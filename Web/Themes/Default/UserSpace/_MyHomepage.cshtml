@@ -1,0 +1,207 @@
+﻿@{
+    var userHolder = ViewData.Get<User>("userHolder", null);
+    var contentItems = ViewData.Get<PagingDataSet<ContentItem>>("contentItems", null);
+    var threads = ViewData.Get<PagingDataSet<Thread>>("threads", null);
+    var currentUser = UserContext.CurrentUser;
+    //我的关注
+    var follows = ViewData.Get<IEnumerable<FollowEntity>>("follows", new List<FollowEntity>());
+    //粉丝列表
+    var follow = ViewData.Get<IEnumerable<User>>("follow", new List<User>());
+    var userProfile = ViewData.Get<UserProfile>("userProfile", new UserProfile());
+    TempData["myhome-check"] = "myhome";
+    var gender = "他";
+    if (userProfile.Gender == GenderType.FeMale)
+    {
+        gender = "她";
+    }
+}
+
+<div class="row jh-my-index tn-mb-50">
+    <div class="tn-plr-15">
+        <div class="col-xs-9">
+            <div class="jh-index-block">
+                <div class="tn-title">
+                    <h5><a href="javascript:;" class="morecms">文章</a></h5>
+                </div>
+                <ul class="list-unstyled">
+                    @if (contentItems.Any())
+                    {
+                        foreach (var item in contentItems)
+                        {
+                            <li class="clearfix">
+                                <ul class="list-inline">
+                                    <li class="tn-text"><a href="@SiteUrls.Instance().CMSDetail(item.ContentItemId)" target="_blank" title="@item.Subject">@HtmlUtility.TrimHtml(item.Subject, 30)</a></li>
+                                    <li class="text-muted"><i class="fa fa-commenting" aria-hidden="true"></i> @item.CommentCount()</li>
+                                    <li class="text-muted"><i class="fa fa-clock-o" aria-hidden="true"></i> @item.DateTimeDisplay()</li>
+                                </ul>
+                            </li>
+                        }
+                    }
+                    else
+                    {
+                        <li class="text-center clearfix text-warning">
+                            暂无任何文章
+                        </li>
+                    }
+                </ul>
+            </div>
+            <div class="jh-index-block">
+                <div class="tn-title">
+                    <h5><a href="javascript:;" class="morethreads">贴子</a></h5>
+                </div>
+                <ul class="list-unstyled">
+                    @if (threads.Any())
+                    {
+                        foreach (var item in threads)
+                        {
+                            <li class="clearfix">
+                                <ul class="list-inline">
+                                    <li class="tn-text"><a href="@CachedUrlHelper.Action("ThreadDetail","Post",null,new RouteValueDictionary { { "threadId",item.ThreadId }})" target="_blank" title="@item.Subject">@HtmlUtility.TrimHtml(item.Subject, 30)</a></li>
+                                    <li class="text-muted"><i class="fa fa-commenting" aria-hidden="true"></i> @item.CommentCount</li>
+                                    <li class="text-muted"><i class="fa fa-clock-o" aria-hidden="true"></i> @item.LastModified.ToFriendlyDate()</li>
+                                    <li class="text-muted"><a title="@item.BarSection.Name" href="@CachedUrlHelper.Action("BarSectionDetail","Post",null,new RouteValueDictionary { {"sectionId",item.BarSection.SectionId }})" target="_blank">@HtmlUtility.TrimHtml(item.BarSection.Name, 15) </a></li>
+                                </ul>
+                            </li>
+                        }
+                    }
+                    else
+                    {
+                        <li class="text-center clearfix text-warning">
+                            暂无任何贴子
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+        <div class="col-xs-3">
+            <div class="jh-index-right tn-gray-bg">
+                <div class="tn-title">
+                    @if (UserContext.CurrentUser == userHolder)
+                    {
+                        <h5><a href="javascript:;" class="myfans">我的粉丝</a><span>（@userHolder.FollowerCount）</span></h5>
+                    }
+                    else
+                    {
+                        <h5><a href="javascript:;" class="myfans">@(gender)的粉丝</a><span>（@userHolder.FollowerCount）</span></h5>
+                    }
+                </div>
+                <div class="row">
+                    @if (follow.Count() > 5)
+                    {
+                        var count = 0;
+                        foreach (var user in follow)
+                        {
+                            if (count == 5)
+                            {
+                                break;
+                            }
+                            <div class="col-xs-4">
+                                @Html.ShowUserAvatar(user.UserId, AvatarSizeType.Small, htmlAttributes: new RouteValueDictionary { { "width", "60" }, { "height", "60" } })
+                                <p class="tn-text"><a href="@SiteUrls.Instance().SpaceHome(user.UserName)" title="@user.DisplayName" target="_blank">@user.DisplayName</a></p>
+                            </div>
+                            count++;
+                        }
+                        <div class="col-xs-4">
+                            <a href="javascript:;" class="myfans"><img class="img-circle" alt="..." src="~/img/more.png" width="60" height="60"></a>
+                        </div>
+                    }
+                    else
+                    {
+                        foreach (var user in follow)
+                        {
+                            <div class="col-xs-4">
+                                @Html.ShowUserAvatar(user.UserId, AvatarSizeType.Small, htmlAttributes: new RouteValueDictionary { { "width", "60" }, { "height", "60" } })
+                                <p class="tn-text"><a href="@SiteUrls.Instance().SpaceHome(user.UserName)" title="@user.DisplayName" target="_blank">@user.DisplayName</a></p>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="jh-index-right tn-gray-bg">
+                <div class="tn-title">
+                    @if (UserContext.CurrentUser == userHolder)
+                    {
+                        //此处用列表中的数量解决user缓存计数错误问题
+                        <h5><a href="javascript:;" class="myfocus">我的关注</a><span>（@userHolder.FollowedCount）</span></h5>
+                    }
+                    else
+                    {
+                        <h5><a href="javascript:;" class="myfocus">@(gender)的关注</a><span>（@userHolder.FollowedCount）</span></h5>
+                    }
+                </div>
+                <div class="row">
+                    @if (follows.Count() > 5)
+                    {
+                        var count = 0;
+                        foreach (var user in follows)
+                        {
+                            if (count == 5)
+                            {
+                                break;
+                            }
+                            <div class="col-xs-4">
+                                @Html.ShowUserAvatar(user.FollowedUserId, AvatarSizeType.Small, htmlAttributes: new RouteValueDictionary { { "width", "60" }, { "height", "60" } })
+                                <p class="tn-text"><a href="@SiteUrls.Instance().SpaceHome(user.followuser().UserName)" title="@user.followuser().DisplayName" target="_blank">@user.followuser().DisplayName</a></p>
+                            </div>
+                            count++;
+                        }
+                        <div class="col-xs-4">
+                            <a class="myfocus" href="javascript:;"><img class="img-circle" alt="..." src="~/img/more.png" width="60" height="60"></a>
+                        </div>
+                    }
+                    else
+                    {
+                        foreach (var user in follows)
+                        {
+                            <div class="col-xs-4">
+                                @Html.ShowUserAvatar(user.FollowedUserId, AvatarSizeType.Small, htmlAttributes: new RouteValueDictionary { { "width", "60" }, { "height", "60" } })
+                                <p class="tn-text"><a href="@SiteUrls.Instance().SpaceHome(user.followuser().UserName)" title="@user.followuser().DisplayName" target="_blank">@user.followuser().DisplayName</a></p>
+                            </div>
+                        }
+
+                    }
+
+                </div>
+            </div>
+            <div class="jh-index-right" id="advertisingDiv">
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+
+        $(function () {
+            //加载广告
+            $.get("@CachedUrlHelper.Action("_Advertising","Common")", { positionId: "1000002", requesttime: new Date().getTime() }, function (data) {
+                    $("#advertisingDiv").html(data);
+
+            })
+            //贴子点击
+            $('.morethreads').on("click", function () {
+                $('a[data-type="post"]').click();
+            })
+
+            //文章
+            $('.morecms').on("click", function () {
+                $('a[data-type="cms"]').click();
+            })
+            //粉丝点击
+            $(".myfans").click(function () {
+                $.get("@CachedUrlHelper.Action("_ManageMyFollow", "UserSpace")", { userId: '@userHolder.UserId', follow: "fans", type: "fans", requestTime: new Date().getTime() }, function (data) {
+                    replaceUrl("follow-fans")
+                    $("#my-content").html(data);
+                })
+            })
+
+            //关注点击
+            $(".myfocus").click(function () {
+                $.get("@CachedUrlHelper.Action("_ManageMyFollow", "UserSpace")", { userId: '@userHolder.UserId', follow: "focus", requestTime: new Date().getTime() }, function (data) {
+                    replaceUrl("follow-focus")
+                    $("#my-content").html(data);
+                })
+            })
+        })
+      
+    })
+</script>

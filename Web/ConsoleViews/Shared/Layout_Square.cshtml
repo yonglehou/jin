@@ -1,0 +1,117 @@
+﻿@{
+    var users = UserContext.CurrentUser;
+    ISettingsManager<SiteSettings> siteSettingsManager = DIContainer.Resolve<ISettingsManager<SiteSettings>>();
+    var siteSettings = siteSettingsManager.Get();
+    //获取Cookie
+    HttpCookie strcookie = System.Web.HttpContext.Current.Request.Cookies.Get("sideSwitch");
+    var strcookieval = "";
+    if (strcookie != null && strcookie.Value == "1")
+    {
+        strcookieval = "tn-narrow-side";
+    }
+
+    
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@Formatter.GenerateTitle(true, ViewData.Get<string[]>("Title", null))</title>
+    @*<title>@ViewData["Title"] -@(siteSettings.SiteName)后台</title>*@
+    <meta charset="gbk">
+    <meta http-equiv="x-ua-compatible" content="IE=edge, chrome=1">
+    @*<style>
+            .ztree li span.button.chk.radio_false_full:after,
+            .ztree li span.button.chk.radio_false_full_focus:after {
+                content: "\f096";
+            }
+
+            .ztree li span.button.chk.radio_true_full:after,
+            .ztree li span.button.chk.radio_true_full_focus:after {
+                content: "\f046";
+            }
+
+            .ztree li span.button.chk.radio_false_part:after,
+            .ztree li span.button.chk.radio_false_part_focus:after {
+                content: "\f14a";
+            }
+
+            .ztree li span.button.chk:hover {
+                color: #bf0a10;
+                cursor: pointer;
+            }
+        </style>*@
+    @*@if (siteSettings.BannedUsers.Contains(users.UserGuid))
+        {
+        <script>
+            window.location.href = "http://404";
+        </script>}*@
+
+    @Styles.Render("~/Bundle/Styles/Site")
+        @Styles.Render("~/Bundle/Styles/SiteConsole")
+        @Styles.Render("~/Bundle/Styles/layer")
+   
+    <!--[if lt IE 9]>
+       <script type="text/javascript" src="/js/html5shiv.min.js"></script>
+       <script type="text/javascript" src="/js/respond.js"></script>
+    <![endif]-->
+    <script src="~/js/require.js"></script>
+    <script src="~/js/config.js"></script>
+    <script src="~/js/frameConsole.js"></script>
+    
+
+</head>
+<body class="tn-fluid-page tn-has-side @strcookieval">
+    <div class="tn-wrapper">
+        @Html.Partial("_Menus")
+        <div class="tn-side-lower"></div>
+        <div class="tn-page-wrapper">
+            @Html.Partial("_Header")
+            <div class="container-fluid">
+                @RenderSection("SubMenu", false)
+                @Html.AntiForgeryToken()
+                @RenderBody()
+            </div>
+            <div class="tn-fluid-footer text-center">
+            </div>
+        </div>
+    </div>
+    
+    <!--<script>
+        $('.maintenance').on('click', function () {
+            layer.alert('您没有权限查看，查看请联系管理员。', {
+                icon: 2,
+                shadeClose: true
+            })
+        });
+    </script>
+
+    <script>
+        $(function () {
+            $('input, textarea').placeholder({ customClass: 'my-placeholder' });
+        });
+    </script>
+
+    <script>
+    //选中样式
+    function checkedActive($that) {
+        if ($that.prop("checked")) {
+            $that.parent().parent().addClass("active")
+        }
+        else {
+            $that.parent().parent().removeClass("active")
+        }
+    }
+    //单选按钮
+    $(function () {
+        $(".tn-checkbox").change(function () {
+            checkedActive($(this))
+        });
+    });
+    </script>-->
+</body>
+</html>
+@if (Utility.IsMiniProfilerEnabled())
+{
+    @StackExchange.Profiling.MiniProfiler.RenderIncludes(position: StackExchange.Profiling.RenderPosition.Left, showTrivial: false, showTimeWithChildren: false, startHidden: false);
+}

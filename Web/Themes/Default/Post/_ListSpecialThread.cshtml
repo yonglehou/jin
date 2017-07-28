@@ -1,0 +1,80 @@
+﻿@model PagingDataSet<Thread>
+
+@if (Model != null && Model.Any())
+{
+    foreach (var item in Model)
+    {
+        <div class="media">
+            <div class="media-left">
+                @Html.ShowUserAvatar(userId: item.UserId, htmlAttributes: new RouteValueDictionary { { "width", "50" }, { "height", "50" } })
+            </div>
+            <div class="media-body">
+                <h5 class="media-heading">
+                    <a href="@CachedUrlHelper.Action("ThreadDetail","Post",null,new RouteValueDictionary { { "threadId",item.ThreadId } })">
+                        @item.Subject
+                        @if (item.isEssential())
+                    {
+                            <span class="label label-danger">精华</span>
+                        }
+                    </a>
+                </h5>
+                <ul class="list-inline text-muted">
+                    <li><a href="@SiteUrls.Instance().MyHome(item.UserId)?type=home"> @item.Author</a></li>
+                    <li><i class="fa fa-clock-o" aria-hidden="true"></i> @item.DateCreated.ToFriendlyDate()</li>
+                    @if (item.ThreadCategory != null)
+                    {
+                        <li>
+                            <a href="@CachedUrlHelper.Action("BarSectionDetail","Post",null,new RouteValueDictionary { { "sectionId", item.BarSection.SectionId } })" title="@item.BarSection.Name">
+                                <i class="fa fa-comments-o" aria-hidden="true"></i> @HtmlUtility.TrimHtml(item.BarSection.Name, 10)
+                            </a>
+                        </li>
+                    }
+                    <li class="pull-right"><i class="fa fa-commenting" aria-hidden="true"></i> @item.CommentCount</li>
+                    <li class="pull-right"><i class="fa fa-eye" aria-hidden="true"></i> @item.HitTimes</li>
+                    @if (item.LastModifiedUserId != 0)
+                    {
+                        <li>@UserIdToUserNameDictionary.GetDisplayName(item.LastModifiedUserId) 最后回复于 @item.LastModified.ToFriendlyDate()</li>
+                    }
+                </ul>
+                @if (item.Attachments != null && item.Attachments.Count() > 0)
+                {
+
+                    <div class="tn-chat-photo">
+                        <ul class="tn-nine-squares list-unstyled clearfix">
+                            @{ var index = 1; }
+                            @foreach (var img in item.Attachments)
+                            {
+                                if (img.MediaType != MediaType.Image)
+                                {
+                                    continue;
+                                }
+                                else
+                                {
+                                    <li class="tn-photo-item"><a class="tn-block" href="@CachedUrlHelper.Action("ThreadDetail","Post",null,new RouteValueDictionary { { "threadId",item.ThreadId }})"><img class="tn-block lazy" data-original="@img.GetDirectlyUrl("Small")" alt=""></a></li>
+                                    index++;
+                                    if (index == 4)
+                                    {
+                                        break;
+                                    }
+                                }
+
+                            }
+
+                        </ul>
+                    </div>
+                                }
+            </div>
+        </div>
+                                }
+                                <div class="text-center">
+                                    @Html.AjaxPagingButton(Model, "_ListHomeThread", CachedUrlHelper.Action("_ListSpecialThread", "Post"))
+                                </div>
+                                }
+                                else
+                                {
+                                    <div class="text-center tn-mb-20 tn-mt-20 text-warning">
+                                        暂无任何贴子
+                                    </div>
+                                }
+
+

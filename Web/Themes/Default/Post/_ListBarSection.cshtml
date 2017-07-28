@@ -1,0 +1,40 @@
+﻿@model PagingDataSet<Section>
+
+<div class="row jh-post-list">
+    @if (Model != null && Model.Any())
+    {
+        foreach (var barSection in Model)
+        {
+            <div class="col-xs-4">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div class="media">
+                            <div class="media-left">
+                                <a href="@CachedUrlHelper.Action("BarSectionDetail","Post",null,new RouteValueDictionary { { "sectionId", barSection.SectionId } })">
+                                    <img class="media-object lazy" data-original="@(new AttachmentService(TenantTypeIds.Instance().Section()).Get(barSection.FeaturedImageAttachmentId).GetDirectlyUrl("Small"))" width="90" height="90" alt="...">
+                                </a>
+                            </div>
+                            <div class="media-body">
+                                <h5 class="media-heading"><a href="@CachedUrlHelper.Action("BarSectionDetail","Post",null,new RouteValueDictionary { { "sectionId", barSection.SectionId } })" title="@barSection.Name">@HtmlUtility.TrimHtml(barSection.Name, 10)</a></h5>
+                                <ul class="list-inline text-muted">
+                                    <li>总贴子：@barSection.ThreadCount</li>
+                                    <li>用户数：@barSection.GetFavoritedUserCount()</li>
+                                </ul>
+                                <p class="text-muted" title="@barSection.Description">@HtmlUtility.TrimHtml(barSection.Description, 15)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="text-center tn-mb-20 tn-mt-20 text-warning">
+            暂无贴吧
+        </div>
+    }
+</div>
+<div class="text-center">
+    @Html.AjaxPagingButton(Model, "_BarSectionList", CachedUrlHelper.Action("_ListBarSection", "Post"))
+</div>

@@ -1,0 +1,109 @@
+﻿@model PagingDataSet<Thread>
+@{
+    var sectionId = ViewData.Get<long>("sectionId", 0);
+    var categoryId = ViewData.Get<long>("categoryId", 0);
+    var sortBy_BarDateThread = ViewData.Get<int>("sortBy_BarDateThread", 0);
+}
+@if (Model != null && Model.TotalRecords > 0)
+{
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th class="tn-selection-column">
+                    <label>
+                        <input type="checkbox" id="select-all">
+                    </label>
+                </th>
+                <th width="400">标题</th>
+                <th>审核状态</th>
+                <th>贴子分类</th>
+                <th>发贴人</th>
+                <th>发贴时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var item in Model)
+                {
+                <tr id="thread-@item.ThreadId">
+                    <td class="tn-selection-column">
+                        <input name="checks" type="checkbox" class="tn-checkbox" data-id="@item.ThreadId">
+                    </td>
+                    <td id="@item.ThreadId">
+                        <a href="@CachedUrlHelper.Action("ThreadDetail","Post",null,new RouteValueDictionary { {"threadId",item.ThreadId } })" target="_blank">@item.Subject</a>
+                        <span id="sticky-@item.ThreadId" class="label label-danger @if (!item.IsSticky)
+                            { <text>hidden</text>} " data-id="@item.ThreadId">置顶</span>
+                        <span id="Essential-@item.ThreadId" class="label label-danger @if (!item.isEssential())
+                            { <text>hidden</text>} " data-id="@item.ThreadId">精华</span>
+                    </td>
+                    <td id="audit-@item.ThreadId">
+                        @if (item.ApprovalStatus == AuditStatus.Success)
+                        {
+                            <i class="fa fa-check-circle tn-green-color" title="@AuditStatus.Success.GetDisplayName()"></i>
+                        }
+                        else if (item.ApprovalStatus == AuditStatus.Again)
+                        {
+                            <i class="fa fa-check-circle tn-orange-color" title="@AuditStatus.Again.GetDisplayName()"></i>
+                        }
+                        else if (item.ApprovalStatus == AuditStatus.Pending)
+                        {
+                            <i class="fa fa-circle-o tn-orange-color" title="@AuditStatus.Pending.GetDisplayName()"></i>
+                        }
+                        else
+                        {
+                            <i class="fa fa-ban tn-red-color " title="@AuditStatus.Fail.GetDisplayName()"></i>
+                        }
+                    </td>
+                    <td>
+                        @if (item.ThreadCategory != null)
+                    {
+                            @item.ThreadCategory.CategoryName
+
+                        }
+                    </td>
+
+                    <td>@item.Author</td>
+                    <td>@item.DateCreated.ToLocalTime().ToString("d")</td>
+                    <td>
+                        <a class="btn btn-xs btn-link" href="@CachedUrlHelper.Action("EditThread","Post",null,new RouteValueDictionary { { "sectionId",item.SectionId}, {"threadId",item.ThreadId } })"><i class="fa fa fa-pencil"></i></a>
+                        <a class="btn btn-xs btn-link deletethread" href="javascript:;" data-id="@item.ThreadId"><i class="fa fa-trash"></i></a>
+                    </td>
+                </tr>
+            }
+
+
+        </tbody>
+    </table>
+    <div class="text-center">
+        @Html.AjaxPagingButton(Model, "_ListThreadManage", CachedUrlHelper.Action("_ListThreadManage", "Post", null,
+        new RouteValueDictionary { { "sectionId", sectionId }, { "categoryId", categoryId }, { "sortBy_BarDateThread", sortBy_BarDateThread } }))
+    </div>
+}
+else
+{
+    <div class="text-center tn-mb-20 tn-mt-20 text-warning">
+        暂无任何贴子
+    </div>
+
+}
+
+<script type="text/javascript">
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+        $("#_ListThreadManage").on("click", ".deletethread", function () {
+            var $this = $(this);
+            layer.confirm("是否删除", { btn: ['确认', '取消'] }, function () {
+                $.post('@CachedUrlHelper.Action("DeleteThread", "Post")',
+                    { threadId: $this.data('id') }, function (data) {
+                        if (data.state == 1) {
+                            layer.msg("删除成功",
+                                {
+                                    icon: 1
+                                });
+                            $('#thread-' + $this.data('id')).remove();
+                        }
+                    })
+            })
+        })
+    })
+</script>

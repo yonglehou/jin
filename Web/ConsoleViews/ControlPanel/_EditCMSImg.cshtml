@@ -1,0 +1,49 @@
+﻿@{
+    var attachmentList = ViewData.Get<IEnumerable<Attachment>>("attachmentList", new List<Attachment>());
+    attachmentList = attachmentList.OrderBy(n => n.DisplayOrder);
+    var contentItemId = ViewData.Get<long>("contentItemId", 0);
+}
+@if (attachmentList.Any())
+{
+    var counts = 0;
+    foreach (var item in attachmentList)
+    {
+        <div class="col-xs-3">
+            <div class="thumbnail">
+                <div class="tn-img-area">
+                    <img data-id="@item.AttachmentId" src="@item.GetDirectlyUrl()" alt="...">
+                </div>
+                <div class="caption">
+                    <p class="tn-no-mb tn-overflow-hidden tn-break-word" style="height:75px;" title="@item.Discription">
+                        @HtmlUtility.TrimHtml(item.Discription, 40)
+                    </p>
+                    <a id="edit-@item.AttachmentId" role="button" title="编辑描述" href="javascript:;">编辑描述</a>
+                    <a id="delete-@item.AttachmentId" href="javascript:;">删除</a>
+                    @if (attachmentList.ElementAt(0).AttachmentId != item.AttachmentId)
+                    {
+                        <a id="upAttachment-@item.AttachmentId" data-change="@attachmentList.ElementAt(counts-1).AttachmentId" href="javascript:;">上移</a>
+                    }
+                    @if (attachmentList.ElementAt(attachmentList.Count() - 1).AttachmentId != item.AttachmentId)
+                    {
+                        <a id="downAttachment-@item.AttachmentId" data-change="@attachmentList.ElementAt(counts+1).AttachmentId" href="javascript:;">下移</a>
+                    }
+                </div>
+            </div>
+        </div>
+        counts++;
+    }
+}
+else
+{
+    <div class="text-center tn-mb-20 tn-mt-20">
+        暂无任何照片
+    </div>
+}
+<script>
+    require(['jquery','tnlayer'], function (_,tnlayer) {
+        $('a[id^=edit-]').click(function () {
+            var attachmentId = $(this).attr("id").replace(/[^0-9]/ig, "");
+            tnlayer.layermodal('编辑描述', '@CachedUrlHelper.Action("_EditAttachmentDiscription", "ControlPanel")?attachmentId=' + attachmentId + '&contentItemId=' + '@contentItemId' + '&t=' + '@DateTime.Now.Ticks', '550px', '310px')
+        })
+    })
+</script>

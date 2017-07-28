@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<notices>
+  <notice templateName="NewThreadReply">
+    您的贴子“<a href="@Model.RelativeObjectUrl" name="knowLink" target="_blank">@Model.RelativeObjectName</a>”,被<a href="@Model.LeadingActorUrl" target="_blank">@Model.LeadingActor</a>于 @Model.DateCreated 回复,回复内容:@Model.Body
+  </notice>                                        
+  <notice templateName="NewCMSReply">
+    您的文章“<a href="@Model.RelativeObjectUrl" name="knowLink" target="_blank">@Model.RelativeObjectName</a>”,被<a href="@Model.LeadingActorUrl" target="_blank">@Model.LeadingActor</a>于 @Model.DateCreated 回复,回复内容:@Model.Body
+  </notice>                                        
+  <notice templateName="NewArticleReply">          
+    您的文章“<a href="@Model.RelativeObjectUrl" name="knowLink" target="_blank">@Model.RelativeObjectName</a>”,被<a href="@Model.LeadingActorUrl" target="_blank">@Model.LeadingActor</a>于 @Model.DateCreated 回复,回复内容:@Model.Body
+  </notice>
+  <notice templateName="NewImageReply">
+    您的组图“<a href="@Model.RelativeObjectUrl" name="knowLink" target="_blank">@Model.RelativeObjectName</a>”,被<a href="@Model.LeadingActorUrl" target="_blank">@Model.LeadingActor</a>于 @Model.DateCreated 回复,回复内容:@Model.Body
+  </notice>
+  <notice templateName="NewVideoReply">            
+    您的视频“<a href="@Model.RelativeObjectUrl" name="knowLink" target="_blank">@Model.RelativeObjectName</a>”,被<a href="@Model.LeadingActorUrl" target="_blank">@Model.LeadingActor</a>于 @Model.DateCreated 回复,回复内容:@Model.Body
+  </notice>                                        
+  <notice templateName="NewCommentReply">          
+    您的评论“<a href="@Model.RelativeObjectUrl" name="knowLink" target="_blank">@Model.RelativeObjectName</a>”,被<a href="@Model.LeadingActorUrl" target="_blank">@Model.LeadingActor</a>于 @Model.DateCreated 回复,回复内容:@Model.Body
+  </notice>
+  <notice templateName="FollowUser">
+    <a href="@Model.LeadingActorUrl" name="knowLink" target="_blank">@Model.LeadingActor</a>关注了你
+  </notice>
+  
+  <notice templateName="ThreadApproved">
+    您的帖子“<a href="@Model.RelativeObjectUrl" name="knowLink" target="_blank">@Model.RelativeObjectName</a>”通过了审核
+  </notice>
+  <notice templateName="CMSArticleApproved">
+    您的文章“<a href="@Model.RelativeObjectUrl" name="knowLink" target="_blank">@Model.RelativeObjectName</a>”通过了审核
+  </notice>
+  
+  
+  <notice templateName="ThreadDisapproved">
+    您的帖子“<a href="@Model.RelativeObjectUrl" name="knowLink" target="_blank">@Model.RelativeObjectName</a>”未通过审核
+  </notice>
+  <notice templateName="CMSArticleDisapproved">
+    您的文章“<a href="@Model.RelativeObjectUrl" name="knowLink" target="_blank">@Model.RelativeObjectName</a>”未通过审核
+  </notice>
+  
+  <!--<notice templateName="NewComment">
+    <a href="@Model.LeadingActorUrl" target="_blank">@Model.LeadingActor</a>评论了你的“<a href="@Model.RelativeObjectUrl" target="_blank">@Model.RelativeObjectName</a>”
+  </notice>
+  <notice templateName="PhotoComment">
+    <a href="@Model.LeadingActorUrl" target="_blank">@Model.LeadingActor</a>评论了你的“<a href="@Model.RelativeObjectUrl" plugin="dialog">@Model.RelativeObjectName</a>”
+  </notice>
+  <notice templateName="ManagerApproved">
+    你的<a href="@Model.RelativeObjectUrl" target="_blank">@Model.RelativeObjectName</a>通过了审核
+  </notice>
+  <notice templateName="ManagerDisapproved">
+    你的<a href="@Model.RelativeObjectUrl" target="_blank">@Model.RelativeObjectName</a>未通过审核
+  </notice>
+  <notice templateName="ManagerCancelEssential">
+    你的<a href="@Model.RelativeObjectUrl" target="_blank">@Model.RelativeObjectName</a>已被管理员取消加精
+  </notice>
+  <notice templateName="ManagerCancelSticky">
+    你的<a href="@Model.RelativeObjectUrl" target="_blank">@Model.RelativeObjectName</a>已被管理员取消置顶
+  </notice>
+  <notice templateName="ManagerSetEssential">
+    你的<a href="@Model.RelativeObjectUrl" target="_blank">@Model.RelativeObjectName</a>已被管理员设置精华
+  </notice>
+  <notice templateName="ManagerSetSticky">
+    你的<a href="@Model.RelativeObjectUrl" target="_blank">@Model.RelativeObjectName</a>已被管理员设为置顶
+  </notice>
+  <notice templateName="ManagerRecommended">
+    你的<a href="@Model.RelativeObjectUrl" target="_blank">@Model.RelativeObjectName</a>已被管理员推荐
+  </notice>
+  <notice templateName="ManagerRecommendedUser">
+    你被管理员推荐了
+  </notice>
+  <notice templateName="RolesChanged">
+    你的角色已被管理员更改为 @Model.RelativeObjectName
+  </notice>
+  <notice templateName="RoleAdd">
+    管理员已为你添加了新的角色 @Model.RelativeObjectName
+  </notice>
+  <notice templateName="AtUser">
+    <a href="@Model.LeadingActorUrl" target="_blank">@Model.LeadingActor</a>在@(Model.Owner)：“<a href="@Model.RelativeObjectUrl">@Model.RelativeObjectName</a>”中@@了你
+  </notice>
+  <notice templateName="AtUserForPhoto">
+    <a href="@Model.LeadingActorUrl" target="_blank">@Model.LeadingActor</a>在@(Model.Owner)：“<a href="@Model.RelativeObjectUrl" plugin="dialog">@Model.RelativeObjectName</a>”中@@了你
+  </notice>
+  <notice templateName="AutoNoModeratedUser">
+    你已被自动解除管制，去看下<a href="@Model.RelativeObjectUrl" target="_blank">@Model.RelativeObjectName</a>
+  </notice>
+  <notice templateName="PhotoLabelNotice">
+    <a href="@Model.LeadingActorUrl">@Model.LeadingActor</a>圈了你的<a href="@Model.RelativeObjectUrl" plugin="dialog" >照片</a>
+  </notice>
+  <notice templateName="PhotoLabeledNotice">
+    <a href="@Model.LeadingActorUrl">@Model.LeadingActor</a>在<a href="@Model.RelativeObjectUrl" plugin="dialog" >照片</a>中圈出了你
+  </notice>
+  <notice templateName="NoEmailNotice">
+    你的邮箱为空，有帐号丢失无法找回密码的危险，请<a href="@Model.LeadingActorUrl" target="_blank">完善个人资料</a>
+  </notice>-->
+</notices>

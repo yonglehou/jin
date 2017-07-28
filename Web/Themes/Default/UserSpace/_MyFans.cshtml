@@ -1,0 +1,151 @@
+﻿@model PagingDataSet<long>
+@{
+    var fullUserList = ViewData.Get<List<User>>("followerList", new List<User>());
+    var currentUser = ViewData.Get<User>("currentUser", null);
+    var followerProfile = ViewData.Get<List<UserProfile>>("followerProfile", null);
+    var myUserId = ViewData.Get<long>("myUserId", 0);
+    //用户等级
+    Func<int, string> rankimage = (n) =>
+    {
+        string rankimages = string.Empty;
+        var one = n / 9;
+        var two = (n - 9 * one) / 3;
+        var thr = n - 9 * one - 3 * two;
+        for (int i = 0; i < one; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star1.png'></li>";
+        }
+        for (int i = 0; i < two; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star2.png'></li>";
+        }
+        for (int i = 0; i < thr; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star3.png'></li>";
+        }
+        return rankimages;
+    };
+}
+<div class="row">
+    @if (Model.Count() > 0)
+    {
+        for (int i = 0; i < Model.Count(); i++)
+        {
+        <div class="col-xs-6">
+            <div class="media">
+                <div class="media-left">
+                    @Html.ShowUserAvatar(Model[i], AvatarSizeType.Medium)
+                    @*<a href="@SiteUrls.Instance().SpaceHome(Model[i])">
+                            <img class="media-object img-circle" src="@SiteUrls.Instance().UserIDOfAvatarUrl(Model[i], AvatarSizeType.Small)" width="90" height="90">
+                        </a>*@
+                </div>
+                <div class="media-body">
+                    <div class="jh-user-name">
+                        <h4>
+                            <a href="@SiteUrls.Instance().SpaceHome(Model[i])" target="_blank">@fullUserList[i].DisplayName</a>
+
+                            @if (followerProfile.Where(u => u.UserId == Model[i]).FirstOrDefault()?.Gender == GenderType.FeMale)
+                            {
+                            <i class="fa fa-female" aria-hidden="true"></i>
+                            }
+                            else
+                            {
+                            <i class="fa fa-male" aria-hidden="true"></i>
+                            }
+                        </h4>
+                        <ul class="list-inline" title="@fullUserList[i].Rank 级">
+                            @Html.Raw(rankimage(fullUserList[i].Rank))
+                        </ul>
+                        @* 我的粉丝 *@
+                        @if (myUserId == currentUser?.UserId)
+                        {
+                            if (currentUser.IsFollowed(Model[i]))
+                            {
+                            <div class="pull-right follow-state mutual-followed">
+                                <i class="fa fa-exchange"></i>
+                                相互关注
+                            </div>
+                            }
+                            else
+                            {
+                            <a href="javascript:;" onclick="$.post('@SiteUrls.Instance().Follow(Model[i])', $.fn.followCallBack)" class="pull-right a follow-state add-followed">
+                                <i class="fa fa-plus"></i> 关注
+                            </a>
+                            }
+                        }
+                        @* 他人粉丝 *@
+                        else
+                        {
+                            if (Model[i] != currentUser?.UserId)
+                            {
+                                if (currentUser.IsFollowed(Model[i]))
+                                {
+                                <div class="pull-right follow-state mutual-followed">
+                                    <i class="fa fa-check"></i>
+                                    已关注
+                                </div>
+                                }
+                                else
+                                {
+                                <a href="javascript:;" onclick="$.post('@SiteUrls.Instance().Follow(Model[i])', $.fn.followCallBack)" class="pull-right a follow-state add-followed">
+                                    <i class="fa fa-plus"></i> 关注
+                                </a>
+                                }
+                            }
+                        }
+                    </div>
+                    <ul class="list-inline text-muted">
+                        <li>粉丝：<span class="tn-theme-color">@fullUserList[i].FollowerCount</span></li>
+                        <li>关注：<span class="tn-theme-color">@fullUserList[i].FollowedCount</span></li>
+                    </ul>
+                    <p class="text-muted">@(followerProfile.Where(u => u.UserId == Model[i]).FirstOrDefault()?.Introduction)</p>
+                </div>
+            </div>
+        </div>
+        }
+    }
+    else
+    {
+    <div class="text-center clearfix text-warning">
+        暂无粉丝
+    </div>
+    }
+    <div style="clear:both; text-align:center">
+        @Html.AjaxPagingButton(Model, "followList", CachedUrlHelper.Action("_MyFans", "UserSpace", "", new RouteValueDictionary(new { userId = myUserId })))
+    </div>
+</div>
+<script type="text/javascript">
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+
+        //关注回调函数
+        $.fn.followCallBack = function (data) {
+            if ('@currentUser' == "") {
+                window.location.href = "@SiteUrls.Instance().Login()";
+            }
+            else {
+                if (data.state == 1) {
+                    layer.msg(data.successmsg, { icon: 1 })
+                    $.get("@CachedUrlHelper.Action("_MyFans","UserSpace")", { userId: '@myUserId', requestTime: new Date().getTime() }, function (data) {
+                        $("#followList").html(data);
+                        $(".tipsy").remove();
+                    })
+                }
+                else {
+                    layer.msg(data.errormsg, { icon: 2 })
+                }
+            }
+        }
+        //取消关注回调函数
+        $.fn.cancelFollowCallBack = function (data) {
+            if (data.state == 1) {
+                layer.msg(data.successmsg, { icon: 1 })
+                $.get("@CachedUrlHelper.Action("_MyFans", "UserSpace")", { userId: '@myUserId', requestTime: new Date().getTime() }, function (data) {
+                    $("#followList").html(data);
+                })
+            }
+            else {
+                layer.msg(data.errormsg, { icon: 2 })
+            }
+        }
+    })
+</script>

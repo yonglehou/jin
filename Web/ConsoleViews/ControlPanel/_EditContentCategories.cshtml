@@ -1,0 +1,150 @@
+﻿@model ContentCategoryModel
+@{
+    var contentCategoryAdmin = Model.ContentCategoryAdmin == null ? new List<long>() : Model.ContentCategoryAdmin.Select(n => Convert.ToInt64(n));
+
+}
+<div class="panel-body jn-training-creation jn-block">
+    <div class="tab-content ">
+        <div role="tabpanel" class="tab-pane active" id="tab_jcxx">
+            @using (Html.BeginForm("_EditContentCategories", "ControlPanel", FormMethod.Post, new { @class = "form-horizontal tn-form-validation", @id = "_EditContentCategories" }))
+            {
+            @Html.AntiForgeryToken()
+                @Html.HiddenFor(n => n.CategoryId)
+                @Html.ValidationMessageFor(n => n.CategoryId)
+                @Html.HiddenFor(n => n.ParentId)
+                @Html.ValidationMessageFor(n => n.ParentId)
+                if (Model.ParentId > 0)
+                {
+                <div class="form-group">
+                    @Html.LabelFor(n => n.ParentName, new { @class = "col-xs-3 text-left" })
+                    <div class="col-xs-12">
+                        @Html.TextBoxFor(n => n.ParentName, new { @class = "col-xs-10 form-control", @disabled = "" })
+                        @Html.ValidationMessageFor(n => n.ParentName)
+                    </div>
+                </div>
+                }
+                <div class="form-group">
+                    @Html.LabelFor(n => n.CategoryName, new { @class = "col-xs-3 text-left" })
+                    <div class="col-xs-12">
+                        @Html.TextBoxFor(n => n.CategoryName, new { @class = "col-xs-10 form-control" })
+                        @Html.ValidationMessageFor(n => n.CategoryName)
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(n => n.ContentModelKeys, new { @class = "col-xs-3 text-left" })
+                    <div class="col-xs-12">
+                        <label class="checkbox-inline">
+                            <input value="@ContentModelKeys.Instance().Article()" name="ContentModelKeys" type="checkbox" @(Model.ContentModelKeys.Contains(ContentModelKeys.Instance().Article()) ? "checked" : "")>
+                            文章
+                        </label>
+                        <label class="checkbox-inline">
+                            <input value="@ContentModelKeys.Instance().Image()" name="ContentModelKeys" type="checkbox" @(Model.ContentModelKeys.Contains(ContentModelKeys.Instance().Image()) ? "checked" : "")>
+                            组图
+                        </label>
+                        <label class="checkbox-inline">
+                            <input value="@ContentModelKeys.Instance().Video()" name="ContentModelKeys" type="checkbox" @(Model.ContentModelKeys.Contains(ContentModelKeys.Instance().Video()) ? "checked" : "")>
+                            视频
+                        </label>
+                        <label class="checkbox-inline">
+                            <input value="@ContentModelKeys.Instance().Contribution()" name="ContentModelKeys" type="checkbox" @(Model.ContentModelKeys.Contains(ContentModelKeys.Instance().Contribution()) ? "checked" : "")>
+                            用户投稿
+                        </label>
+                    </div>
+                    @Html.ValidationMessageFor(n => n.ContentModelKeys)
+                </div>
+                <div class="form-group">
+                    <label class="col-xs-3 text-left">栏目设置</label>
+                    <div class="col-xs-12">
+                        <label class="checkbox-inline">
+                            <input value="true" name="IsListDisplay" type="checkbox" @(Model.IsListDisplay ? "checked" : "")>
+                            在栏目列表显示
+                        </label>
+                    </div>
+                    @Html.ValidationMessage("IsListDisplay")
+                </div>
+                if (Model.ParentId > 0)
+                {
+                <div class="form-group">
+                    <label class="col-xs-3 text-left" style="text-align:left;">栏目管理员</label>
+                    <div class="col-xs-12">
+                        <label class="checkbox-inline">
+                            <input value="true" name="IsInherit" type="checkbox" @(Model.IsInherit ? "checked" : "")>
+                            继承父栏目设置
+                        </label>
+                    </div>
+                    @Html.ValidationMessage("IsSource")
+                </div>
+                }
+                <div class="form-group contentCategoryAdmin">
+                    @Html.LabelFor(n => n.ContentCategoryAdmin, new { @class = "col-xs-3 text-left" })
+                    <div class="col-xs-12">
+                        @Html.UserSelector("ContentCategoryAdmin", mode: UserOrOrgSelectorMode.User, selectionUserIds: contentCategoryAdmin, selectionNum: 50, innerText: "选择人员", validation: false, sourceUrl: SiteUrls.Instance().GetAllOguUser())
+                        @Html.ValidationMessageFor(n => n.ContentCategoryAdmin)
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(n => n.Description, new { @class = "col-xs-3 text-left" })
+                    <div class="col-xs-12">
+                        @Html.TextAreaFor(n => n.Description, new { @class = "col-xs-10 form-control" })
+                        @Html.ValidationMessageFor(n => n.Description)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-12">
+                        <label class="checkbox-inline">
+                            <input value="true" name="IsEnabled" type="checkbox" @(Model.IsEnabled ? "checked" : "")>
+                            是否启用
+                        </label>
+                    </div>
+                    @Html.ValidationMessage("IsEnabled")
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-12">
+                        <button type="button" class="btn btn-primary btn-submit tn-btn-wp">保存</button>
+                        <button type="button" class="btn btn-default tn-btn-wp" onclick="layer.closeAll();">取消</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+@if (Model.IsInherit)
+{
+    <script>
+        require(['jquery'], function () {
+            $('.contentCategoryAdmin').hide()
+        })
+
+    </script>
+}
+<script>
+    require(['jquery'], function () {
+        //提交表单
+        $('.btn-submit').on('click', function () {
+            var countModelKeys = 0;
+            $('input[name="ContentModelKeys"]').each(function () {
+                if ($(this).is(':checked')) {
+                    countModelKeys++;
+                }
+            })
+            if (countModelKeys == 0) {
+                layer.msg("请选择内容模型", {
+                    icon: 2
+                });
+                return false;
+            }
+            $('#_EditContentCategories').submit();
+        });
+
+        //栏目管理员勾选
+        $('input[name="IsInherit"]').click(function () {
+            if ($(this).is(':checked')) {
+                $('.contentCategoryAdmin').hide()
+            }
+            else {
+                $('.contentCategoryAdmin').show()
+            }
+        });
+
+    })
+</script>

@@ -1,0 +1,91 @@
+﻿@model PagingDataSet<ContentItem>
+@{
+    var contentModelService = DIContainer.Resolve<ContentModelService>();
+}
+@if (Model.Any())
+{
+    <ul class="list-unstyled">
+        @foreach (var item in Model)
+        {
+            <li class="jh-news-list">
+                <ul class="list-inline">
+                    @if (item.FeaturedImageAttachmentId > 0)
+                    {
+                        <li class="jh-list-img">
+                            <a href="@SiteUrls.Instance().CMSDetail(item.ContentItemId)" class="jh-vedio-img">
+                                <img class="lazy" data-original="@item.FristFeaturedImage("List")" width="260" height="146" />
+                                @if (item.ContentModelId == contentModelService.GetContentModelsByContentModeKey(ContentModelKeys.Instance().Video()).ModelId)
+                                {
+                                    <div class="jh-vedio-mask">
+                                        <i class="fa fa-play-circle-o" aria-hidden="true"></i>
+                                    </div>
+                                }
+                            </a>
+                        </li>
+                    }
+                    <li class="jh-list-title @if (!(item.FeaturedImageAttachmentId > 0)) { <text>jh-no-img</text>} ">
+                        <h5 class="tn-text">
+                            <a href="@SiteUrls.Instance().CMSDetail(item.ContentItemId)" title="@item.Subject">
+                                @HtmlUtility.TrimHtml(item.Subject, 60)
+                            </a>
+                        </h5>
+                        @{
+                            var displayBody = "";
+                            if (!string.IsNullOrEmpty(item.Summary))
+                            {
+                                displayBody = item.Summary;
+                            }
+                            if (string.IsNullOrEmpty(displayBody) && !string.IsNullOrEmpty(item.Body))
+                            {
+                                displayBody = HtmlUtility.TrimHtml(item.Body, 180);
+                            }
+                        }
+                        @if (!string.IsNullOrEmpty(displayBody))
+                    {
+                            <p>
+                                @displayBody
+                            </p>
+                        }
+                        <ul class="list-inline text-muted">
+                            <li>
+                                @Html.ShowUserAvatar(userId: item.UserId, avatarSizeType: AvatarSizeType.Micro)
+                                <span>
+                                    <a href="@SiteUrls.Instance().MyHome(item.UserId)" target="_blank">
+                                        @item.Author
+                                    </a>
+                                </span>
+                            </li>
+                            @if (item.ContentCategory != null)
+                            {
+                                <li>
+                                    <a href="@SiteUrls.Instance().CategoryCMS(item.ContentCategoryId)">
+                                        @HtmlUtility.TrimHtml(item.ContentCategory.CategoryName, 20)
+                                    </a>
+                                </li>
+                            }
+                            <li>
+                                <i class="fa fa-clock-o" aria-hidden="true"></i>
+                                @item.DatePublished.ToFriendlyDate()
+                            </li>
+                            <li>
+                                <i class="fa fa-commenting" aria-hidden="true"></i>
+                                @item.CommentCount()
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+                            }
+      
+    </ul>
+    <div class="text-center">
+        @Html.AjaxPagingButton(Model, "listCMS", CachedUrlHelper.Action("_ListContentItem", "CMS"), PaginationMode.NextLoadMore)
+    </div>
+                            }
+                            else
+                            {
+                                <div class="text-center text-warning">
+                                    暂无任何资讯
+                                </div>
+                            }
+

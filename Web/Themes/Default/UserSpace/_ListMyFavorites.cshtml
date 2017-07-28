@@ -1,0 +1,62 @@
+﻿@model PagingDataSet<FavoriteEntity>
+@{
+    var isContentItem = ViewData.Get<bool>("isContentItem", true);
+    var contentItems = ViewData.Get<IEnumerable<ContentItem>>("contentItems", null);
+    var threads = ViewData.Get<IEnumerable<Thread>>("threads", null);
+}
+
+<ul class="list-unstyled">
+    @if (isContentItem == true)
+    {
+        if (contentItems != null && contentItems.Any())
+        {
+            foreach (var item in contentItems)
+            {
+                <li class="clearfix">
+                    <ul class="list-inline">
+                        <li class="tn-text" title="@item.Subject" style="width:700px"><a href="@SiteUrls.Instance().CMSDetail(item.ContentItemId)" target="_blank">@item.Subject</a></li>
+                        <li class="text-muted" style="margin-left:10px"><i class="fa fa-commenting" aria-hidden="true"></i> @item.CommentCount()</li>
+                        <li class="text-muted" style="margin-left:10px"><i class="fa fa-clock-o" aria-hidden="true"></i> @item.DateCreated.ToFriendlyDate()</li>
+                        @if (item.ContentCategory != null)
+                        {
+                            <li class="text-muted" title="@item.ContentCategory.CategoryName" style="margin-left:10px"><a href="@SiteUrls.Instance().CategoryCMS(item.ContentCategoryId)" target="_blank" class="text-muted">@HtmlUtility.TrimHtml(item.ContentCategory.CategoryName, 20)</a></li>
+                        }
+                    </ul>
+                </li>
+            }
+        }
+        else
+        {
+            <li class="clearfix text-warning text-center">
+                您还没有收藏任何文章,快去收藏吧!
+            </li>
+        }
+    }
+    else
+    {
+        if (threads != null && threads.Any())
+        {
+            foreach (var item in threads)
+            {
+                <li class="clearfix">
+                    <ul class="list-inline">
+                        <li class="tn-text" title="@item.Subject" style="width:700px"><a href="@SiteUrls.Instance().ThreadDetail(item.ThreadId)" target="_blank">@item.Subject</a></li>
+                        <li class="text-muted" style="margin-left:10px"><i class="fa fa-commenting" aria-hidden="true"></i> @item.CommentCount</li>
+                        <li class="text-muted" style="margin-left:10px"><i class="fa fa-clock-o" aria-hidden="true"></i>   @item.DateCreated.ToFriendlyDate()</li>
+                        <li class="text-muted" title="@item.BarSection.Name" style="margin-left:10px"><a href="@CachedUrlHelper.Action("BarSectionDetail","Post",null,new RouteValueDictionary { {"sectionId",item.SectionId} })" target="_blank" class="text-muted">@HtmlUtility.TrimHtml(item.BarSection.Name, 20)</a></li>
+                    </ul>
+                </li>
+            }
+        }
+        else
+        {
+            <li class="clearfix text-warning text-center">
+                您还没有收藏任何贴子,快去收藏吧!
+            </li>
+        }
+    }
+</ul>
+
+<div class="text-center">
+    @Html.AjaxPagingButton(Model, "_ListMyFavorites", CachedUrlHelper.Action("_ListMyFavorites", "UserSpace", null, new RouteValueDictionary { { "isContentItem", isContentItem } }))
+</div>

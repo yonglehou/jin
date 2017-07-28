@@ -1,0 +1,110 @@
+﻿@model PagingDataSet<Tag>
+
+@if (Model.Any())
+{
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="col-xs-3">标签名称</th>
+                        <th>描述</th>
+                        <th class="col-xs-1">内容数</th>
+                        <th class="col-xs-1">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr id="deletetag-@item.TagId">
+                            @if (item.TenantTypeId == TenantTypeIds.Instance().ContentItem())
+                            {
+                                <td><a type="button" target="_blank" href="@CachedUrlHelper.Action("TagCMS","CMS","",new RouteValueDictionary { { "tagName" ,item.TagName}})" title="@item.TagName">@item.TagName</a></td>
+                            }
+                            <td>@Html.Raw(item.Description)</td>
+                            @if (item.TenantTypeId == TenantTypeIds.Instance().ContentItem())
+                            {
+                                <td><a type="button" target="_blank" href="@CachedUrlHelper.Action("TagCMS", "CMS", "", new RouteValueDictionary { { "tagName", item.TagName }})" title="@item.TagName">@item.ItemCount</a></td>
+                            }
+                            <td>
+                                <a class="layertagedit" data-id="@item.TagId" role="button" title="编辑"><i class="fa fa-pencil fa-lg"></i></a>
+                                &nbsp;
+                                <a id="delete-@item.TagId" role="button" title="删除"><i class="fa fa-trash fa-lg"></i></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <div class="text-center text-warning">
+        暂无任何标签
+    </div>
+}
+<div class="text-center">
+    @Html.AjaxPagingButton(Model, "listtag", CachedUrlHelper.Action("_ListTags", "ControlPanel", null))
+</div>
+<script>
+    require(['jquery','tnlayer'],function($,tnlayer){
+
+        $('.layertagedit').click(function(){
+            var tagId=$(this).data("id");
+            tnlayer.layermodal('编辑标签','@CachedUrlHelper.Action("_EditTag", "ControlPanel")?tenantTypeId='+""+'&tagId='+tagId+'&t=' + new Date(),'450px','520px')
+        })
+
+        //删除标签
+        $(document).on('click', 'a[id^=delete-]', function () {
+            var id = $(this).attr("id").replace(/[^0-9]/ig, "");
+            var param = jQuery.param({ tagId: id, t: new Date().getTime() });
+            layer.confirm('确定要删除该标签？', {
+                btn: ['确认', '取消'], //按钮
+                shade: false //不显示遮罩
+            }, function () {
+                $.post("@CachedUrlHelper.Action("DeleteTag", "ControlPanel")", param, function (data) {
+                    if (data.MessageType) {
+                        layer.msg(data.MessageContent, {
+                            icon: 1
+                        })
+                        $("#deletetag-" + id).remove();
+                    }
+                    else {
+                        layer.msg(data.MessageContent, {
+                            icon: 2
+                        })
+                    }
+                });
+            });
+        });
+
+
+        //提交回调
+        $.fn._EditTagSucceed=function(data) {
+            if(data.type=="exist")
+            {
+                layer.msg("标签已存在", {
+                    icon: 2
+                });
+            }
+            else if (data.type == true) {
+                layer.msg("保存成功！", {
+                    icon: 1
+                });
+                setTimeout(function () {
+                    var param=jQuery.param({keyWord:$("#keyword").val(),tenantTypeId:$("#tenantTypeId").val(),pageIndex:@Model.PageIndex,t: new Date().getTime()});
+                    $.get("@CachedUrlHelper.Action("_ListTags", "ControlPanel")",param, function (data) {
+                        $("#listtag").html(data)
+                    })
+                    layer.closeAll();
+                }, 400)
+            } else {
+                layer.msg("保存失败", {
+                    icon: 2
+                });
+            }
+        }
+
+    })
+</script>

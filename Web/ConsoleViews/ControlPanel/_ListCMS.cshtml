@@ -1,0 +1,152 @@
+﻿@model  PagingDataSet<ContentItem>
+@{
+    SpecialContentitemService specialContentitemService = ViewData.Get<SpecialContentitemService>("service", null);
+    var query = ViewData.Get<ContentItemQuery>("query", new ContentItemQuery());
+}
+@if (Model.Any())
+{
+    @Html.Hidden("pageIndex", Model.PageIndex)
+    using (Html.BeginForm("_DeleteCMSList", "ControlPanel", FormMethod.Post, new { @class = "form-horizontal tn-form-validation", @id = "Form-CMS" }))
+    {
+    <div class="panel-body">
+
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th class="tn-selection-column">
+                        <input id="select-all" type="checkbox" value="0">
+                    </th>
+                    <th>标题</th>
+                    <th class="text-nowrap">状态</th>
+                    <th class="text-nowrap">所属栏目</th>
+                    <th class="text-nowrap">发布人</th>
+                    <th class="text-nowrap">发布时间</th>
+                    <th class="text-nowrap">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                    {
+                    <tr>
+                        <td class="tn-selection-column">
+                            <input name="cmsIds" id="box" class="tn-checkbox" type="checkbox" value="@item.ContentItemId">
+                            <input type="hidden" value="@item.ContentItemId" />
+                        </td>
+                        <td>
+                            <a target="_blank" title="@item.Subject" href="@SiteUrls.Instance().CMSDetail(item.ContentItemId)">@HtmlUtility.TrimHtml(item.Subject, 30)</a>
+                            @if (item.IsSticky)
+                        {
+                        <label class="label label-danger"> 置顶</label>
+                            }
+                            @if (item.isEssential())
+                        {
+                        <label class="label label-danger"> 推荐</label>
+                            }
+                        <td class="text-nowrap">
+                            @if (item.ApprovalStatus == AuditStatus.Success)
+                        {
+                        <i class="fa fa-check-circle tn-green-color fa-2x" title="@AuditStatus.Success.GetDisplayName()"></i>
+                            }
+                            else if (item.ApprovalStatus == AuditStatus.Pending)
+                            {
+                            <i class="fa fa-circle-o tn-orange-color fa-2x" title="@AuditStatus.Pending.GetDisplayName()"></i>
+                            }
+                            else if (item.ApprovalStatus == AuditStatus.Fail)
+                            {
+                            <i class="fa fa-ban tn-red-color fa-2x" title="@AuditStatus.Fail.GetDisplayName()"></i>
+                            }
+                            else if (item.ApprovalStatus == AuditStatus.Again)
+                            {
+                            <i class="fa fa-circle tn-orange-color fa-2x" title="@AuditStatus.Again.GetDisplayName()"></i>
+                            }
+                            else
+                            {
+                            <i class="fa fa-ban tn-red-color fa-2x" title="@AuditStatus.Fail.GetDisplayName()"></i>
+                            }
+
+                        </td>
+
+                        @if (item.ContentCategory == null)
+                        {
+                        <td class="text-nowrap"></td>
+                        }
+                        else
+                        {
+                        <td class="text-nowrap" title="@item.ContentCategory.CategoryName">@HtmlUtility.TrimHtml(item.ContentCategory.CategoryName, 10)</td>
+                        }
+                        <td class="text-nowrap">@item.Author</td>
+                        <td class="text-nowrap">@item.DatePublished.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td class="text-nowrap">
+                            <a @if (!item.IsAuthorizer()) { <text> class="maintenance" href="javascript:;" </text>             } else {  <text> href="@CachedUrlHelper.Action("EditCMS","ControlPanel")?contentItemId=@item.ContentItemId&contentCategoryId=@item.ContentCategoryId" </text>             } role="button" title="编辑"><i class="fa fa-pencil fa-lg"></i></a>&nbsp;
+                            <a @if (!item.IsAuthorizer()) { <text> class="maintenance" </text>             } else {  <text> id="delete-@item.ContentItemId" </text>             } href="javascript:;" role="button" title="删除"><i class="fa fa-trash fa-lg"></i></a>&nbsp;
+                            @{var fastar = "fa-flag-o";
+                        var fastars = "推荐";}
+
+                            @if (item.isEssential())
+                        {
+                            fastar = "fa-flag";
+                            fastars = "取消推荐";
+                        }
+                            <a href="javascript:;"class="layerrecommend"  data-href="@SiteUrls.Instance()._RecommendContent(item.ContentItemId,item.CMSTenantTypeId(),item.Subject,0)"   ><i role="button" title="@fastars" class="fa @fastar"></i></a>
+                        </td>
+                    </tr>
+                                }
+            </tbody>
+        </table>
+    </div>
+                                    }
+                                }
+                                else
+                                {
+                                <div class="text-center tn-mb-20 tn-mt-20">
+                                    暂无任何资讯
+                                </div>
+                                }
+<div class="text-center">
+    @Html.AjaxPagingButton(Model, "listCMS", SiteUrls.Instance()._ListCMS(query.SubjectKeyword, query.AuditStatus, query.CategoryId, query.MinDate, query.MaxDate, Model.PageIndex))
+</div>
+<script>
+    require(['jquery', 'tnlayer', 'page'], function ($, tnlayer) {
+
+        $(".layerrecommend").click(function () {
+            var href = $(this).data("href");
+            tnlayer.layermodal('资讯推荐', href, '450px', '450px')
+        })
+
+        //推荐回调
+        $.fn.recommendCallBack = function (data) {
+
+            if (data.state == 1) {
+                layer.closeAll();
+                $("#CloseCurrent").click();
+                layer.msg("操作成功", { icon: 1 });
+                $.get("@SiteUrls.Instance()._ListCMS(query.SubjectKeyword, query.AuditStatus, query.CategoryId, query.MinDate,query.MaxDate, Model.PageIndex)", function (data) {
+                    $("#cmslist").html(data);
+                })
+            }
+            else {
+                layer.msg("操作失败", { icon: 2 });
+            }
+        }
+
+        //全选
+        $("#select-all").click(function () {
+            if ($("#select-all").val() == "0") {
+                $(".tn-checkbox").each(function () {
+                    this.checked = true;
+                    $.fn.checkedActive($(this))
+                    $("#select-all").val("1");
+                });
+            } else {
+                $(".tn-checkbox").each(function () {
+                    this.checked = false;
+                    $.fn.checkedActive($(this))
+                    $("#select-all").val("0");
+                });
+            }
+        });
+
+
+    })
+
+</script>

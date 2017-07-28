@@ -1,0 +1,219 @@
+﻿@model ContentItemEditModel
+@{
+    //标签
+    var tagsOfItem = ViewData.Get<IEnumerable<ItemInTag>>("tagsOfItem", new List<ItemInTag>());
+    var tagsOfItemvalue = string.Join(",", tagsOfItem.Select(n => n.TagName));
+    //栏目
+    var category = ViewData.Get<ContentCategory>("category", new ContentCategory());
+    var categorylist = ViewData.Get<List<SelectListItem>>("categorylist", new List<SelectListItem>());
+    var currentUser = UserContext.CurrentUser;
+    TempData["myhome-check"] = "editcms";
+
+}
+<style>
+    .btn-removeImage {
+        top: 3px;
+        position: absolute;
+        left: 110px;
+    }
+</style>
+@*//标签*@
+@Styles.Render("~/Bundle/Styles/tokenfield")
+<div class="row">
+    <div class="col-xs-12">
+        <div class="tn-plr-15">
+            @if (Model.ContentItemId > 0)
+            {
+                <div class="tn-title" style="overflow:visible;height:38px;">
+                    <h5 class="pull-left tn-mt-0">写文章</h5>
+                </div>
+            }
+            else
+            {
+                <div class="tn-title" style="overflow:visible;height:38px;">
+                    @Html.Action("_ListDraft", "UserSpace", new RouteValueDictionary { { "userId", currentUser.UserId } })
+                </div>
+            }
+            @using (Html.BeginForm("_EditCMS", "UserSpace", FormMethod.Post, new { @class = "form-horizontal tn-survey-form tn-form-validation", @id = "_EditCMS" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(n => n.ContentItemId)
+                @Html.HiddenFor(n => n.ContentModelId)
+                @Html.HiddenFor(n => n.DateCreated)
+                @Html.HiddenFor(n => n.Author)
+                @Html.ValidationMessageFor(n => n.ContentItemId)
+                @Html.ValidationMessageFor(n => n.ContentModelId)
+                @Html.ValidationMessageFor(n => n.DateCreated)
+                @Html.ValidationMessage("Author")
+                @Html.HiddenFor(n => n.BodyImageAttachmentId)
+                @Html.ValidationMessageFor(n => n.BodyImageAttachmentId)
+                @Html.HiddenFor(n => n.IsDraft)
+                @Html.ValidationMessageFor(n => n.IsDraft)
+                <div class="form-group">
+                    <div class="col-xs-12">
+                        @Html.TextBoxFor(n => n.Subject, new { @class = "form-control", @placeholder = "文章标题" })
+                        @Html.ValidationMessageFor(n => n.Subject)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-12">
+                        @if (category.CategoryId == 12 || category.CategoryId == 8 || category.CategoryId == 9)
+                        {
+                            @Html.HtmlEditor("Body", TenantTypeIds.Instance().CMS_Article(), 0, Model.Body, new Dictionary<string, object> { { "style", "height:400px;" }, { "maximumWords", 20000 } }, "video")
+                        }
+                        else
+                        {
+                            @Html.HtmlEditor("Body", TenantTypeIds.Instance().CMS_Article(), 0, Model.Body, new Dictionary<string, object> { { "style", "height:400px;" }, { "maximumWords", 20000 } }
+                                   , "allsattachment")
+                        }
+                        @Html.ValidationMessageFor(n => n.Body)
+                    </div>
+                </div>
+                <div class="form-group ">
+                    <div class="col-xs-12 text-right" id="TemporaryAttachments">
+                        @Html.Action("_TemporaryAttachments", "Common")
+                    </div>
+                    <div class="col-xs-12 text-right">
+                        @Html.Action("_Attachments", "Common", new { contentItemId = Model.ContentItemId })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-xs-1 control-label">标题图</label>
+                    <div class="col-xs-2" id="UploadFileImgs">
+                        <input type="hidden" name="FeaturedImageAttachmentId" value="@Model.FeaturedImageAttachmentId" />
+                        @if (Model.FeaturedImageAttachmentId > 0)
+                        {
+                            <div class="tn-pic-attachment" onmouseover="$.fn.showbtn();" onmouseout="$.fn.hidebtn();">
+                                <img class="img-thumbnail img-responsive" src="@(new AttachmentService(TenantTypeIds.Instance().CMS_Article()).Get(Model.FeaturedImageAttachmentId).GetDirectlyUrl("Small"))">
+                                <button class="btn btn-default btn-xs btn-removeImage" type="button" style="display:none;"><i class="fa fa-remove"></i></button>
+                            </div>
+                        }
+                        else
+                        {
+                            @Html.FileUploader("UploadFiles", TenantTypeIds.Instance().CMS_Article(), currentUser.UserId, "+", extensions: "jpg,jpeg,png,bmp", associateId: Model.ContentItemId, callbacks: new { uploadSuccess = "succeedImageSyntony" })
+                        }
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-xs-1 control-label">设置标签</label>
+                    <div class="col-xs-4">
+                        <input type="text" class="form-control" id="tokenfield" value="@tagsOfItemvalue" />
+                        <span class="help-block">多个标签请用空格隔开,最多添加5个标签,标签长度不能超过60</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-xs-1 control-label">投稿到</label>
+                    <div class="col-xs-4">
+                        @Html.DropDownList("CategoryId", categorylist, new { @class = "form-control" })
+                        @Html.ValidationMessage("CategoryId")
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-4 col-xs-offset-1">
+                        <button id="answer" type="button" class="btn btn-primary btn-submit tn-btn-wp">确定</button>
+                        @if (Model.ContentItemId > 0 && Model.AudiStatus != 0)
+                        {
+                            <a type="button" class="btn btn-default tn-btn-wp cancel-submit" href="@SiteUrls.Instance().MyHome(currentUser.UserId)#cms">取消</a>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-default tn-btn-wp" id="posttext">存为草稿</button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    require(['jquery', 'ZeroClipboard', 'ueditor', 'tnlayer', 'uploader', 'tag'], function ($, ZeroClipboard, tnlayer) {
+        window['ZeroClipboard'] = ZeroClipboard;
+        $(function () {
+            $('input, textarea,textbox').placeholder({ customClass: 'my-placeholder' });
+        });
+        //提交按钮
+        $("#answer").on('click', function () {
+            $("#IsDraft").val(false);
+            operateAttachment();
+            $("#_EditCMS").submit();
+        });
+        //提交草稿
+        $("#posttext").on('click', function () {
+            $("#IsDraft").val(true);
+            operateAttachment();
+            $("#_EditCMS").submit();
+        });
+        function operateAttachment() {
+            //编辑器 img
+            var bodyImageId = $("#BodyImageAttachmentId");
+            var imgIds = "";
+            var _img = $(UE.getEditor("Body").getContent()).find("img")
+            $(_img).each(function () {
+                imgIds += $(this).data("id") + ",";
+            });
+            //临时附件
+            var _temporarya = $("#TemporaryAttachments").find("a")
+            $(_temporarya).each(function () {
+                imgIds += $(this).data("id") + ",";
+            });
+            //正式附件
+            var _attachments = $("#Attachments").find("a")
+            $(_attachments).each(function () {
+                imgIds += $(this).data("id") + ",";
+            });
+            //标题图
+            imgIds += $("[name='FeaturedImageAttachmentId']").val() + ",";
+            bodyImageId.val(imgIds);
+        }
+
+        //删除附件
+        $(document).on('click', 'a[id^=delete-]', function (e) {
+            var $this = $(this);
+            var param = jQuery.param({ attachmentId: $(this).attr("id").replace(/[^0-9]/ig, ""), t: new Date().getTime() });
+            $.post("@CachedUrlHelper.Action("_DeleteAttachments", "Common")", param, function myfunction(data) {
+                if (data.MessageType) {
+                    layer.msg(data.MessageContent, {
+                        icon: 1
+                    });
+                    $this.parent().remove();
+                }
+                else {
+                    layer.msg(data.MessageContent, {
+                        icon: 2
+                    });
+                }
+            });
+        });
+
+        $.fn.showbtn = function () {
+            $(".btn-removeImage").show();
+        }
+        $.fn.hidebtn=function() {
+            $(".btn-removeImage").hide();
+        }
+
+        //标签
+        $('#tokenfield').tokenfield({
+            limit: 5,
+            showAutocompleteOnFocus: true
+        })
+        $('#tokenfield').on('tokenfield:createtoken', function (event) {
+            var existingTokens = $(this).tokenfield('getTokens');
+            if (event.attrs.value.length > 60) {
+                layer.msg("标签长度不能超过60", {
+                    icon: 2
+                });
+            }
+            else {
+                $.each(existingTokens, function (index, token) {
+                    if (token.value === event.attrs.value)
+                        event.preventDefault();
+                });
+            };
+        });
+    })
+    //取消编辑文章
+    $('.cancel-submit').on("click", function () {
+        $('a[data-type="cms"]').click();
+    })
+</script>

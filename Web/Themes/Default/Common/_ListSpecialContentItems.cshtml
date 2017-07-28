@@ -1,0 +1,166 @@
+﻿@model IEnumerable<SpecialContentItem>
+@{
+    var firstId = ViewData.Get<long>("firstId", 0);
+    var lastId = ViewData.Get<long>("lastId", 0);
+    var specialContentType = ViewData.Get<SpecialContentType>("specialContentType", new SpecialContentType());
+}
+<table class="table tn-va-middle">
+    <thead>
+        <tr>
+            <th>标题</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @if (item.Link == null || item.Link == string.Empty)
+                    {
+                        if (item.ItemName.Length > 15)
+                        {
+                            <a href="@item.GetCommentedObjectUrl()" title="@item.ItemName"> @item.ItemName.Substring(0, 15)...</a>
+                        }
+                        else
+                        {
+                            <a href="@item.GetCommentedObjectUrl()"> @item.ItemName</a>
+                        }
+                    }
+                    else
+                    {
+                        if (item.ItemName.Length > 15)
+                        {
+                            <a href="@item.Link" title="@item.ItemName"> @item.ItemName.Substring(0, 15)...</a>
+                        }
+                        else
+                        {
+                            <a href="@item.Link"> @item.ItemName</a>
+                        }
+                    }
+                </td>
+                <td class="text-nowrap operation" data-id="@item.Id">
+                    <a class="a tn-mr-10 layerrecommendContent" data-href="@SiteUrls.Instance()._RecommendContent(item.ItemId,item.TenantTypeId,item.ItemName,specialContentItemId:item.Id)" href="javascript:;"><i class="fa fa-pencil"></i></a>
+                    @*<a class="a tn-mr-10 tanchukuang mylayer" href="javascript:;" onclick="myLayer('@SiteUrls.Instance()._RecommendContent(item.ItemId,item.TenantTypeId,item.ItemName,specialContentItemId:item.Id)')"><i class="fa fa-pencil"></i></a>*@
+                    <a class="a tn-mr-10 deleteItem" href="javascript:;" data-id="@item.Id"><i class="fa fa-trash"></i></a>
+                    @if (item.Id != firstId)
+                    {
+                        <a class="a tn-mr-10 changeorder-up" href="javascript:;" data-id="@item.Id"><i class="fa fa-arrow-up"></i></a>
+                    }
+                    @if (item.Id != lastId)
+                    {
+                        <a class="a tn-mr-10 changeorder-down" href="javascript:;" data-id="@item.Id"><i class="fa fa-arrow-down"></i></a>
+                    }
+                </td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+<script>
+
+    //function myLayer(url) {
+    //    $.get(url,function (data) {
+    //        layer.open({
+    //            type:1,
+    //            title:"内容推荐编辑",
+    //            area:[ '598px', '580px'],
+    //            content:data
+    //        })
+    //    })
+    //}
+    //显示标题
+     require(['jquery','tnlayer'],function($,tnlayer){
+           $(".mylayer").click(function(){
+               tnlayer.myLayer('')
+           })
+
+         $(".layerrecommendContent").click(function(){
+             var href =$(this).data("href");
+               tnlayer.layermodal('内容推荐编辑', href, '450px', '580px')
+           })
+
+
+          $(document).ready(function () {
+            $(".layui-layer-title").text("管理" + "@specialContentType.Name" + "下的推荐内容")
+        })
+
+        //推荐成功回调
+         $.fn.recommendCallBack=function(data) {
+            var type = $("#specialContentType option:selected").val();
+            var belong = $("#contentTenant option:selected").val();
+            if (data.state == 1) {
+                layer.closeAll();
+                layer.msg("编辑推荐成功", { icon: 1 });
+                $.get("@CachedUrlHelper.Action("_ListSpecialContentItems", "Common")", { typeId:@specialContentType.TypeId, requestTime: new Date().getTime() }, function (data) {
+                    $("#_listSpecialContentItems").html(data);
+                })
+            }
+            else {
+                layer.msg("编辑推荐失败", { icon: 2 });
+            }
+        }
+
+        //取消推荐
+        $(".deleteItem").click(function () {
+            var id = $(this).data("id");
+            layer.confirm("是否确认取消推荐该内容", {
+                btn: ['确认', '取消']
+            },
+            function () {
+                $.post('@CachedUrlHelper.Action("_DeleteSpecialContentItem", "Common")',{specialContentItemId:id},function (data) {
+                    if(data.state==1){
+                        layer.msg("取消推荐成功",{icon:1});
+                        $.get("@CachedUrlHelper.Action("_ListSpecialContentItems", "Common")", {typeId:@specialContentType.TypeId, requestTime: new Date().getTime() }, function (data) {
+                            $("#_listSpecialContentItems").html(data);
+                        })
+                    }
+                    else {
+                        layer.msg("取消推荐失败",{icon:2});
+                    }
+                })
+            })
+        })
+        //向上调整内容顺序
+        $(".changeorder-up").click(function () {
+            var id = $(this).data("id");
+            var previouId;
+            var operations = $(".operation");
+            for (var i = 0; i < operations.length; i++) {
+                if ($(operations[i]).data("id") == id) {
+                    previouId = $(operations[i - 1]).data("id");
+                }
+            }
+            $.post('@CachedUrlHelper.Action("_ChangeSpecialContentOrder", "Common")', { firstId: id, secondId: previouId },
+                function (data) {
+                    if (data.state == 1) {
+                        $.get("@CachedUrlHelper.Action("_ListSpecialContentItems", "Common")", {typeId:@specialContentType.TypeId, requestTime: new Date().getTime() }, function (data) {
+                            $("#_listSpecialContentItems").html(data);
+                        })
+                    }
+                })
+        })
+
+        //向下调整内容顺序
+        $(".changeorder-down").click(function () {
+            var id = $(this).data("id");
+            var nextId;
+            var operations = $(".operation");
+            for (var i = 0; i < operations.length; i++) {
+                if ($(operations[i]).data("id") == id) {
+                    nextId = $(operations[i + 1]).data("id");
+                }
+            }
+            $.post('@CachedUrlHelper.Action("_ChangeSpecialContentOrder", "Common")', { firstId: id, secondId: nextId }, function (data) {
+                if (data.state == 1) {
+                    $.get("@CachedUrlHelper.Action("_ListSpecialContentItems", "Common")", {typeId:@specialContentType.TypeId, requestTime: new Date().getTime() }, function (data) {
+                        $("#_listSpecialContentItems").html(data);
+                    })
+                }
+            })
+        })
+     })
+
+
+
+</script>

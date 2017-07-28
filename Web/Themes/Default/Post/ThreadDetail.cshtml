@@ -1,0 +1,610 @@
+﻿@model Thread
+@{
+    var AuthorThreads = ViewData.Get<PagingDataSet<Thread>>("authorThreadList", null);
+    var UserProfile = ViewData.Get<UserProfile>("userProfile", null);
+    var UserThreadCount = ViewData.Get("userThreadCount", 0);
+    var UserCommentCount = ViewData.Get("userCommentCount", 0);
+    var PostCount = Model.BarSection.ThreadAndPostCount - Model.BarSection.ThreadCount;
+    var author = ViewData.Get<IUser>("author", null);
+    //等级
+    var Rank = ViewData.Get("rank", 0); ;
+    Func<int, string> rankimage = (n) =>
+    {
+        string rankimages = string.Empty;
+        var one = n / 9;
+        var two = (n - 9 * one) / 3;
+        var thr = n - 9 * one - 3 * two;
+        for (int i = 0; i < one; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star1.png'></li>";
+        }
+        for (int i = 0; i < two; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star2.png'></li>";
+        }
+        for (int i = 0; i < thr; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star3.png'></li>";
+        }
+        return rankimages;
+    };
+    bool authorizeResult = false;
+    var _currentUser = UserContext.CurrentUser;
+    Authorizer authorizer = DIContainer.Resolve<Authorizer>();
+    if (_currentUser != null)
+    {
+        authorizeResult = authorizer.IsCategoryManager(TenantTypeIds.Instance().Section(), _currentUser, Model.BarSection.SectionId) || _currentUser.UserId == Model.BarSection.UserId;
+    }
+}
+@Styles.Render("~/Bundle/Styles/fancyBox")
+@Styles.Render("~/Bundle/Styles/Uploader")
+@Styles.Render("~/Bundle/Styles/qqFace")
+<style>
+    .sp-fade-arrows, .sp-thumbnail-arrows {
+        display: none !important;
+    }
+
+    .bdsharebuttonbox {
+        padding: 15px;
+    }
+
+        .bdsharebuttonbox > li > a {
+            padding: 0 20px;
+        }
+
+            .bdsharebuttonbox > li > a:hover {
+                background-color: transparent;
+                color: #bf0a10;
+            }
+</style>
+<div class="tn-content">
+    <div class="container">
+        <div class="jh-post-top tn-mb-20 jh-top-center">
+            <div class="row">
+                <div class="col-xs-1">
+                    <a href="@CachedUrlHelper.Action("BarSectionDetail", "Post", null, new RouteValueDictionary { { "sectionId", Model.BarSection.SectionId } })"><img src="@(new AttachmentService(TenantTypeIds.Instance().Section()).Get(Model.BarSection.FeaturedImageAttachmentId).GetDirectlyUrl("Small"))" width="60" height="60" alt="..."></a>
+
+                </div>
+                <div class="col-xs-10 jh-post-title">
+                    <div class="jh-title-left">
+                        @{
+                            var content = "加关注";
+                            var href = CachedUrlHelper.Action("FavoriteSection", "Post", null, new RouteValueDictionary { { "sectionId", Model.BarSection.SectionId } });
+                        }
+                        @if (_currentUser != null)
+                        {
+                            if (Model.BarSection.IsSectionFavoriteByCurrentUser(_currentUser))
+                            {
+                                content = "已关注";
+                                href = CachedUrlHelper.Action("CancelFavoriteSection", "Post", null, new RouteValueDictionary { { "sectionId", Model.BarSection.SectionId } });
+                            }
+                        }
+
+                        <h4>
+                            <a href="@CachedUrlHelper.Action("BarSectionDetail", "Post", null, new RouteValueDictionary { { "sectionId", Model.BarSection.SectionId } })" target="_blank" title="@Model.BarSection.Name"><strong>@HtmlUtility.TrimHtml(Model.BarSection.Name, 10)</strong></a> <button class="btn btn-default btn-xs tn-ml-20" id="favorite" type="button"> @content</button>
+                        </h4>
+                    </div>
+                    <div class="jh-title-right">
+                        <ul class="list-inline">
+                            <li>主题数： @Model.BarSection.ThreadCount</li>
+                            <li>回贴数：@PostCount</li>
+                            <li>用户数：@Model.BarSection.GetFavoritedUserCount() </li>
+                            @if (Model.BarSection.Category != null)
+                            {
+                                <li>所属分类： <a href="@CachedUrlHelper.Action("BarSection", "Post", null, new RouteValueDictionary { { "categoryId", Model.BarSection.Category.CategoryId } })">@Model.BarSection.Category.CategoryName</a></li>
+                            }
+
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-xs-1 text-right">
+                    <button class="btn btn-primary" type="button" id="EditThread">发贴</button>
+                </div>
+            </div>
+        </div>
+        <div class="row jh-my-post">
+            <div class="col-xs-9">
+                <div class="jh-padding-white  tn-mb-20">
+                    <div class="tn-article-detail">
+                        @if (Model.IsSpecial(SpecialContentTypeIds.Instance().OfficialThread()))
+                        {
+                            <img class="jh-position-img" src="../img/SpecialContentType/122.png" />
+                        }
+                        <div class="jh-article-title" style="@if (!Model.IsSpecial(SpecialContentTypeIds.Instance().OfficialThread())) {<text>margin-left:0</text> }">
+                            <h1>@Model.Subject</h1>
+                            <ul class="list-inline text-muted">
+                                <li>
+                                    <span id="StickySpan" class="label label-danger @if (!Model.IsSticky) {<text>hidden</text>} } ">置顶</span>
+                                    <span id="EssentialSpan" class="label label-danger @if (!Model.isEssential()) {<text>hidden</text> } ">精华</span>
+                                </li>
+
+                                @if (Model.ThreadCategory != null)
+                                {
+                                    <li><a href="@CachedUrlHelper.Action("BarSectionDetail", "Post", null, new RouteValueDictionary { { "sectionId", Model.BarSection.SectionId }, { "threadCategoryId", Model.ThreadCategory.CategoryId } })" target="_blank"><i class="fa fa-list-ul" aria-hidden="true" target="_blank"></i> @Model.ThreadCategory.CategoryName</a></li>
+                                }
+                                <li><i class="fa fa-clock-o"></i> @Model.DateCreated.ToFriendlyDate() </li>
+                                <li><i class="fa fa-commenting"></i> @Model.CommentCount </li>
+                                <li><i class="fa fa-eye"></i> @Model.HitTimes</li>
+                                @*<li><i class="fa fa-mobile" aria-hidden="true"></i> 手机看贴 </li>*@
+                                <li style="position: relative;">
+                                    <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-share-square-o"></i>分享</a>
+                                    <ul style="position:absolute;top:15px;" class="bdsharebuttonbox dropdown-menu" data-tag="share_1">
+                                        <li><a class="bds_tsina" data-cmd="tsina">微博</a></li>
+                                        <li><a class="bds_weixin" data-cmd="weixin">微信</a></li>
+                                        <li><a class="bds_renren" data-cmd="renren">人人</a></li>
+                                        <li><a class="bds_sqq" data-cmd="sqq">QQ好友</a></li>
+                                        <li><a class="bds_qzone" data-cmd="qzone" href="#">QQ空间</a></li>
+                                        <li><a class="bds_douban" data-cmd="douban">豆瓣</a></li>
+                                        <li><a class="bds_linkedin" data-cmd="linkedin">领英</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a href="javascript:;" class="favoriteThread @if (Model.IsThreadFavoriteByCurrentUser()) {<text>hidden</text>}" data-favorite="1"><i class="fa fa-heart-o " aria-hidden="true"></i> 收藏 </a>
+                                    <a href="javascript:;" class="favoriteThread @if (!Model.IsThreadFavoriteByCurrentUser()) {<text>hidden</text>}" title="取消收藏" data-favorite="0"><i class="fa fa-heart " aria-hidden="true"></i> 已收藏 </a>
+                                </li>
+                                @if (_currentUser != null)
+                                {
+                                    if (_currentUser.UserId == Model.UserId || authorizeResult)
+                                    {
+                                        <li class="pull-right">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-default  btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <i class="fa fa-reorder"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    @if (authorizeResult)
+                                                    {
+                                                        <li><a href="javascript:;" class="@if (Model.IsSticky){ <text>hidden</text>}" id="StickyThread">置顶</a></li>
+                                                        <li><a href="javascript:;" id="CancelStickyThread" class="@if (!Model.IsSticky){ <text>hidden</text>}">取消置顶</a></li>
+                                                        <li><a href="javascript:;" class="@if (Model.isEssential()){ <text>hidden</text>}" id="EssentialThread">精华</a></li>
+                                                        <li><a href="javascript:;" id="CancelEssentialThread" class="@if (!Model.isEssential()){ <text>hidden</text>}">取消精华</a></li>
+                                                        <li><a href="javascript:;" data-threadid="@Model.ThreadId" data-tenantTypeId="@TenantTypeIds.Instance().Thread()" data-title="@Model.Subject" class="layerRecommend">推荐</a></li>
+
+                                                    }
+                                                    <li><a href="javascript:;" id="DeleteThread">删除</a></li>
+                                                    <li><a href="@CachedUrlHelper.Action("EditThread", "Post", null, new RouteValueDictionary { { "threadId", Model.ThreadId }, { "sectionId", Model.BarSection.SectionId } })" id="EditThread">编辑</a></li>
+
+                                                </ul>
+                                            </div>
+                                        </li>
+                                    }
+
+                                }
+                            </ul>
+                        </div>
+                        <hr />
+                        <div class="tn-text-area">
+                            @Html.Raw(Model.GetBody())
+                        </div>
+                        @if (Model.Attachments != null && Model.Attachments.Any()&&Model.Attachments.Where(n=>n.MediaType!=MediaType.Image).Count()>0)
+                        {
+                            <div class="tn-file-list" style="padding-bottom: 5px;">
+                                @foreach (var item in Model.Attachments)
+                                {
+                                    if (item.MediaType == MediaType.Image || item.Position == 1)
+                                    {
+                                        continue;
+                                    }
+                                    <div class="row tn-mb-10">
+                                        <div class="col-xs-1">
+                                            @if (item.MediaType == MediaType.Document)
+                                            {
+                                                <img src="../img/word-icon.png" />
+                                            }
+                                            else if (item.MediaType == MediaType.PPT)
+                                            {
+                                                <img src="../img/ppt-icon.png" />
+                                            }
+                                            else if (item.MediaType == MediaType.Excel)
+                                            {
+                                                <img src="../img/excel-icon.png" />
+                                            }
+                                            else
+                                            {
+                                                <img src="../img/moren-icon.png" />
+                                            }
+                                        </div>
+                                        <div class="col-xs-7">@item.FriendlyFileName</div>
+                                        <div class="col-xs-2 tn-gray-color">@item.FriendlyFileLength</div>
+                                        <div class="col-xs-2"><a href="@CachedUrlHelper.Action("AttachmentDownload", "Common", null, new RouteValueDictionary { { "attachmentId", item.AttachmentId },{"tenantTypeId",TenantTypeIds.Instance().Thread() } })" class="a">下载</a></div>
+
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                    </div>
+                </div>
+                <div class="jh-padding-white tn-mb-20">
+                    <div class="tn-title">
+                        <h5 class="pull-left">我要回复</h5>
+                        @if (_currentUser != null)
+                        {
+                            <ul class="list-inline pull-right">
+                                <li>@Html.ShowUserAvatar(userId: _currentUser.UserId, htmlAttributes: new RouteValueDictionary { { "width", "30" }, { "height", "30" } })</li>
+                                <li>@_currentUser.DisplayName</li>
+                            </ul>
+                        }
+                    </div>
+                    @if (_currentUser != null)
+                    {
+                        using (Html.BeginAjaxForm("EditComment", "Post", "", FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "commentCallBack" }, new
+                        { @id = "createComment-0", @class = "tn-form-validation" }))
+                        {
+                            @Html.Hidden("ParentId", 0)
+                            @Html.Hidden("CommentedObjectId", Model.ThreadId)
+                            @Html.Hidden("TenantTypeId", TenantTypeIds.Instance().Thread())
+                            <textarea id="textBody" data-id="0" name="Body" class="form-control tn-mb-15 commentBody" rows="5"></textarea>
+                            <div class="btn-toolbar" role="toolbar">
+                                <div class="btn-group btn-group-sm pull-left" role="group">
+                                    <a class="btn btn-default emotion" href="javascript:;" role="button"><i class="fa fa-smile-o "></i></a>
+                                </div>
+                                <button class="btn btn-primary btn-sm tn-btn-wp pull-right commentsubmit" data-id="0" type="button">发布</button>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="jh-textarea-button">
+                            <textarea name="Body" id="textBody" class="form-control tn-mb-15" rows="5" style="text-align:center;" placeholder="登录后才能评论" disabled></textarea>
+                            <a class="btn btn-primary tn-btn-wp" href="@SiteUrls.Instance().Login()" data-id="0">登录</a>
+                        </div>
+                    }
+                </div>
+                @if (Model.CommentCount > 0)
+                {
+                    <div class="jh-padding-white">
+                        <div class="tn-title">
+                            <h5 class="pull-left">
+                                所有回帖
+                                <span class="commentcount">@Model.CommentCount</span>
+                                <small id="AuditCount" data-commontcount="@Model.CommentCount" class="tn-theme-color tn-ml-10 tn-font-14"></small>
+                            </h5>
+                            <ul class="list-inline pull-right">
+                                <li>
+                                    <a href="javascript:;" class="AuthorOnly" data-url="@CachedUrlHelper.Action("_ListComment", "Post", null, new RouteValueDictionary { { "isOnlyAuthor", true } })">仅看楼主</a>
+                                    <a href="javascript:;" class="AuthorOnly hidden" data-url="@CachedUrlHelper.Action("_ListComment", "Post")">查看全部</a>
+                                </li>
+                                <li> | </li>
+                                <li>
+                                    <a href="javascript:;" class="Desc" data-url="@CachedUrlHelper.Action("_ListComment", "Post", null, new RouteValueDictionary { { "sortBy_Comment", 1 } })">倒序看贴</a>
+                                    <a href="javascript:;" class="Desc hidden" data-url="@CachedUrlHelper.Action("_ListComment", "Post")">正序看贴</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="tn-chat-list" id="_ListComment">
+                            @Html.Action("_ListComment", "Post", new { threadId = Model.ThreadId })
+                        </div>
+                    </div>
+                }
+              
+            </div>
+
+            <div class="col-xs-3">
+                <div class="tn-gray-bg tn-mb-20">
+                    <div class="jh-post-right text-center">
+                        @Html.ShowUserAvatar(userId: author.UserId, avatarSizeType: AvatarSizeType.Medium, isShowUserCard: false)
+                        <div class="jh-user-name" style="margin-left:80px;">
+                            <h4 style="font-size:16px;" title="@Model.Author">@Model.Author</h4>
+                            <ul class="list-inline star" title="@Rank 级">
+                                @Html.Raw(rankimage(Rank))
+                            </ul>
+                        </div>
+                        @if (UserProfile != null)
+                        {
+                            <h6 style="word-break:break-all"> @UserProfile.Introduction </h6>
+                        }
+                        <ul class="list-inline jh-ul">
+                            <li>
+                                <a href="@if (author==_currentUser){<text> @SiteUrls.Instance().MyHome(Model.UserId)#post</text>}
+                            else{ <text> @SiteUrls.Instance().SpaceHome(Model.UserId)#post</text>} " target="_blank">@UserThreadCount</a><div>发贴</div>
+                        </li>
+                        <li>
+                            <a href="@if (author==_currentUser){<text> @SiteUrls.Instance().MyHome(Model.UserId)#comment</text>}
+                            else{ <text> @SiteUrls.Instance().SpaceHome(Model.UserId)#comment</text>} " target="_blank">@UserCommentCount</a><div>回贴</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            @if (AuthorThreads != null && AuthorThreads.Any())
+            {
+                <div class="tn-gray-bg tn-mb-20">
+                    <div class="tn-title">
+                        <h5>楼主最近发布的贴子</h5>
+                    </div>
+                    <div class="jh-post-right">
+                        <ul class="list-unstyled">
+                            @foreach (var thread in AuthorThreads)
+                            {
+                                <li class="tn-text">
+                                    <a href="@CachedUrlHelper.Action("ThreadDetail", "Post", null, new RouteValueDictionary { { "threadId", thread.ThreadId }, { "sectionId", Model.BarSection.SectionId } })">• @thread.Subject</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+            <div class="tn-mb-20" id="advertisingDiv">
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+
+<script type="text/javascript">
+    require(['jquery', 'tnlayer','tnfancyBox','qqFace'], function ($, tnlayer) {
+        $(".layerRecommend").click(function () {
+            var threadid = $(this).data("threadid");
+            var tenantTypeId = $(this).data("tenanttypeid");
+            var title = $(this).data("title");
+            tnlayer.layermodal('内容推荐', '@CachedUrlHelper.Action("_RecommendContent", "Common", "")?itemId=' + threadid + '&tenantTypeId=' + tenantTypeId + '&title=' + title, '480px', '450px')
+        })
+
+        window._bd_share_config = {
+            common: {
+                bdText: '@Model.Subject',
+            },
+            share: [{
+                //分享按钮的尺寸
+                "bdSize": 16,
+            }]
+        }
+        with (document) 0[(getElementsByTagName('head')[0] || body).appendChild(createElement('script')).src = 'http://bdimg.share.baidu.com/static/api/js/share.js?cdnversion=' + ~(-new Date() / 36e5)];
+
+        var userid = @Model.UserId;
+
+        $(function () {
+            //加载广告
+            $.get("@CachedUrlHelper.Action("_Advertising","Common")", { positionId: "1000007", requesttime: new Date().getTime() }, function (data) {
+                $("#advertisingDiv").html(data);
+            })
+        })
+
+        //图片放大
+        $(document).ready(function () {
+            $( ".fancybox").fancybox();
+            arrows:true
+        });
+        //表情
+        $(function () {
+            $('.emotion').qqFace({
+                id: 'facebox',
+                assign: 'textBody',
+                ohref: '/common/GetEmotions',
+                directoryname: 'default',
+            });
+        });
+        //回复定位
+        $('.replyfocus').on("click",function(){
+            $('.commentBody').focus();
+        })
+        $("#topid").before( '<li id="replyForms" name="leftticon"><a href="javascript:;" class="replyfocus"><i class="fa fa-comment "></i><br />回复</a></li>');
+        //关注贴吧
+        $('#favorite').on("click", function ()
+        {
+            $.post("@href", {sectionId: @Model.BarSection.SectionId}, function(data) {
+                if (data.state)
+                {
+                    layer.msg(data.msg,
+                          {
+                              icon: 1
+                          });
+                    setTimeout(function(){
+                        window.location.reload();
+                    },1500);
+                }
+                else
+                {
+                    layer.msg(data.msg,
+                            {
+                                icon: 2
+                            });
+                }
+            })
+        });
+
+        //发贴
+        $("#EditThread").on("click", function ()
+        {
+            window.location.href = "@CachedUrlHelper.Action("EditThread", "Post", null, new RouteValueDictionary { { "sectionId",Model.BarSection.SectionId } })";
+        });
+        //收藏贴子
+        $('.favoriteThread').on("click",function(){
+            var $this=$(this);
+            var isApproved=true;
+            if ($this.data('favorite')==0) {
+                isApproved=false;
+            }
+            $.post("@CachedUrlHelper.Action("FavoriteThread", "Post")",{threadId:@Model.ThreadId,isApproved:isApproved},
+                function(data){
+                    if (data.state==1) {
+                        layer.msg(data.msg,
+                          {
+                              icon: 1
+                          });
+                        $('.favoriteThread').each(function(){
+                            if ($(this).hasClass("hidden")) {
+                                $(this).removeClass("hidden");
+                            }
+                            else {
+                                $(this).addClass("hidden");
+                            }
+                        });
+                    }
+                    else {
+                        layer.msg(data.msg,
+                            {
+                                icon: 2
+                            });
+                    }
+                });
+        })
+        //删除贴子
+        $("#DeleteThread").on("click",function(){
+            var $this = $(this);
+            layer.confirm("是否删除", { btn: ['确认', '取消'] }, function() {
+                $.post('@CachedUrlHelper.Action("DeleteThread", "Post")',{ threadId:@Model.ThreadId },
+                function (data) {
+                    if (data.state == 1) {
+                        window.location.href="@CachedUrlHelper.Action("BarSectionDetail", "Post",null, new RouteValueDictionary { { "sectionId", Model.BarSection.SectionId } })";
+                    }
+                })
+            })
+        });
+
+        //置顶
+        $("#StickyThread").on("click",function(){
+            updateSticky(true);
+        })
+        //取消置顶
+        $("#CancelStickyThread").on("click",function(){
+            updateSticky(false);
+        })
+        //精华
+        $("#EssentialThread").on("click",function(){
+            updateEssential(true);
+        })
+        //取消精华
+        $("#CancelEssentialThread").on("click",function(){
+            updateEssential(false);
+        })
+
+        function updateSticky(isApproved){
+            $.post("@CachedUrlHelper.Action("Sticky", "Post")",{threadId:@Model.ThreadId, isApproved:isApproved},function(data){
+                if (data.state==1) {
+                    layer.msg("操作成功",
+                    {
+                        icon: 1
+                    });
+                    if (isApproved)
+                    {
+                        $('#StickySpan').removeClass('hidden');
+                        $("#CancelStickyThread").removeClass('hidden');
+                        $("#StickyThread").addClass('hidden');
+                    }
+                    else
+                    {
+                        $('#StickySpan').addClass('hidden');
+                        $("#CancelStickyThread").addClass('hidden');
+                        $("#StickyThread").removeClass('hidden');
+                    }
+
+                }
+            })
+        }
+        function updateEssential(isApproved){
+            $.post("@CachedUrlHelper.Action("Essential", "Post")",{threadId:@Model.ThreadId, isApproved:isApproved},function(data){
+                if (data.state==1) {
+                    layer.msg("操作成功",
+                    {
+                        icon: 1
+                    });
+                    if (isApproved)
+                    {
+                        $('#EssentialSpan').removeClass('hidden');
+                        $("#CancelEssentialThread").removeClass('hidden');
+                        $("#EssentialThread").addClass('hidden');
+                    }
+                    else
+                    {
+                        $('#EssentialSpan').addClass('hidden');
+                        $("#CancelEssentialThread").addClass('hidden');
+                        $("#EssentialThread").removeClass('hidden');
+                    }
+
+                }
+            })
+        }
+        //评论
+        $(document).on("click",".commentsubmit",function(){
+            var id=$(this).data('id');
+            if ($('textarea[data-id="'+id+'"]').val().length>0) {
+                $('#createComment-'+id).submit();
+            }
+            else {
+                layer.msg("回复内容不能为空",
+                       {
+                           icon: 2
+                       });
+            }
+
+
+        })
+
+        //评论回调
+        $.fn.commentCallBack=function(data){
+            if (data.state==1) {
+                layer.msg("回贴成功",{ icon: 1 });
+                $('.commentBody').val("");
+                $.get("@CachedUrlHelper.Action("_ListComment", "Post")",{threadId:@Model.ThreadId },
+                    function(html){
+                        $('#_ListComment').html(html);
+                    })
+            }
+        }
+        //显示评论控件
+        $(document).on("click",".reply",function(){
+            var $this=$(this);
+            var href=$this.data('href');
+            var getTimestamp = new Date().getTime();
+            $.get(href+'&t=' + getTimestamp,function(html){
+                if ($this.data('isshow')==0) {
+                    $this.parent().parent().append(html);
+                    $this.data('isshow',1);
+                }
+                else {
+                    $this.data('isshow',0);
+                    $this.parent().parent().find('.CommentControl').remove();
+                }
+
+            });
+        })
+
+        //只看楼主
+        $('.AuthorOnly').on("click",function()
+        {
+            var $this=$(this);
+            var url=$this.data("url");
+            $.get(url,{threadId:@Model.ThreadId,tenantTypeId:@TenantTypeIds.Instance().Thread()},function(html){
+                $('#_ListComment').html(html);
+            });
+            $('.AuthorOnly').each(function(){
+                if($(this).hasClass("hidden")){
+                    $(this).removeClass("hidden");
+                }
+
+            });
+            $this.addClass("hidden");
+
+        })
+
+        //倒序看贴
+        $('.Desc').on("click",function(){
+            var $this=$(this);
+            var url=$this.data("url");
+            $.get(url,{threadId:@Model.ThreadId,tenantTypeId:@TenantTypeIds.Instance().Thread()},function(html){
+                $('#_ListComment').html(html);
+            });
+            $('.Desc').each(function(){
+                if($(this).hasClass("hidden")){
+                    $(this).removeClass("hidden");
+                }
+
+            });
+            $this.addClass("hidden");
+        });
+
+        //推荐成功回调
+        $.fn.recommendCallBack=function(data) {
+            if (data.state == 1) {
+                layer.closeAll();
+                layer.msg("推荐成功", { icon: 1 });
+            }
+            else {
+                layer.msg("推荐失败", { icon: 2 });
+            }
+        }
+    });
+
+</script>

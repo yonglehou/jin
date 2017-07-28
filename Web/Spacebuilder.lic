@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<License Version="2.0">
+    <ValidationKey>gjaC2DGHTbEA/QrBz9tLNZuKAwcLsPyA3HmbM3LNwqHl+4wxHs3fv6TiyYr7XyptxJKQam4dLM6AYJcz5UUBew==</ValidationKey>
+<User>
+    <Name />
+    <Email />
+    <Organization />
+    <UserType>Company</UserType>
+</User>
+<Product>
+    <LicenseID>935d2373-d0eb-4bf6-90e2-88e0f6eb637a</LicenseID>
+    <Level>Free</Level>
+    <Version>v5.0</Version>
+    <ShortName>近乎</ShortName>
+    <FullName>Spacebuilder</FullName>
+    <Developer>青岛拓宇网络科技有限公司</Developer>
+    <Description>基于asp.net mvc业内领先的一站式web2.0建站平台</Description>
+</Product>
+<Issuer>
+    <Name>青岛拓宇网络科技有限公司</Name>
+    <Email>support@tunynet.com</Email>
+    <Url>http://www.jinhusns.com</Url>
+</Issuer>
+<Constraints>vohVSkSoaPq+Jj2ksVWcdXRSRxMu7XXayjOMXGCkRZAKPfk+c2ivi0HCZBeFsy7QRy42x/48SgzC8I1F+Vw7PFESro7R2zjX2Qago+bu3W6+KyYgi608I3aMKwlfqpiyaAQGJF9PWQfPIkGkYRRpG6skqOeXeH3VLhsxs/DR4Kf7azi4VVJJTKN6wXhIzguOz8qWpgjg0O+krDpi/KliFrSHxzaXpHYeBMORkFdvT/cAsmRewty41tyjuBKC7CyKQ0nXNznzKM5X4oRfU3YE6/7cOVOmbfZsmcGxYvS8E61lwYaCV4cv8KWC5I+C4G8U2yaHp8P9bljFBQD/VtKwrJLKr1Z9zh2bOtJAXQnj9wE=</Constraints>
+</License>

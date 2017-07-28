@@ -1,0 +1,158 @@
+﻿@{
+    ViewData["Title"] = new string[] { "贴吧" };
+
+    var specialSections = ViewData.Get<IEnumerable<Section>>("specialSections", new List<Section>());
+    var favoriteSections = ViewData.Get<IEnumerable<Section>>("favoriteSections", new List<Section>());
+    var rootCategories = ViewData.Get<IEnumerable<Category>>("rootCategories", new List<Category>());
+    var canEditBar = ViewData.Get<bool>("canEditBar", false);
+}
+@Styles.Render("~/Bundle/Styles/Uploader")
+@Styles.Render("~/Bundle/Styles/zTree")
+
+<div class="row jh-my-post">
+    <div class="col-xs-9">
+        <div class="jh-padding-white">
+            <ul class="nav nav-pills" role="tablist" id="myTab">
+                <li role="presentation"><a name="maintabnav" data-type="new" href="javascript:;" aria-expanded="true" id="newthreads">最新贴子</a></li>
+                <li role="presentation"><a name="maintabnav" data-type="special" href="javascript:;" aria-expanded="false" id="specialthreads">推荐的贴子</a></li>
+                @if (canEditBar)
+                {
+                    <li class="pull-right"><button class="btn btn-primary layerEditBar" type="button"><i class="fa fa-plus"></i> 创建贴吧</button></li>
+                }
+            </ul>
+            <div class="tab-content">
+                <div id="_ListHomeThread">
+                    <div class="text-center text-warning">
+                        <img src="/img/loading.gif" class="tn-mr-10" />Loading...
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="col-xs-3">
+        @if (specialSections.Count() > 0)
+        {
+            <div class="tn-gray-bg tn-mb-20">
+                <div class="tn-title">
+                    <h5>推荐贴吧<a class="text-muted pull-right tn-mt-5" href="@CachedUrlHelper.Action("BarSection","Post")">所有贴吧 >></a></h5>
+                </div>
+                <div class="jh-post-right">
+                    @foreach (var specialContentSection in specialSections)
+                    {
+                        if (specialContentSection.IsEnabled)
+                        {
+                            <a role="button" href="@CachedUrlHelper.Action("BarSectionDetail","Post",null,new RouteValueDictionary { { "sectionId", specialContentSection.SectionId } })" class="btn btn-default btn-sm" type="button" title="@specialContentSection.Name">@HtmlUtility.TrimHtml(specialContentSection.Name, 10) </a>
+                        }
+                    }
+                </div>
+            </div>
+        }
+        @if (favoriteSections.Count() > 0)
+        {
+            <div class="tn-gray-bg tn-mb-20">
+                <div class="tn-title">
+                    <h5>我的贴吧</h5>
+                </div>
+                <div class="jh-post-right">
+                    @foreach (var s in favoriteSections)
+                    {
+                        if (s.IsEnabled)
+                        {
+                            <a role="button" href="@CachedUrlHelper.Action("BarSectionDetail","Post",null,new RouteValueDictionary { { "sectionId", s.SectionId } })" class="btn btn-default btn-sm" title="@s.Name">@HtmlUtility.TrimHtml(s.Name, 10)</a>
+                        }
+                    }
+                </div>
+            </div>
+        }
+        @if (rootCategories.Count() > 0)
+        {
+            <div class="tn-gray-bg tn-mb-20">
+                <div class="tn-title">
+                    <h5>贴吧分类</h5>
+                </div>
+                <div class="jh-post-right">
+                    <ul class="list-unstyled">
+                        @foreach (var rootCategory in rootCategories)
+                        {
+                            <li>
+                                <a href="@CachedUrlHelper.Action("BarSection","Post",null,new RouteValueDictionary { { "categoryId",rootCategory.CategoryId } })">@rootCategory.CategoryName (@rootCategory.CumulateItemCount)</a>
+                                @if (rootCategory.ChildCount > 0)
+                                {
+                                    <ul class="list-inline">
+                                        @foreach (var childCategory in rootCategory.Children)
+                                        {
+                                            <li><a href="@CachedUrlHelper.Action("BarSection","Post",null,new RouteValueDictionary { { "categoryId",childCategory.CategoryId } })">@childCategory.CategoryName (@childCategory.ItemCount)</a></li>
+                                        }
+                                    </ul>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<script type="text/javascript">
+    require(['jquery', 'tnlayer', 'page'], function ($, tnlayer) {
+        $(".layerEditBar").click(function () {
+            tnlayer.layermodal('创建贴吧','@CachedUrlHelper.Action("_EditBarSection","Post")','660px','580px');
+        });
+
+    locationhash()
+    function locationhash() {
+        var _seperator = "#";
+        var _hashStr = window.location.hash;
+        var splitval = _hashStr.split(_seperator);
+        var tmp = new Array();
+        for (var i in splitval) {
+            var o = splitval[i];
+            if (typeof o !== 'undefined' && o != '') {
+                tmp.push(splitval[i]);
+            }
+        }
+        if (tmp.length > 0) {
+            var maintabnavas = $("[name=maintabnav]");
+            for (var i in maintabnavas) {
+                var _that = maintabnavas[i];
+                if ($(_that).data("type") == tmp[0]) {
+                    threadsclick(tmp[0])
+                    return false;
+                }
+            }
+        }
+        else {
+            threadsclick("new")
+        }
+    }
+
+    function threadsclick(type) {
+        if (type == "special") {
+            replaceUrl(type)
+            $.get("@CachedUrlHelper.Action("_ListSpecialThread", "Post")", { t: (new Date()).valueOf() }, function (data) {
+                $("#newthreads").parent().removeClass("active");
+                $("#specialthreads").parent().addClass("active");
+                $("#_ListHomeThread").html(data);
+            })
+        }
+        else {
+            replaceUrl("new")
+            $.get("@CachedUrlHelper.Action("_ListNewThread", "Post")", { t: (new Date()).valueOf() }, function (data) {
+                $("#newthreads").parent().addClass("active");
+                $("#specialthreads").parent().removeClass("active");
+                $("#_ListHomeThread").html(data);
+            })
+        }
+    }
+
+    //推荐贴子
+    $("#specialthreads").on("click", function () {
+        threadsclick("special")
+    })
+    //最新贴子
+    $("#newthreads").on("click", function () {
+        threadsclick("new")
+    })
+    })
+</script>

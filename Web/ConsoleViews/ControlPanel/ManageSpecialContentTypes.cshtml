@@ -1,0 +1,41 @@
+﻿@{
+    ViewData["Title"] = new string[] { "推荐类别管理" };
+    TempData["subMenu-check"] = new string[] { "Public", "ManageContentItems" };
+    var selectList = ViewData.Get<List<SelectListItem>>("selectList", new List<SelectListItem>());
+}
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-lg-12">
+        <h3>推荐类别管理</h3>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="form-inline tn-tool-column">
+            <div class="form-group">
+                <a class="btn btn-default layerspeci" href="javascript:;" ><i class="fa fa-plus"></i>  添加类别</a>
+            </div>
+            <div class="form-group" style="width:280px;float:right">
+                <label>所属</label>&nbsp;
+                @Html.DropDownList("specialContentTypeList", selectList, new { @class = "form-control" })
+            </div>
+        </div>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div id="_listSpecialContentTypes" class="panel-body">
+        @Html.Action("_ListSpecialContentTypes", "ControlPanel",new { tenantType="All" })
+    </div>
+</div>
+<script>
+    require(['jquery','tnlayer'], function ($,tnlayer) {
+        $(".layerspeci").click(function () {
+             tnlayer.layermodal('添加推荐类别', '@SiteUrls.Instance()._EditSpecialContentType(0)', '450px', '630px')
+         })
+        $("#specialContentTypeList").change(function () {
+            var typeId = $("#specialContentTypeList option:selected").val();
+            $.get("@SiteUrls.Instance()._ListSpecialContentTypes()", { tenantType: typeId }, function (data) {
+                $("#_listSpecialContentTypes").html(data);
+            })
+        })
+    })
+</script>

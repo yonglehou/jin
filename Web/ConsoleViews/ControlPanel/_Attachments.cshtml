@@ -1,0 +1,20 @@
+﻿@{
+    var attachmentCItemList = ViewData.Get<IEnumerable<Attachment>>("attachmentCItemList", null);
+}
+@if (attachmentCItemList != null && attachmentCItemList.Any())
+{
+    foreach (var item in attachmentCItemList)
+    {
+
+        if (item.MediaType == MediaType.Image || item.Position == 1)
+        {
+            continue;
+        }
+
+        <div class="tn-file-attachment tn-mb-10">
+            <i class="fa fa-file-o"></i>
+            @item.FriendlyFileName
+            <a href="javascript:;" data-id="@item.AttachmentId" id="delete-@item.AttachmentId" class="pull-right remove-file">删除</a>
+        </div>
+    }
+}

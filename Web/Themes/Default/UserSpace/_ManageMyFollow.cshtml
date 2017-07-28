@@ -1,0 +1,66 @@
+﻿@{
+    var follow = ViewData.Get<string>("follow", "fans");
+    var userProfile = ViewData.Get<UserProfile>("userProfile", new UserProfile());
+    var user = UserContext.CurrentUser;
+    var gender = user != null && user.UserId == userProfile.UserId ? "我" : userProfile.Gender == GenderType.FeMale ? "他" : "她";
+}
+<div class="row jh-my-fans">
+    <div class="col-xs-12">
+        <div class="tn-plr-15">
+            <ul class="nav nav-pills" role="tablist" id="myTab">
+                <li role="presentation" id="myFans" class="@if (follow == "fans") { <text>active</text>}"><a href="javascript:;" id="myFans" role="tab" data-toggle="tab">@(gender)的粉丝</a></li>
+                <li role="presentation" id="myFocus" class="@if (follow == "focus") { <text>active</text>}"><a href="javascript:;" id="myFocus" role="tab" data-toggle="tab">@(gender)的关注</a></li>
+                @if (user != null && userProfile.UserId == user.UserId)
+                {
+                    <li class="pull-right"><a id="inviteFriend" href="javascript:;"><i class="fa fa-user-plus" aria-hidden="true"></i> 邀请朋友</a></li>
+                }
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="followList">
+                    @if (follow == "fans")
+                    {
+                        @Html.Action("_MyFans", "UserSpace", new { userId = userProfile.UserId })
+                    }
+                    else
+                    {
+                        @Html.Action("_MyFocus", new { userId = userProfile.UserId })
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+    
+    $(function () {
+        //我的粉丝
+        $("#myFans").click(function () {
+            $("li[id=myFans]").attr("class", "active");
+            $("li[id=myFocus]").attr("class", "");
+            $.get("@CachedUrlHelper.Action("_MyFans", "UserSpace")", { userId: '@userProfile.UserId', requestTime: new Date().getTime() }, function (data) {
+                replaceUrl("follow-fans")
+                $("#followList").html(data);
+            })
+        })
+
+        //我的关注
+        $("#myFocus").click(function () {
+            $("li[id=myFans]").attr("class", "");
+            $("li[id=myFocus]").attr("class", "active");
+            $.get("@CachedUrlHelper.Action("_MyFocus", "UserSpace")", { userId: '@userProfile.UserId', requestTime: new Date().getTime() }, function (data) {
+                replaceUrl("follow-focus")
+                $("#followList").html(data);
+            })
+        })
+
+        //邀请好友
+        $("#inviteFriend").click(function () {
+            $.get("@CachedUrlHelper.Action("_InviteFriend","UserSpace")", { requestTime: new Date().getTime() }, function (data) {
+                replaceUrl("invitefriend")
+                $("#my-content").html(data);
+            })
+        })
+    })
+    })
+</script>

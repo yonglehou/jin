@@ -1,0 +1,532 @@
+﻿@model SectionEditModel
+<!--创建编辑贴吧-->
+
+@{
+    int index = 0;
+    var managers = ViewData.Get<IEnumerable<long>>("managers", null);
+    var rootcategoryId = ViewData.Get<long>("rootCategoryId", 0);
+    var childrencategoryId = ViewData.Get<long>("childrenCategoryId", 0);
+}
+<style>
+    .tn-mr-14 {
+        margin-right: 14px;
+    }
+
+    #rootCategory {
+        width: 140px;
+    }
+
+    #childrenCategory {
+        width: 140px;
+    }
+</style>
+
+<div class="panel tn-survey-form" style="width:620px;">
+    <div class="panel-body ">
+        @using (Html.BeginAjaxForm("_EditBarSection", "ControlPanel", "", FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "editSectionCallBack" }, new { @id = "SectionForm", @class = "tn-form-validation" }))
+        {
+        @Html.HiddenFor(n => n.SectionId)
+            @Html.HiddenFor(n => n.CategoryId)
+            @Html.HiddenFor(n => n.ThreadCategoryNames)
+            @Html.HiddenFor(n => n.ThreadCategoryIds)
+            @Html.HiddenFor(n => n.FeaturedImageAttachmentId)
+
+            <div class="form-group" id="categoryCode_custom">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <label>所属分类</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-3">
+                        <select id="rootCategory" class="form-control jn-select-sm first" data-value="@rootcategoryId" disabled="disabled"></select>
+                    </div>
+                    <div class="col-xs-3">
+                        <select id="childrenCategory" class="form-control jn-select-sm second categoryCodes" data-value="@childrencategoryId" disabled="disabled"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-xs-3">
+                        @Html.LabelFor(n => n.Name)
+                    </div>
+                </div>
+                @Html.TextBoxFor(n => n.Name, new { @class = "form-control" })
+                @Html.ValidationMessageFor(n => n.Name)
+            </div>
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-xs-3">
+                        @Html.LabelFor(n => n.Description)
+                    </div>
+                </div>
+                @Html.TextBoxFor(n => n.Description, new { @class = "form-control" })
+                @Html.ValidationMessageFor(n => n.Description)
+            </div>
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-xs-2" id="UploadFileImgs">
+                        @if (!Model.HasLogoImage)
+                        {
+                        @Html.FileUploader("UploadSectionLogo", TenantTypeIds.Instance().Section(), UserContext.CurrentUser.UserId, "+", extensions: "jpg,jpeg,png,gif", callbacks: new { uploadSuccess = "succeedImageSyntony" })
+                        }
+                        else
+                        {
+                        <div class="tn-pic-attachment">
+                            <img class="img-thumbnail img-responsive" src="@(new AttachmentService(TenantTypeIds.Instance().Section()).Get(Model.FeaturedImageAttachmentId).GetDirectlyUrl("Small"))" alt="..." style="height:70px;width:70px">
+                            <button class="btn btn-default btn-xs btn-removeImg" type="button"><i class="fa fa-remove"></i></button>
+                        </div>
+                        }
+                    </div>
+                    <div class="col-xs-10">
+                        <h6>贴吧logo</h6>
+                        <span class="help-block">建议上传180*180px的图片，超出该尺寸自动 裁剪</span>
+                    </div>
+                </div>
+            </div>
+            if (Model.SectionId != 0)
+            {
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <label for="SectionOwner">吧主</label>
+                    </div>
+                </div>
+                @Html.UserSelector("SectionOwner", mode: UserOrOrgSelectorMode.User, selectionUserIds: new List<long> { Model.UserId }, selectionNum: 1, innerText: "选择吧主", validation: true, require: true, sourceUrl: SiteUrls.Instance().GetAllOguUser())
+            </div>
+            }
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-xs-3">
+                        @Html.LabelFor(m => m.SectionManagers)
+                    </div>
+                </div>
+                @Html.UserSelector("SectionManagers", mode: UserOrOrgSelectorMode.User, selectionUserIds: managers, selectionNum: 50, innerText: "选择管理员", validation: false, require: false, sourceUrl: SiteUrls.Instance().GetAllOguUser())
+                @Html.ValidationMessageFor(n => n.SectionManagers)
+            </div>
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <div class="checkbox">
+                            <label>
+                                @Html.CheckBoxFor(n => n.IsEnabled) 启用贴吧
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <div class="enableType">
+                            <label>
+                                @Html.CheckBoxFor(n => n.EnabledThreadCategory) 启用贴子分类
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-xs-9">
+                        <span class="help-block">贴子分类请进入贴吧管理中的贴子分类进行维护</span>
+                    </div>
+                </div>
+            </div>
+            <div hidden>
+                <div id="ThreadCategories">
+                    @if (Model.SectionId == 0)
+                    {
+                    <div class="form-group ThreadCategory" data-id="@index">
+                        <div class="row">
+                            <div class="form-group">
+                                <div class="col-xs-4">
+                                    @Html.TextBoxFor(n => n.ThreadCategoryName, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(n => n.ThreadCategoryName)
+                                </div>
+                                <div class="col-xs-8 form-control-static">
+                                    <a href="javascript:;" class="a tn-mr-10 btn-removeCategory"><i class="fa fa-remove"></i></a>
+                                    <a href="javascript:;" class="a tn-mr-10"><i class="fa fa-long-arrow-up up" aria-hidden="true"></i></a>
+                                    <a href="javascript:;" class="a tn-mr-10"><i class="fa fa-long-arrow-down down" aria-hidden="true"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                        {
+                            index++;
+                        }
+                        <div class="form-group ThreadCategory" data-id="@(index)">
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-xs-4">
+                                        <input type="text" class="form-control" name="ThreadCategoryName" />
+                                    </div>
+                                    <div class="col-xs-8 form-control-static">
+                                        <a href="javascript:;" class="a tn-mr-10 btn-removeCategory"><i class="fa fa-remove"></i></a>
+                                        <a href="javascript:;" class="a tn-mr-10"><i class="fa fa-long-arrow-up up" aria-hidden="true"></i></a>
+                                        <a href="javascript:;" class="a tn-mr-10"><i class="fa fa-long-arrow-down down" aria-hidden="true"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {
+                            index++;
+                        }
+
+                    }
+                    else
+                    {
+                        foreach (var item in Model.ThreadCategories)
+                        {
+                        <div class="form-group ThreadCategory" data-id="@index">
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-xs-4">
+                                        <input type="text" class="hidden" name="ThreadCategoryId" value="@item.CategoryId" />
+                                        <input type="text" class="form-control" data-id="@index" name="ThreadCategoryName" value="@item.CategoryName" />
+                                        @Html.ValidationMessageFor(n => n.ThreadCategoryName)
+                                    </div>
+                                    <div class="col-xs-8 form-control-static">
+                                        <a href="javascript:;" class="a tn-mr-10 btn-removeCategory" data-id="@index" data-categoryid="@item.CategoryId"><i class="fa fa-remove"></i></a>
+                                        <a href="javascript:;" class="a tn-mr-10"><i class="fa fa-long-arrow-up up" aria-hidden="true"></i></a>
+                                        <a href="javascript:;" class="a tn-mr-10"><i class="fa fa-long-arrow-down down" aria-hidden="true"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                            {
+                                index++;
+                            }
+                        }
+                    }
+                </div>
+
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-xs-5">
+                            <a href="javascript:;" id="EditThreadCategory" class="a">+ 添加贴子分类</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button id="EditSection" type="button" class="btn btn-primary tn-btn-wp">确定</button>
+            <button type="button" class="btn btn-default tn-btn-wp cancel tn-ml-5">取消</button>
+        }
+
+    </div>
+</div>
+<script>
+    require(['jquery'],function(){
+        //删除的贴子分类Id集合
+        var deleteThreadCategoryIds=[];
+
+        var dataid=@(index);
+        $(function(){
+            var isChecked = $(this).find('input[name="EnabledThreadCategory"]').is(':checked');
+            isChecked ?  $('#ThreadCategories').parent().show() : $('#ThreadCategories').parent().hide();
+
+            HideAndShowArrow();
+
+            //交换标签
+            $('#ThreadCategories').on("click",".up",function(){
+                var $this=$(this);
+                var arr=[];
+                $('input[name="ThreadCategoryName"]').each(function () {
+                    arr.push($(this));
+                });
+                var temp;
+                var id=$this.parent().parent().parent().parent().parent().data('id');
+
+                temp = arr[id].val();
+                arr[id].val(arr[id-1].val());
+                arr[id-1].val(temp);
+
+                //编辑时交换Id
+                if ($('input[name="SectionId"]').val()!=0)
+                {
+                    var arr2=[];
+                    $('.btn-removeCategory').each(function () {
+                        arr2.push($(this));
+                    });
+
+                    temp = arr2[id].data('categoryid');
+                    arr2[id].data('categoryid',arr2[id-1].data('categoryid'));
+                    arr2[id-1].data('categoryid',temp);
+                }
+
+                HideAndShowArrow();
+            })
+            $('#ThreadCategories').on("click",".down",function(){
+                var $this=$(this);
+                var arr=[];
+                $('input[name="ThreadCategoryName"]').each(function () {
+                    arr.push($(this));
+                });
+                var temp;
+
+                var id=$this.parent().parent().parent().parent().parent().data('id');
+
+                temp = arr[id].val();
+                arr[id].val(arr[id+1].val());
+                arr[id+1].val(temp);
+
+                //编辑时交换Id
+                if ($('input[name="SectionId"]').val()!=0)
+                {
+                    var arr2=[];
+                    $('.btn-removeCategory').each(function () {
+                        arr2.push($(this));
+                    });
+
+                    temp = arr2[id].data('categoryid');
+                    arr2[id].data('categoryid',arr2[id+1].data('categoryid'));
+                    arr2[id+1].data('categoryid',temp);
+                }
+
+                HideAndShowArrow();
+            })
+
+            //级联
+            $('#categoryCode_custom').cxSelect({
+                selects: ['first', 'second'],
+                required: true,
+                url:@(Html.Raw(ViewData["Categories"])),
+            });
+
+        });
+
+        //添加贴子分类
+        $('#EditThreadCategory').on("click",function()
+        {
+            var html=" <div class=\"form-group ThreadCategory\"data-id=\""+dataid+"\"><div class=\"row\"><div class=\"form-group\"><div class=\"col-xs-4\"><input type=\"text\" class=\"hidden\" name=\"ThreadCategoryId\" value=\"0\" data-id=\""+dataid+"\" /><input type=\"text\" class=\"form-control\" name=\"ThreadCategoryName\" data-id=\""+dataid+"\" /></div><div class=\"col-xs-8 form-control-static\"><a href=\"javascript:;\" class=\"a tn-mr-14 btn-removeCategory\"><i class=\"fa fa-remove\"></i></a><a href=\"javascript:;\" class=\"a tn-mr-14\"><i class=\"fa fa-long-arrow-up up\" aria-hidden=\"true\"></i></a><a href=\"javascript:;\" class=\"a tn-mr-14\"><i class=\"fa fa-long-arrow-down down\" aria-hidden=\"true\"></i></a></div></div> </div></div>";
+
+            $('#ThreadCategories').append(html);
+
+            HideAndShowArrow();
+
+            dataid++;
+        });
+
+        //是否启用贴子分类
+        $('.enableType').on("click",function()
+        {
+            var isChecked = $(this).find('input[name="EnabledThreadCategory"]').is(':checked');
+            isChecked ?  $('#ThreadCategories').parent().show() : $('#ThreadCategories').parent().hide();
+        });
+
+        //隐藏第一个上箭头和最后一个下箭头
+        function HideAndShowArrow(){
+            var arr=[];
+            $('.ThreadCategory').each(function () {
+                arr.push($(this));
+            });
+            if(arr.length>0){
+                arr[0].find('.up').parent().hide();
+                arr[arr.length-1].find('.down').parent().hide();
+                for (var i = 1; i <= arr.length-1; i++) {
+                    arr[i].find('.up').parent().show();
+                }
+                for (var i = 0; i <= arr.length-2; i++) {
+                    arr[i].find('.down').parent().show();
+                }
+            }
+        }
+
+        //移除贴子分类
+        $('#SectionForm').on("click",".btn-removeCategory",function(){
+            var $this= $(this);
+            var categoryId=$this.data('categoryid');
+            $this.parent().parent().parent().parent().remove();
+            HideAndShowArrow();
+            dataid--;
+            if (categoryId)
+            {
+                deleteThreadCategoryIds.push(categoryId);
+            }
+        })
+
+
+        //上传成功回调
+        $.fn.succeedImageSyntony=function(file, data){
+            var $this = $("#UploadFileImgs");
+            var itemTmpl = '<div class="tn-pic-attachment">\
+                                <img class="img-thumbnail img-responsive" src="' + data.path + '" alt="..." style="height:70px;width:70px">\
+                                <button class="btn btn-default btn-xs btn-removeImg" type="button"><i class="fa fa-remove"></i></button>\
+                                </div>';
+            $('input[name="FeaturedImageAttachmentId"]').val(data.id);
+            $('input[name="FeaturedImageAttachmentPath"]').val(data.path);
+
+            $this.append(itemTmpl);
+            $this.find("div[id^='uploader-UploadSectionLogo']").remove();
+        }
+
+
+        //移除logo
+        $('#SectionForm').on('click','.btn-removeImg', function () {
+            var temp='@Html.FileUploader("UploadSectionLogo", TenantTypeIds.Instance().Section(), UserContext.CurrentUser.UserId, "+", extensions: "jpg,jpeg,png,gif", callbacks: new { uploadSuccess = "succeedImageSyntony" })';
+            var $this = $(this);
+            var uploadFileInput = $("[name='FeaturedImageAttachmentId']");
+            uploadFileInput.val("0")
+            $this.parent().parent().append(temp);
+            $this.parent().remove();
+        });
+
+        //提交表单
+        $('#EditSection').on("click",function(){
+            if($.trim( $('input[name="Name"]').val()).length==0){
+                layer.msg("贴吧名称不能为空", {
+                    icon: 2
+                });
+                return false;
+            }
+            if ($('input[name="SectionId"]').val()==0) {
+                if ($('#rootCategory').val()==0)
+                {
+                    layer.msg("请选择所属分类", {
+                        icon: 2
+                    });
+                    return false;
+                }
+                //创建
+
+
+                if ($('#childrenCategory').val().length>0) {
+                    $('input[name="CategoryId"]').val($('#childrenCategory').val());
+                }
+                else {
+                    $('input[name="CategoryId"]').val($('#rootCategory').val());
+                }
+
+                if ($('input[name="CategoryId"]').val()==0)
+                {
+                    layer.msg("请选择所属分类", {
+                        icon: 2
+                    });
+                    return false;
+                }
+                else {
+                    if ($('input[name="FeaturedImageAttachmentId"]').val()==0) {
+                        layer.msg("请上传贴吧logo", {
+                            icon: 2
+                        });
+                        return false;
+                    }
+                    else {
+                        var threadCategoryNames=[];
+                        var isExceedLimit=false;
+                        $('input[name="ThreadCategoryName"]').each(function () {
+                            if($(this).val().length>128){
+                                isExceedLimit=true;
+                            }
+                            if ($(this).val().length > 0)
+                            {
+                                threadCategoryNames.push($(this).val());
+                            }
+                        });
+
+                        if(isExceedLimit){
+                            layer.msg("贴子分类名称不能超过128字符", {
+                                icon: 2
+                            });
+                            return false;
+                        }
+
+                        $('input[name="ThreadCategoryNames"]').val(threadCategoryNames.join(';'));
+
+                        $('#SectionForm').submit();
+                    }
+                }
+
+
+
+            }
+            else
+            {
+                //编辑
+                if ($('#childrenCategory').val()==null) {
+                    $('input[name="CategoryId"]').val($('#rootCategory').val());
+                }
+                else {
+                    $('input[name="CategoryId"]').val($('#childrenCategory').val());
+                }
+                if ($('input[name="CategoryId"]').val()==0)
+                {
+                    layer.msg("请选择所属分类", {
+                        icon: 2
+                    });
+                    return false;
+                }
+                else {
+                    if ($('input[name="FeaturedImageAttachmentId"]').val()==0) {
+                        layer.msg("请上传贴吧logo", {
+                            icon: 2
+                        });
+                        return false;
+                    }
+                    else
+                    {
+                        var threadcategorynames=[];
+                        var threadcategoryids=[];
+                        var isExceedLimit=false;
+
+                        $('input[name="ThreadCategoryName"]').each(function () {
+                            if($(this).val().length>128){
+                                isExceedLimit=true;
+                            }
+                            if ($(this).val().length > 0)
+                            {
+                                threadcategorynames.push($(this).val());
+                            }
+                        });
+                        $('input[name="ThreadCategoryId"]').each(function () {
+                            if ($(this).val().length > 0)
+                            {
+                                threadcategoryids.push($(this).val());
+                            }
+                        });
+                        if(isExceedLimit){
+                            layer.msg("贴子分类名称不能超过128字符", {
+                                icon: 2
+                            });
+                            return false;
+                        }
+                        if (threadcategoryids.length>threadcategorynames.length) {
+                            layer.msg("贴子分类名称不能为空", {
+                                icon: 2
+                            });
+                            return false;
+                        }
+                        else {
+
+                            $('input[name="ThreadCategoryNames"]').val(threadcategorynames.join(';'));
+                            $('input[name="ThreadCategoryIds"]').val(threadcategoryids.join(';'));
+                            if (deleteThreadCategoryIds.length>0) {
+                                $.post("@CachedUrlHelper.Action("DeleteThreadCategorys", "ControlPanel")",{sectionId:@Model.SectionId,categoryIds:deleteThreadCategoryIds.join(';')});
+                            }
+
+
+                            $('#SectionForm').submit();
+                        }
+
+                    }
+                }
+
+            }
+
+        });
+        //取消
+        $('.cancel').on("click",function(){
+            layer.closeAll();
+        })
+
+        //回调
+        $.fn.editSectionCallBack=function(data){
+            if (data.state==1) {
+                layer.msg(data.msg, {
+                    icon: 1
+                });
+                setTimeout(function(){
+                    layer.closeAll();
+                },1500);
+
+            }
+        }
+    })
+</script>

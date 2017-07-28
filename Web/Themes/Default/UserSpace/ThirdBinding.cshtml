@@ -1,0 +1,27 @@
+﻿@model ThirdAccountGetter
+@{
+    Layout = null;
+    var accountType = ViewData.Get<AccountType>("accountType", null);
+}
+
+<div class="panel">
+    <div class="panel-body">
+        <div id="login_container" style="text-align:center;">
+
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+        var obj = new WxLogin({
+            id: "login_container",
+            appid: "@accountType.AppKey",
+            scope: "snsapi_login",
+            redirect_uri: "@SiteUrls.FullUrl(CachedUrlHelper.Action("ThirdBindingCallBack", "UserSpace", null, new RouteValueDictionary { { "accountTypeKey", "WeChat" } }))",
+            state: "",
+            style: "black",
+            href: ""
+        });
+    })
+</script>

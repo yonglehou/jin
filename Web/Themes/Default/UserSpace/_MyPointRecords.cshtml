@@ -1,0 +1,42 @@
+﻿@model PagingDataSet<PointRecord>
+@{
+    var experience = ViewData.Get<string>("Experience", null);
+    var trade = ViewData.Get<string>("Trade", null);
+}
+
+<div role="tabpanel">
+    @if (Model.Count() > 0)
+    {
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>时间</th>
+                <th>用户</th>
+                <th>@experience</th>
+                <th>@trade</th>
+                <th style="width:600px;">描述</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+                {
+                <tr>
+                    <td>@item.DateCreated.ToUserDateString()</td>
+                    <td>@item.UserDisplayName</td>
+                    <td>@item.ExperiencePoints</td>
+                    <td>@item.TradePoints</td>
+                    <td>@Html.Raw(item.Description)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    }
+    else
+    {
+    <div class="text-center text-warning">暂无任何记录</div>
+    }
+
+</div>
+<div class="text-center">
+    @Html.AjaxPagingButton(Model, "showinfo", CachedUrlHelper.Action("_MyPointRecords", "UserSpace"))
+</div>

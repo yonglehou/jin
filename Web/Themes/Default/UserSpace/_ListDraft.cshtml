@@ -1,0 +1,40 @@
+﻿@model IEnumerable<ContentItem>
+    <style type="text/css">
+        .table > tbody > tr:first-child > td {
+                border-top: none ;
+        }
+    </style>
+<h5 class="pull-left tn-mt-0">写文章</h5>
+
+<div class="btn-group pull-right">
+    @if (Model.Count() > 0)
+    {
+        <div class="pull-left">
+            <ul class="pull-left">草稿(@Model.Count())：</ul>
+            <ul class="list-inline pull-right" style="margin-bottom:0;">
+                <li><a href="javascript:;" class="a" data-href="@CachedUrlHelper.Action("_EditCMS","UserSpace")?contentItemId=@Model.First().ContentItemId&contentCategoryId=@Model.First().ContentCategoryId" id="editdraftlist-@Model.First().ContentItemId" data-type="cms-edit" role="button" title="@Model.First().Subject">@HtmlUtility.TrimHtml(Model.First().Subject,15)</a></li>
+                <li><a data-href="@CachedUrlHelper.Action("_DeleteCMS", "ControlPanel",null,new RouteValueDictionary { { "contentItemId", Model.First().ContentItemId } })" class="a" id="deletedraft-@Model.First().ContentItemId" role="button">删除</a></li>
+            </ul>
+        </div>
+        if(Model.Count()>1)
+        { 
+        <div class="pull-right" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            <ul class="list-inline">
+                <li><i class="fa fa-angle-double-down" aria-hidden="true"></i></li>
+            </ul>
+        </div>
+        <div class="dropdown-menu" style="width:360px;">
+            <table class="table  table-hover">
+                @foreach (var item in Model.Skip(1))
+                {
+                    <tr>
+                        <td><a href="javascript:;" class="a" data-href="@CachedUrlHelper.Action("_EditCMS","UserSpace")?contentItemId=@item.ContentItemId&contentCategoryId=@item.ContentCategoryId" id="editdraftlist-@item.ContentItemId" role="button" title="@item.Subject">@HtmlUtility.TrimHtml(item.Subject, 15)</a></td>
+                        <td><a id="deletedraft-@item.ContentItemId" class="a" role="button">删除</a></td>
+                    </tr>
+                }
+
+            </table>
+        </div>
+        }
+    }
+</div>

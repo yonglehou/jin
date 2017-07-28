@@ -1,0 +1,39 @@
+@mixin sharp {
+	content: "";
+	position: absolute;
+	width: 0;
+	height: 0;
+}
+@mixin sharp-top($sharp-width, $sharp-color) {
+	border: {
+		style: dashed dashed solid;
+		width: 0 $sharp-width $sharp-width;
+		color: transparent transparent $sharp-color;
+	}
+}
+@mixin sharp-right($sharp-width, $sharp-color) {
+	border: {
+		style: dashed dashed dashed solid;
+		width: $sharp-width 0 $sharp-width $sharp-width;
+		color: transparent transparent transparent $sharp-color;
+	}
+}
+@mixin sharp-bottom($sharp-width, $sharp-color) {
+	border: {
+		style: solid dashed dashed;
+		width: $sharp-width $sharp-width 0;
+		color: $sharp-color transparent transparent;
+	}
+}
+@mixin sharp-left($sharp-width, $sharp-color) {
+	border: {
+		style: dashed solid dashed dashed;
+		width: $sharp-width $sharp-width $sharp-width 0;
+		color: transparent $sharp-color transparent transparent;
+	}
+}
+@mixin text-overflow {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}

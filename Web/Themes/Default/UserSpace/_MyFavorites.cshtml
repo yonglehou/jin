@@ -1,0 +1,28 @@
+﻿<div class="row jh-my-index">
+    <div class="tn-plr-15">
+        <div class="col-xs-12 jh-index-block" id="_ListMyFavorites">
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+    
+    $(function () {
+        if ($('#nav-favorites-post').hasClass('active')) {
+            $.get('@CachedUrlHelper.Action("_ListMyFavorites", "UserSpace")', { isContentItem: false, t: new Date().getTime() }, function (data) {
+                $('#_ListMyFavorites').html(data);
+            });
+        }
+        else if ($('#nav-favorites-ask').hasClass('active')) {
+            $.get('@CachedUrlHelper.Action("_ListMyFavoriteQuestions", "Ask")', { t: new Date().getTime() }, function (data) {
+                $('#_ListMyFavorites').html(data);
+            });
+        }
+        else {
+            $.get('@CachedUrlHelper.Action("_ListMyFavorites", "UserSpace")', { t: new Date().getTime() }, function (data) {
+                $('#_ListMyFavorites').html(data);
+            });
+        }
+    });
+    })
+</script>

@@ -1,0 +1,50 @@
+﻿@model SystemMessageViewModel
+ 
+
+@if (Model.Title == "500"|| Model.Title == "404")
+{
+<div class="row">
+    <div class="col-xs-6 col-xs-offset-3">
+        <div class="tn-error-mod tn-error-v2">
+            <div class="tn-error-title">@Model.Title</div>
+            <div class="tn-error-tips text-primary">@Model.BodyLink["Title"]</div>
+            <div class="tn-error-info">@Model.Body</div>
+            <div class="row tn-error-feedback ">
+                <div class="col-xs-6">
+                    <a class="btn btn-primary btn-block tn-btn-outline" href="javascript:;" onclick="history.back()">返回上一页</a>
+                </div>
+                <div class="col-xs-6">
+                    @foreach (var item in Model.ButtonLink)
+                    {
+                        <a class="btn btn-primary btn-block tn-btn-outline" href="@item.Value">@item.Key</a>
+                    }
+                
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+}
+else
+{
+    <div class="row">
+        <div class="col-xs-6 col-xs-offset-3">
+            <div class="tn-error-mod tn-error-v1">
+                <div class="tn-error-title tn-no-access">无权访问</div>
+                <div class="tn-error-tips text-primary">抱歉您无权访问此页面！</div>
+                <div class="tn-error-info">请点击以下按钮返回上一页或返回首页。</div>
+                <div class="row tn-error-feedback">
+                    <div class="col-xs-6">
+                        <a class="btn btn-primary btn-block tn-btn-outline" href="javascript:;" onclick="history.back()">返回上一页</a>
+                    </div>
+                    <div class="col-xs-6">
+@foreach (var item in Model.ButtonLink)
+{
+                        <a class="btn btn-primary btn-block tn-btn-outline" href="@item.Value">返回首页</a>
+}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

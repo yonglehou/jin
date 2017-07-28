@@ -1,0 +1,51 @@
+﻿@model PagingDataSet<PointRecord>
+@{
+    var experience = ViewData.Get<string>("experience", string.Empty);
+    var trade = ViewData.Get<string>("trade", string.Empty);
+}
+@if (Model.Any())
+{
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th style="width:80px;">日期</th>
+                <th style="width:80px;">用户</th>
+                <th style="width:80px;">@experience</th>
+                <th style="width:80px;">@trade</th>
+                <th style="width:100px;">操作</th>
+                <th style="width:80px;">操作人</th>
+                <th style="width:500px;">描述</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+                {
+                <tr>
+                    <td>@item.DateCreated.ToUserDateString()</td>
+                    <td>@item.UserDisplayName</td>
+                    <td>@item.ExperiencePoints</td>
+                    <td>@item.TradePoints</td>
+                    @if (item.Description.IndexOf("：") != -1)
+                    {
+                        <td>@item.Description.Substring(0, item.Description.IndexOf("："))</td>
+                    }
+                    else
+                    {
+                        <td>@item.Description</td>
+                    }
+                    <td>@item.OperatorUserDisplayName</td>
+                    <td>@Html.Raw(item.Description)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="text-center">
+        @Html.AjaxPagingButton(Model, "listpointrecords", CachedUrlHelper.Action("_ListPointRecords", "ControlPanel", null, new RouteValueDictionary { { "userId", Request.QueryString.Get("userId", string.Empty) }, { "startDate", Request.QueryString.Get("startDate", string.Empty) }, { "endDate", Request.QueryString.Get("endDate", string.Empty) } }))
+    </div>
+}
+else
+{
+    <div class="text-center text-warning">
+        暂无任何记录
+    </div>
+}

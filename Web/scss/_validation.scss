@@ -1,0 +1,104 @@
+.tn-form-validation {
+	.form-group {
+		position: relative;
+		.form-control.valid {
+			border-color: $valid-border-color;
+		}
+		.form-control.error,
+		.form-control.input-validation-error {
+			border-color: $error-border-color;
+		}
+		label.error,
+		span.field-validation-error {
+			position: absolute;
+			top: 0;
+			right: 0;
+			padding-left: 5px;
+			padding-right: 5px;
+			border-radius: 3px;
+			background-color: $error-border-color;
+			color: $inverse-color;
+			white-space: nowrap;
+			&:after {
+				@include sharp;
+				@include sharp-bottom(5px, $error-border-color);
+				right: 10px;
+				bottom: -5px;
+			}
+		}
+	}
+}
+// .form-horizontal.tn-form-validation {
+// 	.form-group {
+// 		> div[class|="col"] {
+// 			position: relative;
+// 		}
+// 		label.error,
+// 		span.field-validation-error {
+// 			top: 3px;
+// 			right: auto;
+// 			left: 100%;
+// 			&:after {
+// 				@include sharp;
+// 				@include sharp-left(5px, $error-border-color);
+// 				left: -5px;
+// 				top: 5px;
+// 				right: auto;
+// 				bottom: auto;
+// 			}
+// 		}
+// 	}
+// }
+.form-horizontal.tn-form-validation {
+	.form-group {
+		label.error,
+		span.field-validation-error {
+			position: relative;
+			top: 5px;
+			right: auto;
+			&:after {
+				@include sharp;
+				@include sharp-top(5px, $error-border-color);
+				left: 10px;
+				top: -5px;
+				right: auto;
+				bottom: auto;
+			}
+		}
+	}
+}
+.tn-form-validation {
+	.form-group {
+		.checkbox {
+			label label.error {
+				top: auto;
+				right: auto;
+				left: 0;
+				top: -17px;
+				&:after {
+					@include sharp;
+					@include sharp-bottom(5px, $error-border-color);
+					left: 2px;
+					top: auto;
+					right: auto;
+					bottom: -5px;
+				}
+			}
+			> label.error {
+				position: relative;
+				top: auto;
+				right: auto;
+				left: auto;
+				top: auto;
+				&:after {
+					@include sharp;
+					@include sharp-top(5px, $error-border-color);
+					left: 2px;
+					top: -5px;
+					right: auto;
+					bottom: auto;
+				}
+			}
+		}
+	}
+}

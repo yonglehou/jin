@@ -1,0 +1,72 @@
+﻿@{ 
+    var invitationCode = ViewData.Get<string>("invitationCode", null);
+}
+<div class="row jh-my-fans">
+    <div class="col-xs-12">
+        <div class="tn-plr-15">
+            <div class="tab-content">
+                <div class="tn-title">
+                    <h5 class="pull-left tn-mt-0">邀请朋友</h5>
+                    <ul class="list-inline pull-right">
+                        <li><a href="javascript:;" id="myfocus" class="a">我的关注</a></li>
+                        <li>|</li>
+                        <li><a href="javascript:;" id="myfans" class="a">我的粉丝</a></li>
+                    </ul>
+                </div>
+                <div class="row">
+                    <div class="col-xs-6">
+                        <p>通过QQ、电子邮件发送链接给你的朋友，注册成功后他们会自动成为你的粉丝。</p>
+                        <div class="row">
+                            <div class="col-xs-10">
+                                @if (invitationCode!=null)
+                                {
+                                    <input type="text" id="inviteUrl" class="form-control" value="@SiteUrls.Instance().InviteRegister(invitationCode)">
+                                    @*<input type="text" id="inviteUrl" class="form-control" value="@invitationCode">*@
+                                }
+                            </div>
+                            <div class="col-xs-2">
+                                <button type="button" id="copyUrl" class="btn btn-default">复制链接</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tn-title">
+                    <h5 class="pull-left">已成功邀请的朋友</h5>
+                </div>
+                <div id="invitedFriendsList">
+                    @Html.Action("_MyInvitedFriendsList", "UserSpace")
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+   
+    $(function () {
+        //我的关注
+        $("#myfocus").click(function () {
+            $.get("@CachedUrlHelper.Action("_ManageMyFollow", "UserSpace")", { userId: '@UserContext.CurrentUser.UserId', follow: "focus", requestTime: new Date().getTime() }, function (data) {
+                replaceUrl("focus")
+                $("#my-content").html(data);
+            })
+        })
+
+        //我的粉丝
+        $("#myfans").click(function () {
+            $.get("@CachedUrlHelper.Action("_ManageMyFollow", "UserSpace")", { userId: '@UserContext.CurrentUser.UserId', follow: "fans", requestTime: new Date().getTime() }, function (data) {
+                replaceUrl("fans")
+                $("#my-content").html(data);
+            })
+        })
+
+        //复制链接
+        $("#copyUrl").click(function () {
+            var invite= $("#inviteUrl");
+            invite.select();
+            document.execCommand("Copy");
+            layer.msg("链接已复制到剪贴板", {icon:1})
+        })
+    })
+    })
+</script>

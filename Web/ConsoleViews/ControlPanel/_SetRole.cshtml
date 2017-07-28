@@ -1,0 +1,42 @@
+﻿@model List<UserInRoleEditModel>
+@{
+    string trueName = ViewData.Get<string>("UserTureName", "");
+    long userId = ViewData.Get<long>("UserId", 0);
+}
+@Html.AntiForgeryToken()
+<div class="panel">
+    <div class="panel-body">
+        @using (Html.BeginAjaxForm("_SetRole", "ControlPanel", "", FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "SetRoleCallBack" }, new { @class = "tn-form-validation" }))
+        {
+            @Html.Hidden("UserId", userId)
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <label class="help-block">为 @trueName 设置用户角色</label>
+                        </div>
+                    </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            @for (int i = 0; i < Model.Count; i++)
+                            {
+                                <div class="col-xs-6">
+                                    <label class="checkbox-inline col-xs-12">
+                                        @Html.HiddenFor(model => model[i].UserRole.RoleId)
+                                        @Html.CheckBoxFor(model => model[i].IsInRole)
+                                        <label style="width:100px">@Model[i].UserRole.RoleName</label>
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary tn-mr-10 tn-btn-wp">确定</button>
+                        <button type="button" class="btn btn-default tn-btn-wp" data-dismiss="modal" onclick="layer.closeAll()">关闭</button>
+                    </div>
+                    }
+                </div>
+            </div>
+        <script>
+
+        </script>

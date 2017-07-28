@@ -1,0 +1,49 @@
+﻿@{
+    ViewData["Title"] = new string[] { "权限管理" };
+    TempData["subMenu-check"] = new string[] { "User", "ManagePermissions" };
+}
+@Styles.Render("~/Bundle/Styles/zTree")
+<!--@Scripts.Render("~/Bundle/Scripts/zTree")-->
+
+
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-lg-12">
+        <h3>权限管理</h3>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="form-inline tn-tool-column">
+            <div class="form-group">
+                <button type="button" class="btn btn-default btn-newPermissions" data-url="@CachedUrlHelper.Action("_EditPermission", "ControlPanel", null, new RouteValueDictionary { { "OwnerType", OwnerType.Role } })" data-width="450px" data-height="610px"> 添加角色授权</button>
+                <button type="button" class="btn btn-default btn-newPermissions" data-url="@CachedUrlHelper.Action("_EditPermission", "ControlPanel", null, new RouteValueDictionary { { "OwnerType", OwnerType.User } })" data-width="500px" data-height="620px"> 添加用户授权</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div id="_ListPermissions">
+        </div>
+    </div>
+</div>
+
+<script>
+    require(['jquery', 'tnlayer', 'ztree', 'userSelector'], function ($,tnlayer) {
+
+        $.get('@CachedUrlHelper.Action("_ListPermissions", "ControlPanel")', { t: (new Date()).valueOf() }, function (data) {
+            $("#_ListPermissions").html(data);
+        })
+
+        $('.btn-newPermissions').on('click', function () {
+            var $this = $(this);
+            var url = $this.data("url") + "&t=" + (new Date()).valueOf();
+            var width = $this.data("width");
+            var height = $this.data("height");
+            tnlayer.layermodal('添加授权', url, width, height);
+        })
+
+    })
+</script>
+
+

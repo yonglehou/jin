@@ -1,0 +1,231 @@
+﻿@model PagingDataSet<Comment>
+@{
+    User spaceUser = ViewData.Get<User>("spaceUser", null);
+    var currentUser = UserContext.CurrentUser;
+
+    var tenantTypes = ViewData.Get<Dictionary<string, string>>("tenantTypes", null);
+    var gender = ViewData.Get<string>("gender", string.Empty);
+
+    bool isReceived = ViewData.Get<bool>("isReceived", true);
+}
+<div class="tn-chat-list">
+    @if (Model.Any())
+    {
+        if (currentUser != null && spaceUser.UserId == currentUser.UserId)
+        {
+            //我的空间评论列表
+            foreach (var comment in Model)
+            {
+                //尝试获取被评论对象
+                var commentedObject = comment.GetCommentedObject();
+                <div class="media">
+                    <div class="media-left">
+                        <a class="tn-avatar" href="@SiteUrls.Instance().SpaceHome(comment.UserId)" target="_blank">@Html.ShowUserAvatar(comment.UserId, AvatarSizeType.Small)</a>
+                    </div>
+                    <div class="media-body">
+                        <h4 class="media-heading">
+                            @if (isReceived == true)
+                            {
+                                <a href="@SiteUrls.Instance().SpaceHome(comment.UserId)" target="_blank"><span>@comment.Author</span>&nbsp; &nbsp;</a>
+                                <small class="text-muted">@comment.DateCreated.ToFriendlyDate()</small><span>&nbsp;</span>
+                                <span>发布</span>
+                            }
+                            else
+                            {
+                                <a href="@SiteUrls.Instance().MyHome(comment.UserId)" target="_blank"><span>我</span>&nbsp; &nbsp;</a>
+                                <small class="text-muted">@comment.DateCreated.ToFriendlyDate()</small><span>&nbsp;</span>
+                                if (commentedObject != null)
+                                {
+                                    <span>回复:</span>
+                                    //尝试获取父级评论
+                                    var parentComment = comment.GetParentComment();
+                                    if (parentComment != null)
+                                    {
+                                        <a href="@SiteUrls.Instance().SpaceHome(parentComment.UserId)" target="_blank"><span>@parentComment.Author</span></a>
+                                    }
+                                    else
+                                    {
+                                        <a href="@SiteUrls.Instance().SpaceHome(commentedObject.UserId)" target="_blank"><span>@commentedObject.Author</span></a>
+                                    }
+                                }
+                                else
+                                {
+                                    <span>发布</span>
+                                }
+                            }
+                        </h4>
+                        <p style="display:inline" class="commentbody">@(Html.Raw(HtmlUtility.StripHtml(comment.Body, true, true).Length > 700 ? HtmlUtility.TrimHtml(comment.Body, 700) : comment.Body))</p>
+                        @if (HtmlUtility.StripHtml(comment.Body, true, true).Length > 700)
+                        {
+                            <a href="javascript:;" class="showOrHide" data-commentbody="@comment.Body" data-isshow="true">  展开>>></a>
+                        }
+                        <div class="tn-feedback">
+                            @if (isReceived == true)
+                            {
+                                <span>评论我的</span>
+                            }
+                            else
+                            {
+                                <span>我评论的</span>
+                            }
+                            @if (commentedObject != null)
+                            {
+                                if (commentedObject.contentModelName != null)
+                                {
+                                    <span>@commentedObject.contentModelName  :</span>
+                                }
+                                else
+                                {
+                                    <span>@(tenantTypes.ContainsKey(comment.TenantTypeId) ? tenantTypes[comment.TenantTypeId] : "")  :</span>
+                                }
+
+                                var commentedObjectDetailUrl = commentedObject.DetailUrl;
+                                var commentedObjectName = commentedObject.Name;
+                                <a href="@commentedObjectDetailUrl" title="@commentedObjectName" target="_blank">@HtmlUtility.TrimHtml(commentedObjectName, 40)</a>
+                                if (isReceived == true)
+                                {
+                                    <a href="javascript:;" class="commentreply hide" style="float:right" data-href="@SiteUrls.Instance()._Comment(comment.Id,comment.TenantTypeId,comment.CommentedObjectId)"><i class="fa fa-reply"></i> 回复</a>
+                                }
+                                else
+                                {
+                                    <a href="javascript:;" class="commentdelete hide" style="float:right" data-href="@SiteUrls.Instance()._DeleteComment(comment.Id)"><i class="fa fa-trash"></i> 删除</a>
+                                }
+                            }
+                            else
+                            {
+                                <span style="color:#bf0a10">被评论的内容已被删除</span>
+                                if (isReceived == false)
+                                {
+                                    <a href="javascript:;" class="commentdelete hide" style="float:right" data-href="@SiteUrls.Instance()._DeleteComment(comment.Id)"><i class="fa fa-trash"></i> 删除</a>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            //Ta的空间评论列表
+            foreach (var comment in Model)
+            {
+                //尝试获取被评论对象
+                var commentedObject = comment.GetCommentedObject();
+                <div class="media">
+                    <div class="media-left">
+                        <a class="tn-avatar" href="@SiteUrls.Instance().SpaceHome(comment.UserId)" target="_blank">@Html.ShowUserAvatar(comment.UserId, AvatarSizeType.Small)</a>
+                    </div>
+                    <div class="media-body">
+                        <h4 class="media-heading">
+                            <a href="@SiteUrls.Instance().SpaceHome(comment.UserId)" target="_blank"><span>@comment.Author</span>&nbsp; &nbsp;</a>
+                            <small class="text-muted">@comment.DateCreated.ToFriendlyDate()</small><span>&nbsp;</span>
+                            <span>发布</span>
+                        </h4>
+                        <p style="display:inline" class="commentbody">@(Html.Raw(HtmlUtility.StripHtml(comment.Body, true, true).Length > 700 ? HtmlUtility.TrimHtml(comment.Body, 700) : comment.Body))</p>
+                        @if (HtmlUtility.StripHtml(comment.Body, true, true).Length > 700)
+                        {
+                            <a href="javascript:;" class="showOrHide" data-commentbody="@comment.Body" data-isshow="true">  展开>>></a>
+                        }
+                        <div class="tn-feedback">
+                            <span>@gender 评论的</span>
+                            @if (commentedObject != null)
+                            {
+                                if (commentedObject.contentModelName != null)
+                                {
+                                    <span>@commentedObject.contentModelName  :</span>
+                                }
+                                else
+                                {
+                                    <span>@(tenantTypes.ContainsKey(comment.TenantTypeId) ? tenantTypes[comment.TenantTypeId] : "")  :</span>
+                                }
+
+                                var commentedObjectDetailUrl = commentedObject.DetailUrl;
+                                var commentedObjectName = commentedObject.Name;
+                                <a href="@commentedObjectDetailUrl" title="@commentedObjectName" target="_blank">@HtmlUtility.TrimHtml(commentedObjectName, 40)</a>
+                            }
+                            else
+                            {
+                                <span style="color:#bf0a10">被评论的内容已被删除</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    }
+    else
+    {
+        <div class="clearfix text-warning text-center">
+            没有发现评论~
+        </div>
+    }
+</div>
+
+<div class="text-center">
+    @Html.AjaxPagingButton(Model, "_ListComments", CachedUrlHelper.Action("_ListComments", "UserSpace", null, new RouteValueDictionary { { "spacekey", spaceUser.UserName }, { "isReceived", isReceived } }))
+</div>
+
+
+<script type="text/javascript">
+    require(['jquery', 'tnlayer','page'], function ($) {
+
+    //过长评论展开和收起
+    $('.showOrHide').on('click', function () {
+        var $this = $(this);
+        var commentbody = $this.data('commentbody');
+        var swapcommentbody = $this.prev().html();
+        $this.prev().empty();
+        $this.prev().html(commentbody);
+        $this.data('commentbody', swapcommentbody);
+        if ($this.data('isshow') == true) {
+            $this.text('  <<<收起');
+            $this.data('isshow', false);
+        }
+        else {
+            $this.text('  展开>>');
+            $this.data('isshow', true);
+        }
+    });
+
+    //显示评论控件
+    $('.commentreply').on('click', function () {
+        var $this = $(this);
+        $(".CommentControl").remove();
+        var href = $this.data("href");
+        $.get(href, { t: new Date().getTime() }, function(data) {
+            $this.parent().parent().append(data);
+        });
+    });
+
+    //删除评论
+    $('.commentdelete').on('click', function () {
+        var href = $(this).data('href');
+        layer.confirm('确定要删除评论么?',
+            { btn: ['确定', '取消'], icon: 3 }, function () {
+                $.post(href, function (data) {
+                    if (data.MessageType) {
+                        layer.msg(data.MessageContent, { icon: 1 });
+                        $.get('@CachedUrlHelper.Action("_ListComments", "UserSpace",null, new RouteValueDictionary { { "spaceKey", spaceUser.UserName }})', { isReceived: false, t: new Date().getTime() }, function (data) {
+                            $('#_ListComments').html(data);
+                        });
+                    }
+                    else {
+                        layer.msg(data.MessageContent, { icon: 2 });
+                    }
+                });
+            });
+    });
+
+    //鼠标移入显示回复/删除
+    $('.media-body').mouseover(function () {
+        $(this).children('.tn-feedback').children('.commentreply').removeClass('hide');
+        $(this).children('.tn-feedback').children('.commentdelete').removeClass('hide');
+    });
+    $('.media-body').mouseout(function () {
+        $(this).children('.tn-feedback').children('.commentreply').addClass('hide');
+        $(this).children('.tn-feedback').children('.commentdelete').addClass('hide');
+    });
+
+    })
+
+</script>

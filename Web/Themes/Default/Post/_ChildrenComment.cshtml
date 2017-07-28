@@ -1,0 +1,38 @@
+﻿@model PagingDataSet<Comment>
+@{
+    var parentId = ViewData.Get<long>("parentId", 0);
+    var commentedObjectId = ViewData.Get<long>("commentedObjectId", 0);
+    var _currentUser = UserContext.CurrentUser;
+}
+@if (Model != null && Model.Any())
+{
+    foreach (var comment in Model)
+    {
+        <div class="tn-floor-box childrenCommentContent" data-id="@comment.Id">
+            <h4 class="media-heading"><a href="@SiteUrls.Instance().MyHome(comment.UserId)" target="_blank">@comment.Author</a> 回复 <a href="@SiteUrls.Instance().MyHome(comment.OwnerId)" target="_blank">@DefaultUserIdToUserNameDictionary.GetDisplayName(comment.OwnerId)</a></h4>
+
+            <p class="message">
+                @Html.Raw(comment.Body)
+            </p>
+            <div class="tn-feedback">
+                <small class="pull-left text-muted">@comment.DateCreated.ToFriendlyDate()</small>
+
+                <ul class="list-inline text-right text-muted" onmouseover="$.fn.showoperation(this);" onmouseout="$.fn.hideoperation(this);">
+                    @if (_currentUser != null)
+                    {
+                        if (_currentUser.UserId == comment.UserId)
+                        {
+                            <li><a href="javascript:;" class="delete" name="deleteChildrenComment" data-id="@comment.Id" hidden><i class="fa fa-trash"></i> 删除</a></li>
+                        }
+                        <li><a href="javascript:;" class="reply" data-href="@CachedUrlHelper.Action("_Comment","Post",null,new RouteValueDictionary { { "parentId", comment.Id },{ "commentedObjectId", commentedObjectId } })" data-isshow="0"><i class="fa fa-reply"></i> 回复</a></li>
+                    }
+                    else
+                    {
+                        <li></li>
+                    }
+                </ul>
+
+            </div>
+        </div>
+    }
+}

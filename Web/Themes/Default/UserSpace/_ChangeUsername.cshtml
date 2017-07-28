@@ -1,0 +1,62 @@
+﻿@model ProfileEditModel
+
+
+<div class="panel-body ">
+    <div class="col-xs-11">
+        @using (Html.BeginForm("_ChangeUserName", "UserSpace", FormMethod.Post, new { @id = "ChangeUserNameForm", @class = "form-horizontal tn-form-validation " }))
+        {
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <label>现昵称:</label>
+                    </div>
+                    <div class="col-xs-9">
+                        <label>@UserContext.CurrentUser.UserName</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>新昵称</label>
+                @Html.TextBoxFor(n => n.UserName, new { @class = "form-control" })
+                @Html.ValidationMessageFor(n => n.UserName)
+                <span class="help-block tn-mb-0">请输入3-16位字符，支持中文、英文、数字和"-"、"_"</span>
+            </div>
+            <div class="form-group">
+                <button type="button" id="changeSubmit" class="btn btn-primary tn-btn-wp">确定</button>
+            </div>
+
+        }
+    </div>
+</div>
+<script type="text/javascript">
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+    
+    $("#changeSubmit").click(function myfunction() {
+        var time = new Date().getTime();
+        $("#ChangeUserNameForm").validate();
+        if ($("#ChangeUserNameForm").valid()) {
+            $.post("@CachedUrlHelper.Action("_ChangeUserName", "UserSpace")", $("#ChangeUserNameForm").serialize(), function myfunction(data) {
+                if (data) {
+
+                    layer.msg("修改成功", {
+                        icon: 1
+                    });
+
+                    $.get("@SiteUrls.Instance()._UserProfile()", { t: time }, function myfunction(data) {
+                        $("#gengxin").html(data);
+                    });
+                    window.setTimeout(function myfunction() {
+                        layer.closeAll();
+                    }, 2000)
+
+                } else {
+                    layer.msg("修改失败", {
+                        icon: 2
+                    });
+                }
+            })
+        }
+    });
+    })
+</script>

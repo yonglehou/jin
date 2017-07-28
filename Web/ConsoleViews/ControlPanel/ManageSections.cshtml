@@ -1,0 +1,57 @@
+﻿@{
+    ViewData["Title"] = new string[] { "贴吧管理" };
+    TempData["subMenu-check"] = new string[] { "Sections", "ManageSections" };
+}
+@Styles.Render("~/Bundle/Styles/zTree")
+@Styles.Render("~/Bundle/Styles/Uploader")
+
+<!--@Scripts.Render("~/Bundle/Scripts/cxselect")
+@Scripts.Render("~/Bundle/Scripts/Uploader")
+@Scripts.Render("~/Bundle/Scripts/zTree")
+@Scripts.Render("~/Bundle/Scripts/page")-->
+
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-lg-12">
+        <h3>贴吧管理</h3>
+    </div>
+</div>
+
+<div class="tn-main">
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div class="row">
+                <form class="form-inline ">
+                    <div class="form-group has-feedback  col-xs-4">
+                        <button class="btn btn-default layerbarsection" type="button"><i class="fa fa-plus"></i> 创建贴吧</button>
+                    </div>
+                    <div class="form-group col-xs-8 text-right">
+                        <a href="@CachedUrlHelper.Action("managecategories", "controlpanel")" class="a tn-mr-10">贴吧类别管理</a>
+                        <label>关键字：</label>
+                        @Html.TextBox("keyword", string.Empty, new RouteValueDictionary { { "class", "color form-control" }, { "style", "width:200px" }, { "placeholder", "贴吧名称/简介" } })
+                        <button class="btn btn-primary" id="search" type="button">搜索</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel panel-body" id="_ListSections">
+            @Html.Action("_ListSections", "ControlPanel")
+        </div>
+    </div>
+
+</div>
+<script>
+    require(['jquery',"tnlayer", 'cxselect', 'linkageDropDownList','uploader', 'ztree', 'userSelector', 'page'], function ($,tnlayer) {
+          $(".layerbarsection").click(function(){
+            tnlayer.layermodal('创建贴吧','@CachedUrlHelper.Action("_EditBarSection","ControlPanel")','660px','700px')
+        })
+        //搜索
+        $('#search').on("click", function () {
+            $.get("@CachedUrlHelper.Action("_ListSections", "ControlPanel")", { keyword: $('input[name="keyword"]').val() }, function (data) {
+                $("#_ListSections").html(data);
+            })
+        })
+    })
+
+</script>

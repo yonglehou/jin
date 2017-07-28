@@ -1,0 +1,118 @@
+﻿@model UserManageEditModel
+<div class="panel">
+    <div class="panel-body">
+        @using (Html.BeginAjaxForm("_EditUser", "ControlPanel", "", FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "EditCallBack" }, new { @class = "tn-form-validation" }))
+        {
+        @Html.HiddenFor(m => m.UserId)
+            <div class="form-group">
+                @Html.LabelFor(m => m.AccountEmail)
+                @Html.TextBoxFor(m => m.AccountEmail, htmlAttributes: new { @class = "form-control" })
+                @if (Model.UserId == 0)
+                {
+                <label class="help-block">如果填写邮箱,自动处于通过验证状态</label>
+                }
+                else
+                {
+                <label class="help-block">如果修改邮箱,自动处于通过验证状态</label>
+                }
+                @Html.ValidationMessageFor(m => m.AccountEmail)
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.AccountMobile)
+                @Html.TextBoxFor(m => m.AccountMobile, htmlAttributes: new { @class = "form-control" })
+                @if (Model.UserId == 0)
+                {
+                <label class="help-block">如果填写手机号码,自动处于通过验证状态</label>
+                }
+                else
+                {
+                <label class="help-block">如果修改手机号码,自动处于通过验证状态</label>
+                }
+
+                @Html.ValidationMessageFor(m => m.AccountMobile)
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.UserName)
+                @Html.TextBoxFor(m => m.UserName, htmlAttributes: new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.UserName)
+            </div>
+            if (Model.UserId == 0)
+            {
+            <div class="form-group has-feedback" id="passwordInput">
+                @Html.LabelFor(m => m.Password)
+                @Html.PasswordFor(m => m.Password, htmlAttributes: new { @class = "form-control" })
+                <span class="form-control-feedback"><i class="fa fa-eye-slash"></i></span>
+                <input type="button" onclick="$.fn.eyeClick()" class="tn-click-eye " />
+                @Html.ValidationMessageFor(m => m.Password)
+            </div>
+            }
+            else
+            {
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-xs-3" style="width:100px">
+                        @Html.LabelFor(m => m.ModerateState, new { @style = "padding-left:0" })
+                    </div>
+                </div>
+                <label class="radio-inline" style="width:50px">
+                    @Html.RadioButtonFor(model => model.ModerateState, (int)ModerateState.NoModerated, new { @name = "ModerateState" })
+                    <label class="control-label">@ModerateState.NoModerated.GetDisplayName()</label>
+                </label>
+                <label class="radio-inline" style="width:50px">
+                    @Html.RadioButtonFor(model => model.ModerateState, (int)ModerateState.Moderated, new { @name = "ModerateState" })
+                    <label class="control-label">@ModerateState.Moderated.GetDisplayName()</label>
+                </label>
+                <label class="radio-inline" style="width:100px">
+                    @Html.RadioButtonFor(model => model.ModerateState, (int)ModerateState.ForceModerated, new { @name = "ModerateState" })
+                    <label class="control-label">@ModerateState.ForceModerated.GetDisplayName()</label>
+                </label>
+            </div>
+            }
+            <div class="form-group">
+                <button type="submit" id="submit" class="btn btn-primary tn-mr-10 tn-btn-wp">确定</button>
+                <button type="button" class="btn btn-default tn-btn-wp" data-dismiss="modal" id="cancel">关闭</button>
+            </div>
+
+        }
+    </div>
+</div>
+<style>
+    /*//$("#specialContentType").change(function () {
+                            var type = $("#specialContentType option:selected").val();
+                            $("#belongList")
+                        })
+
+                        $("#contentTenant").change(function () {
+                            var type = $("#specialContentType option:selected").val();
+                            var belong = $("#contentTenant option:selected").val();
+                            search(belong, type);
+                        })*/
+</style>
+<script>
+    require(['jquery'], function () {
+        //密码明文切换
+        $.fn.eyeClick=function() {
+            $this = $(this);
+            var type = $("#Password").attr("type");
+            var value = $("#Password").val();
+            if (type == "text") {
+                $("#passwordInput").html('@Html.LabelFor(m => m.Password)' + '@Html.PasswordFor(m => m.Password, htmlAttributes: new { @class = "form-control" })' +
+                    '<span class="form-control-feedback"><i class="fa fa-eye-slash"></i></span>\
+                            <input type="button" onclick="eyeClick()" class="tn-click-eye " />' + '@Html.ValidationMessageFor(m => m.Password)');
+                $("#Password").val(value);
+            } else {
+                $("#passwordInput").html('@Html.LabelFor(m => m.Password)' + '@Html.TextBoxFor(m => m.Password, htmlAttributes: new { @class = "form-control" })' +
+                '<span class="form-control-feedback"><i class="fa fa-eye"></i></span>\
+                            <input type="button" onclick="eyeClick()" class="tn-click-eye " />' + '@Html.ValidationMessageFor(m => m.Password)');
+                $("#Password").val(value);
+            }
+        };
+
+        //取消
+        $("#cancel").click(function () {
+            layer.closeAll();
+        });
+    })
+
+
+</script>

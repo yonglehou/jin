@@ -1,0 +1,243 @@
+﻿@{
+    Layout = null;
+}
+@model Spacebuilder.Setup.DataBaseInfoModel
+<!doctype html>
+<html class="no-js" lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge, chrome=1">
+    <title>配置信息</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../css/bootstrap.css">
+    <link rel="stylesheet" href="../css/font-awesome.css">
+    <!--框架样式-->
+    <link rel="stylesheet" href="../css/tnui.css">
+    <link rel="stylesheet" href="../css/jh-install.css">
+    <script type="text/javascript" src="../js/modernizr-2.8.3.min.js"></script>
+    <script type="text/javascript" src="../js/jquery-1.12.0.min.js"></script>
+    <script type="text/javascript" src="../js/main.js"></script>
+    <script type="text/javascript" src="../js/lib/ajaxForm/jquery.form.js"></script>
+    <script type="text/javascript" src="../js/lib/layer/layer.js"></script>
+    <link href="~/js/lib/layer/skin/tnui/style.css" rel="stylesheet" />
+
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="../js/html5shiv.min.js"></script>
+    <script type="text/javascript" src="../js/respond.js"></script>
+    <![endif]-->
+    <style type="text/css">
+        input:-webkit-autofill, select:-webkit-autofill, textarea:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="tn-doc">
+        <div class="tn-content">
+            <div class="container">
+                <div class="jh-install-logo">
+                    <img alt="..." src="../img/logo-big.png" width="124">
+                    <span class="jh-install-wizard"> v5.0 安装向导</span>
+                </div>
+                <div class="jh-install-block">
+                    <div class="jh-install-nav">
+                        <ul class="list-inline">
+                            <li>
+                                <span class="jh-nav-number">1</span>
+                                环境检测
+
+                            </li>
+                            <li class="active">
+                                <span class="jh-nav-number">2</span>
+                                连接数据库
+                            </li>
+                            <li>
+                                <span class="jh-nav-number">3</span>
+                                初始化数据
+                            </li>
+                            <li>
+                                <span class="jh-nav-number">4</span>
+                                安装完成
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="jh-install-content">
+                        @*<form class="form-horizontal">*@
+                        @using (Html.BeginAjaxForm("_Step2_Wait", "Setup", "", FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "CallBackSuccess" }, new { @id = "Spet2Form", @class = "form-horizontal tn-form-validation" }))
+                        {
+                            <div class="form-group">
+                                <label for="" class="col-xs-2 control-label">数据库类型</label>
+                                <div class="col-xs-5">
+                                    @Html.DropDownListFor(a => a.DBType, ViewData.Get<List<SelectListItem>>("dbtype", new List<SelectListItem>()), new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="" class="col-xs-2 control-label">数据库主机</label>
+                                <div class="col-xs-5">
+                                    @Html.TextBoxFor(n => n.Server, new { @class = "form-control", @value = "localhost" })
+                                </div>
+                                <div class="col-xs-5 isShow">
+                                    <span class="help-block"><a href="javascript:;" isShow="0" class="tn-mr-15 moreSetBtn">更多设置 <i class="fa  fa-angle-double-down moreIcon"></i></a>填写主机名或IP地址</span>
+                                </div>
+                            </div>
+                            <div class="form-group moreSetInstance">
+                                <label for="" class="col-xs-2 control-label">实例名</label>
+                                <div class="col-xs-5">
+                                    @Html.TextBoxFor(n => n.Instance, new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group moreSetPort">
+                                <label for="" class="col-xs-2 control-label">端口号</label>
+                                <div class="col-xs-5">
+                                    @Html.TextBoxFor(n => n.Port, new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="" class="col-xs-2 control-label">用户名</label>
+                                <div class="col-xs-5">
+                                    @Html.TextBoxFor(n => n.DataBaseUserName, new { @class = "form-control", @value = "sa" })
+                                </div>
+                                <div class="col-xs-5">
+                                    <span class="help-block">数据库连接用的用户名</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="" class="col-xs-2 control-label">密码</label>
+                                <div class="col-xs-5">
+                                    <div class="has-feedback passwordInput">
+
+                                        @Html.PasswordFor(n => n.DataBasePassword, new { @class = "form-control", @placeholder = "请输入密码" })
+                                        <a href="javascript:;" class="form-control-feedback showPwd" style="color:black"><i class="fa fa-eye-slash"></i></a>
+                                    </div>
+                                </div>
+                                <div class="col-xs-5">
+                                    <span class="help-block">数据库连接用的密码</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="" class="col-xs-2 control-label">数据库名</label>
+                                <div class="col-xs-5">
+                                    @Html.TextBoxFor(n => n.DataBase, new { @class = "form-control", @value = "spacebuilder5" })
+                                </div>
+                                <div class="col-xs-5">
+                                    <span class="help-block jh-help-block">近乎安装到哪个数据库，如果该数据存在则清空已有数据重建数据库，如果不存在则创建</span>
+                                </div>
+                            </div>
+                            <div class="form-group tn-mt-50">
+                                <div class="col-xs-offset-2 col-xs-10">
+                                    <button type="button" class="btn btn-primary btnSubmit">开始安装</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+   
+  
+    <script type="text/javascript">
+        var loadindex;
+        var msgindex;
+        $(function () {
+            $(".moreSetInstance").hide();
+            $(".moreSetPort").hide();
+        });
+        $(document).on("change", "#DBType", function () {
+            var type = $(this).val();
+            if (type == "SqlServer") {
+                $(".moreSetInstance").show(500);
+            }
+            else {
+                $(".moreSetInstance").hide(500);
+            }
+        });
+        $(document).on("click", ".moreSetBtn", function () {
+            var isShow = $(this).attr("isShow");
+            var type = $("#DBType").val();
+            if (isShow == 0) {
+                $(this).attr("isShow", "1");
+                $(".moreIcon").removeClass("fa-angle-double-down");
+                $(".moreIcon").addClass("fa-angle-double-up");
+                $(".moreSetPort").show(500);
+                if (type == "SqlServer") {
+                    $(".moreSetInstance").show(500);
+                }
+            }
+            else {
+                $(this).attr("isShow", "0");
+                $(".moreIcon").removeClass("fa-angle-double-up");
+                $(".moreIcon").addClass("fa-angle-double-down");
+                $(".moreSetPort").hide(500);
+                $(".moreSetInstance").hide(500);
+            }
+
+
+        });
+        $(document).on("click", ".btnSubmit", function () {
+
+            if ($("#Server").val() == "")
+            {
+                layer.msg("数据库主机不能为空！", { icon: 2 });
+                return false;
+            }
+            if ($("#DataBaseUserName").val() == "") {
+                layer.msg("用户名不能为空！", { icon: 2 });
+                return false;
+            }
+            if ($("#DataBasePassword").val() == "") {
+                layer.msg("密码不能为空！", { icon: 2 });
+                return false;
+            }
+            if ($("#DataBase").val() == "") {
+                layer.msg("数据库名不能为空！", { icon: 2 });
+                return false;
+            }
+            msgindex = layer.msg("数据加载中...<br>大约需要1-2分钟，请耐心等待！", { icon: 8, time: 500000, shade: 0.1 });
+            loadindex = layer.load();
+
+            $('#Spet2Form').ajaxSubmit({ success: CallBackSuccess });
+        });
+        $(document).on("click", ".showPwd", function () {
+            //密码明文切换
+            var type = $("#DataBasePassword").attr("type");
+            var value = $("#DataBasePassword").val();
+            if (type == "password") {
+                $(".passwordInput").html('@Html.TextBoxFor(n => n.DataBasePassword, new { @class = "form-control", @placeholder = "请输入关键字" })' +
+                    '<a href="#" class="form-control-feedback showPwd" style="color:black;"><i class="fa fa-eye"></i></a>');
+                $("#DataBasePassword").val(value);
+            } else {
+                $(".passwordInput").html('@Html.PasswordFor(n => n.DataBasePassword, new { @class = "form-control", @placeholder = "请输入关键字" })' +
+                   '<a href="#" class="form-control-feedback showPwd" style="color:black;"><i class="fa fa-eye-slash"></i></a>');
+                $("#DataBasePassword").val(value);
+            }
+
+        });
+        function CallBackSuccess(data) {
+            layer.close(loadindex);
+            layer.close(msgindex);
+            if (!$.isEmptyObject(data)) {
+                var errorkey = data["errorkey"];
+                var errorvalue = data["errorvalue"];
+                if (!errorkey) {
+                    $(".btnSubmit").hide();
+                    layer.msg("数据库安装成功！", {
+                        icon: 1,
+                        time: 2000//2秒关闭（如果不配置，默认是3秒）
+                       
+                    }, function () {
+                        layer.load();
+                        window.location.href = "@CachedUrlHelper.Action("Setup_Step3", "Setup")";
+                    });
+                }
+                else {
+                    layer.alert(errorkey + "<br>" + errorvalue);
+                }
+            }
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+﻿@{
+    ViewData["Title"] = new string[] { "站点设置" };
+    TempData["subMenu-check"] = new string[] { "Setting", "ManageSiteSettings" };
+}
+
+<div id="ManageSiteSettings">
+    <div class="row tn-page-heading tn-mb-10">
+        <div class="col-lg-12">
+            <h3>站点设置</h3>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div id="_EditSiteSetting">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+     require(['jquery'],function(){
+         $.get('@CachedUrlHelper.Action("_EditSiteSetting","ControlPanel")', { t: (new Date()).valueOf() }, function (data) {
+          $('#_EditSiteSetting').html(data);
+         });
+     })
+    
+
+</script>

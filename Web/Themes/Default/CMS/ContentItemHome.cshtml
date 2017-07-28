@@ -1,0 +1,127 @@
+﻿@model ContentItem
+@{
+    ViewData["Title"] = new string[] { "资讯" };
+    var contentModelService = DIContainer.Resolve<ContentModelService>();
+    var currentuser = UserContext.CurrentUser;
+    var specialContentiItem = ViewData.Get<SpecialContentItem>("specialContentiItem",new SpecialContentItem());
+}
+<div class="row jh-my-news">
+    <div class="col-xs-9">
+        <div class="jh-padding-white">
+            <ul class="list-unstyled slider-home">
+                @if (Model != null&& Model.ContentItemId>0)
+                {
+                <li class="jh-news-list jh-news-first">
+                    <ul class="list-inline">
+                        <li class="jh-list-img">
+                            @*@if (currentuser != null && currentuser.IsSuperAdministrator())
+                            {
+                                <button class="btn btn-default" style="position:absolute;right:0;display:none;z-index:100" id="recommend-manage" ><i class="fa fa-cog"></i></button>
+                            }*@
+
+                            <a href="@(SiteUrls.Instance().CMSDetail(Model.ContentItemId))" class="jh-vedio-img">
+                                @if(specialContentiItem!=null)
+                                {
+                                <img src="@specialContentiItem.specialFristFeaturedImage("Frist")" width="515" height="280" />
+                                }
+                                @if (Model.ContentModelId == contentModelService.GetContentModelsByContentModeKey(ContentModelKeys.Instance().Video()).ModelId)
+                                {
+                                <div class="jh-vedio-mask"><i class="fa fa-play-circle-o" aria-hidden="true"></i></div>
+                                }
+                            </a>
+                           
+                        </li>
+                        <li class="jh-list-title">
+                            <h4><a href="@SiteUrls.Instance().CMSDetail(Model.ContentItemId)" title="@Model.Subject">@HtmlUtility.TrimHtml(Model.Subject, 34)</a></h4>
+                            <p>
+                                @if (string.IsNullOrEmpty(Model.Summary))
+                                { @HtmlUtility.TrimHtml(Model.Body, 132)}
+                                else
+                                {@HtmlUtility.TrimHtml(Model.Summary, 132)}
+                            </p>
+                            <ul class="list-inline text-muted">
+                                <li>
+                                    @Html.ShowUserAvatar(userId: Model.UserId, avatarSizeType: AvatarSizeType.Micro)
+                                    <span>
+                                        <a href="@SiteUrls.Instance().MyHome(Model.UserId)">@Model.Author</a>
+                                    </span>
+                                </li>
+                                <li>
+                                    <i class="fa fa-clock-o" aria-hidden="true"></i> 
+                                    @Model.DatePublished.ToFriendlyDate()
+                                </li>
+                                <li>
+                                    <i class="fa fa-commenting" aria-hidden="true"></i> 
+                                    @Model.CommentCount()
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                }
+            </ul>
+            <div id="advertisingDiv">
+            </div>
+            <div class="tn-mb-20"></div>
+            <div id="listCMS">
+                @Html.Action("_ListContentItem", "CMS")
+            </div>
+            <div class="tn-mb-10"></div>
+        </div>
+    </div>
+    <div class="col-xs-3">
+        @Html.Action("_Hotarticle", "CMS")
+    </div>
+</div>
+
+@Html.Hidden("hiddenlabindexs", 1)
+@Styles.Render("~/Bundle/Styles/slider")
+@*
+@Scripts.Render("~/Bundle/Scripts/slider")
+@Scripts.Render("~/Bundle/Scripts/page")
+*@
+@if (currentuser != null && currentuser.IsSuperAdministrator())
+{
+    <script>
+       require(['jquery'],function(){
+           $(".slider-home").hover(function myfunction() {
+               $("#recommend-manage").show();
+           }, function myfunction() {
+               var xoda2 = $("#recommend-manage");
+               $("#recommend-manage").hide();
+           }
+              )
+       })
+    </script>
+}
+<script>
+    require(['jquery', 'tnlayer', 'sliderpro', 'page'], function ($, tnlayer) {
+
+  
+        $(function () {
+            //加载广告
+            $.get("@CachedUrlHelper.Action("_Advertising","Common")", { positionId: "1000003", requesttime: new Date().getTime() }, function (data) {
+                    $("#advertisingDiv").html(data);
+            })
+        })
+         @*$("#recommend-manage").click(function(){
+             tnlayer.layermodal('资讯推荐', '@SiteUrls.Instance()._ManageSpecialContentItems(SpecialContentTypeIds.Instance().SpecialCMS())'.replace(/&amp;/g, "&"), '450px', 'auto')
+         })*@
+
+        window.onscroll = function () {
+        if (getScrollTop() + getClientHeight() == getScrollHeight()) {
+                var count = Math.ceil($(".hiddenlabindex").val());
+                if (count == Math.ceil($("#hiddenlabindexs").val())) {
+                    if (count < 3) {
+                        var _that = $(".pagenext");
+                        $("#hiddenlabindexs").val(count + 1);
+                        _that.click();
+                    }
+                }
+            }
+        }
+    })
+</script>
+
+
+<script src="/js/tn.onscroll.js"></script>

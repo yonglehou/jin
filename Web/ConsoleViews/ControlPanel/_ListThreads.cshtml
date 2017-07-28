@@ -1,0 +1,117 @@
+﻿@model PagingDataSet<Thread>
+@{
+    var query = ViewData.Get<ThreadQuery>("query", new ThreadQuery());
+}
+@if (Model.Count() > 0)
+{
+    <div class="panel-body">
+        <table class="table  table-hover">
+            <thead>
+                <tr>
+                    <th>
+                        <input id="select-all" type="checkbox" value="0">
+                    </th>
+                    <th>标题</th>
+                    <th>审核状态</th>
+                    <th>贴吧名称</th>
+                    <th>发贴人</th>
+                    <th>日期</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+
+                <tr id="remove-@item.ThreadId">
+                    <td>
+                        <input name="checks" id="box" class="tn-checkbox" type="checkbox" data-id="@item.ThreadId">
+                    </td>
+                    <td>
+                        <a title="@item.Subject" href="@SiteUrls.Instance().ThreadDetail(item.ThreadId)" target="_blank">@StringUtility.Trim(item.Subject, 30)</a>
+                        <span id="special-@item.ThreadId" class="label label-danger " @if (!item.isEssential()) { <text> style="display:none" </text>      }>@(item.isEssential() ? "精华" : string.Empty)</span>
+                        <span id="sticky-@item.ThreadId" class="label label-danger " @if (!item.IsSticky) { <text> style="display:none" </text>      }>@(item.IsSticky ? "置顶" : string.Empty)</span>
+                        <span id="specialthread-@item.ThreadId" class="label label-danger " @if (!item.isEssential(SpecialContentTypeIds.Instance().OfficialThread())) { <text> style="display:none" </text>      }>@(item.isEssential(SpecialContentTypeIds.Instance().OfficialThread()) ? "推荐" : string.Empty)</span>
+                    </td>
+                    <td id="audit-@item.ThreadId">
+                        @if (item.ApprovalStatus == AuditStatus.Success)
+                        {
+                        <i class="fa fa-check-circle tn-green-color fa-2x" title="@AuditStatus.Success.GetDisplayName()"></i>
+                        }
+                        else if (item.ApprovalStatus == AuditStatus.Pending)
+                        {
+                        <i class="fa fa-circle-o tn-orange-color fa-2x" title="@AuditStatus.Pending.GetDisplayName()"></i>
+                        }
+                        else if (item.ApprovalStatus == AuditStatus.Fail)
+                        {
+                        <i class="fa fa-ban tn-red-color fa-2x" title="@AuditStatus.Fail.GetDisplayName()"></i>
+                        }
+                        else if (item.ApprovalStatus == AuditStatus.Again)
+                        {
+                        <i class="fa fa-circle tn-orange-color fa-2x" title="@AuditStatus.Again.GetDisplayName()"></i>
+                        }
+                        else
+                        {
+                        <i class="fa fa-ban tn-red-color fa-2x" title="@AuditStatus.Fail.GetDisplayName()"></i>
+                        }
+                    </td>
+                    <td>
+                        <a title="@item.BarSection.Name" href="@CachedUrlHelper.Action("BarSectionDetail","post",null,new RouteValueDictionary { { "sectionId", item.SectionId} })" target="_blank">@StringUtility.Trim(item.BarSection.Name, 30)</a>
+                    </td>
+                    <td>
+                        <a href="@SiteUrls.Instance().SpaceHome(item.UserId)" target="_blank">@item.Author</a>
+                    </td>
+                    <td>@item.DateCreated.ToUserDateString()</td>
+                    <td>
+                        <a href="@CachedUrlHelper.Action("EditThread","ControlPanel",null,new RouteValueDictionary { {"threadId",item.ThreadId } })" role="button" title="编辑"><i class="fa fa-pencil"></i></a>&nbsp;
+                        <a id="delete-@item.ThreadId" href="javascript:;" role="button" title="删除"><i class="fa fa-trash"></i></a>
+                        @if (item.isEssential(SpecialContentTypeIds.Instance().OfficialThread()))
+                        {
+                        <a href="javascript:;" data-id="@item.ThreadId" data-tenanttypeid="@item.TenantTypeId" data-subject="@item.Subject" class="layerrecommend"><i role="button" title="取消推荐" class="fa fa-flag "></i></a>
+                        }
+                        else
+                        {
+                        <a href="javascript:;" data-id="@item.ThreadId" data-tenanttypeid="@item.TenantTypeId" data-subject="@item.Subject" class="layerrecommend"><i role="button" title="推荐" class="fa fa-flag-o"></i></a>
+                        }
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="text-center">
+        @Html.AjaxPagingButton(Model, "_listThreads", SiteUrls.Instance()._ListThreads(query.SubjectKeyword, query.AuditStatus, query.SectionId, query.StartDate, query.EndDate))
+    </div>
+}
+else
+{
+    <div class="text-center text-warning tn-mb-20 tn-mt-20">
+        暂无任何贴子
+    </div>
+}
+
+<script>
+    require(['jquery','tnlayer'],function($,tnlayer){
+        $('.layerrecommend').click(function(){
+            var threadId=$(this).data("id");
+            var tenanttypeId=$(this).data("tenanttypeid");
+            var subject=$(this).data("subject");
+            tnlayer.layermodal('贴子推荐', '@CachedUrlHelper.Action("_RecommendContent", "Common")?itemId='+threadId+'&tenantTypeId='+tenanttypeId+'&title='+subject, '450px', '450px')
+        })
+
+        //提交表单回调
+        $.fn.recommendCallBack=function(data) {
+            if (data.state == 1) {
+                layer.closeAll();
+                $("#CloseCurrent").click();
+                layer.msg("操作成功", { icon: 1 });
+                $.get("@SiteUrls.Instance()._ListThreads(query.SubjectKeyword, query.AuditStatus, query.SectionId, query.StartDate,query.EndDate)&PageSize="+@Model.PageSize+"&PageIndex="+@Model.PageIndex, function myfunction(data) {
+                    $("#_listThreads").html(data);
+                })
+            }
+            else {
+                layer.msg("操作失败", { icon: 2 });
+            }
+        }
+    })
+</script>

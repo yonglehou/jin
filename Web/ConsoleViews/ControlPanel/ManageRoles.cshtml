@@ -1,0 +1,58 @@
+﻿@{
+    TempData["subMenu-check"] = new string[] { "User", "ManageRoles" };
+    IEnumerable<SelectListItem> roleSelectList = ViewData.Get<List<SelectListItem>>("roleSelectList", new List<SelectListItem>());
+    ViewData["Title"] = new string[] { "角色管理" };
+}
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-lg-12">
+        <h3>角色管理</h3>
+    </div>
+</div>
+<div class="alert alert-warning" role="alert">
+    <p>管制用户、永久管制用户说明：管制用户、永久管制用户所发布任何内容都需审核。当管制用户经验值达到解除管制经验值要求，升级为受信任用户；</p>
+    <p> 永久管制用户需由管理员人工解除管制并且经验值达到解除管制经验要求，方可升级为受信任用户;</p>
+</div>
+
+<div class="tn-main">
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-xs-6">
+                    <a class="btn btn-default edit-role layerrole" href="javascript:;"><i class="fa fa-plus"></i> 添加角色</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div id="_listRoles" class="panel-body">
+            @Html.Action("_ListRoles", "ControlPanel")
+        </div>
+    </div>
+</div>
+@Styles.Render("~/Bundle/Styles/Uploader")
+<!--@Scripts.Render("~/Bundle/Scripts/Uploader")-->
+<script>
+    require(['jquery','tnlayer','uploader'], function ($,tnlayer) {
+          $(".layerrole").click(function(){
+            tnlayer.layermodal('添加用户角色', '@SiteUrls.Instance()._EditRole(0)', '450px', '580px')
+        })
+    })
+</script>
+
+
+@* 模态框 *@
+@*<div class="modal fade" id="manageRoleModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel"></h4>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    </div>
+            </div>
+        </div>
+    </div>*@

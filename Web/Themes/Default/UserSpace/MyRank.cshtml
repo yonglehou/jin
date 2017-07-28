@@ -1,0 +1,78 @@
+﻿@{
+    ViewData["Title"] = new string[] { "我的等级" };
+    TempData["SidebarType"] = "MyRank";
+}
+
+<div class="row jh-space-setup">
+    @Html.Partial("_Sidebar")
+    <div class="col-xs-10">
+        <div class="jh-space-right jh-padding-white">
+            <ul class="nav nav-pills" role="tablist" id="myTab">
+                <li role="presentation">
+                    <a data-href="@CachedUrlHelper.Action("_MyRank","UserSpace")" name="maintabnav" data-type="rank" role="button" data-toggle="tab">
+                        我的等级
+                    </a>
+                </li>
+                <li role="presentation">
+                    <a data-href="@CachedUrlHelper.Action("_MyPointRecords","UserSpace")" name="maintabnav" data-type="pointrecord" role="button" data-toggle="tab">
+                        积分记录
+                    </a>
+                </li>
+            </ul>
+            <div class="tab-content" id="showinfo">
+                <div class="text-center text-warning">
+                    <img src="/img/loading.gif" class="tn-mr-10" />Loading...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    require(['jquery', 'tnlayer','page'], function ($, tnlayer) {
+
+        locationhash()
+        function locationhash() {
+            var _seperator = "#";
+            var _hashStr = window.location.hash;
+            var splitval = _hashStr.split(_seperator);
+            var tmp = new Array();
+            for (var i in splitval) {
+                var o = splitval[i];
+                if (typeof o !== 'undefined' && o != '') {
+                    tmp.push(splitval[i]);
+                }
+                else { }
+            }
+            if (tmp.length > 0) {
+                var maintabnavas = $("[name=maintabnav]");
+                for (var i in maintabnavas) {
+                    var _that = maintabnavas[i];
+                    if ($(_that).data("type") == tmp[0]) {
+                        _that.click()
+                        maintabnavclick($(maintabnavas[i]))
+                        return false;
+                    }
+                }
+            }
+            else {
+                var maintabnavas = $("[name=maintabnav]");
+                maintabnavclick($(maintabnavas[0]))
+                $(maintabnavas[0]).parent("li").attr("class", "active")
+            }
+        }
+
+        function maintabnavclick($_that) {
+            var url = $_that.data("href");
+            replaceUrl($_that.data("type"));
+            $.get(url, { t: new Date().valueOf() }, function (data) {
+                $("#showinfo").html(data);
+            })
+        }
+
+        $(document).on('click', '[name=maintabnav]', function () {
+            maintabnavclick($(this))
+        })
+    });
+
+</script>

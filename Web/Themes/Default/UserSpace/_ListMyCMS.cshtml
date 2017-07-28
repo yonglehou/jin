@@ -1,0 +1,52 @@
+﻿@model PagingDataSet<ContentItem>
+@{
+    var userId = ViewData.Get<long>("userId", 0L);
+}
+
+<div>
+    <ul class="list-unstyled">
+        @if (Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <li class="jh-news-list">
+                    <ul class="list-inline" @if (UserContext.CurrentUser != null && UserContext.CurrentUser.UserId == item.UserId) { <text> onmouseover="$.fn.showoperation(this);" onmouseout="$.fn.hideoperation(this);" </text>   }>
+                        @if (item.FeaturedImageAttachmentId > 0)
+                        {
+                            <li class="jh-list-img">
+                                <a href="@SiteUrls.Instance().CMSDetail(item.ContentItemId)" title="@item.Subject" target="_blank" class="jh-vedio-img"><img src="@item.FristFeaturedImage("List")" width="260" height="146" /></a>
+                            </li>
+                        }
+                        <li class="jh-list-title @if (!(item.FeaturedImageAttachmentId > 0)) { <text>jh-no-img</text>}">
+                            <h5 class="tn-text"><a href="@SiteUrls.Instance().CMSDetail(item.ContentItemId)" title="@item.Subject" target="_blank">@HtmlUtility.TrimHtml(item.Subject, 60)</a></h5>
+                            <p>@(string.IsNullOrEmpty(item.Summary) ? HtmlUtility.TrimHtml(item.Body, 300) : item.Summary)</p>
+                            <ul class="list-inline text-muted">
+                                @if (item.ContentCategory != null)
+                                {
+                                    <li><a href="@SiteUrls.Instance().CategoryCMS(item.ContentCategoryId)" target="_blank">@HtmlUtility.TrimHtml(item.ContentCategory.CategoryName, 20)</a></li>
+                                }
+                                <li><i class="fa fa-clock-o" aria-hidden="true"></i> @item.DateTimeDisplay()</li>
+                                <li><i class="fa fa-commenting" aria-hidden="true"></i> @item.CommentCount()</li>
+                                @if (UserContext.CurrentUser != null && UserContext.CurrentUser.UserId == item.UserId)
+                                {
+
+                                    <li class="pull-right a" style="display:none;"><a href="javascript:;" data-href="@CachedUrlHelper.Action("_EditCMS","UserSpace")?contentItemId=@item.ContentItemId&contentCategoryId=@item.ContentCategoryId" data-type="cms-edit" id="editmycms-@item.ContentItemId" role="button">编辑</a></li>
+                                    <li class="pull-right a" style="display:none;"><a role="button" id="deletes-@item.ContentItemId" href="javascript:;">删除</a></li>
+                                }
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            }
+        }
+        else
+        {
+            <li class="text-center text-warning">
+                暂无任何文章
+            </li>
+        }
+    </ul>
+</div>
+<div class="text-center">
+    @Html.AjaxPagingButton(Model, "mycmslist", CachedUrlHelper.Action("_ListMyCMS", "UserSpace", null, new RouteValueDictionary { { "userId", userId } }))
+</div>

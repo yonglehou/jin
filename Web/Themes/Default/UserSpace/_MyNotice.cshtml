@@ -1,0 +1,148 @@
+﻿@model PagingDataSet<Notice>
+@{
+    var status = ViewData.Get<NoticeStatus?>("status", null);
+}
+<ul class="list-group">
+    @if (Model.Count() > 0)
+    {
+        foreach (var notice in Model)
+        {
+            <li class="list-group-item">
+                    
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" class="noticeCheckBox" value="@notice.Id">
+                        </label>
+                    </div>
+                    <div class="jh-list-title">
+
+
+                        <h6 class="noticeBody" data-id="@notice.Id">@Html.Raw(Tunynet.Utilities.WebUtility.HtmlDecode(notice.ResolvedBody))</h6>
+                        <span class="text-muted pull-left">@notice.DateCreated</span>
+                        @if (notice.Status == NoticeStatus.Unhandled)
+                    {
+                            <span class="pull-right">
+                                <a class="btn btn-link know" data-id="@notice.Id" role="button">知道了</a>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="pull-right">
+                                <a class="btn btn-link delete-notice" data-id="@notice.Id" role="button">删除</a>
+                            </span>
+                        }
+                    </div>
+            </li>
+        }
+    }
+    else
+    {
+        <li class="text-center alert-danger list-group-item">暂无通知</li>
+    }
+</ul>
+<div class="text-center">
+    @Html.AjaxPagingButton(Model, "showNotice", CachedUrlHelper.Action("_MyNotice", "UserSpace", "", new RouteValueDictionary(new { status = status })))
+</div>
+<script type="text/javascript">
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+   
+    $(".noticeBody a").attr("class", "btn-link");
+    $("[name='knowLink']").click(function () {
+        var h6 = $(this).parent("h6");
+        var id = h6.data("id");
+        if (id != "") {
+            $.post('@CachedUrlHelper.Action("_KnowNotice", "UserSpace")', { noticeIds: id }, function () {
+                $.get('@CachedUrlHelper.Action("_MyNotice", "UserSpace", "",new RouteValueDictionary(new { pageIndex = Model.PageIndex }))&status=@status'+"&t="+new Date().getTime(), function (data) {
+                    $("#showNotice").html(data);
+                })
+            })
+        }
+    })
+    //获取选中的通知
+    function getCheckedItem(checkedNoticeIds, id) {
+        if (!id) {
+            var noticeCheckBox = $("input[class=noticeCheckBox]");
+            for (var i = 0; i < noticeCheckBox.length; i++) {
+                checkItem = $(noticeCheckBox[i]);
+                if (checkItem[0].checked) {
+                    checkedNoticeIds.push(checkItem.val());
+                }
+            }
+        }
+        else {
+            checkedNoticeIds.push(id);
+        }
+    }
+
+    $(function () {
+        //删除
+        $(".delete-notice").off("click").on("click", function () {
+            var id = $(this).data("id");
+            var checkedNoticeIds = [];
+            getCheckedItem(checkedNoticeIds, id)
+            if (checkedNoticeIds.length > 0) {
+                var status = $("#statusSelect option:selected").val();
+                layer.confirm("是否确认删除通知？", {
+                    btn: ['确认', '取消']
+                }, function () {
+                    $.post('@CachedUrlHelper.Action("_DeleteNotice", "UserSpace")', { noticeIds: checkedNoticeIds }, function (data) {
+                        if (data.state == 1) {
+                            layer.msg("删除成功", { icon: 1 });
+                            $.get('@CachedUrlHelper.Action("_MyNotice","UserSpace", "", new RouteValueDictionary(new { pageIndex = Model.PageIndex }))&status=@status' + "&t=" + new Date().getTime(), function (data) {
+                                $("#showNotice").html(data);
+                            }
+                            )
+                        }
+                        else {
+                            layer.msg("删除失败", { icon: 2 });
+                        }
+                    })
+                })
+            }
+            else {
+                return false;
+            }
+        });
+
+        //知道了
+        $(".know").off("click").on("click", function () {
+            var id = $(this).data("id");
+            var checkedNoticeIds = [];
+            getCheckedItem(checkedNoticeIds, id)
+            if (checkedNoticeIds.length > 0) {
+                $.post('@CachedUrlHelper.Action("_KnowNotice", "UserSpace")', { noticeIds: checkedNoticeIds }, function (data) {
+                    if (data.state == 1) {
+                        layer.msg("操作成功", { icon: 1 });
+                        $.get('@CachedUrlHelper.Action("_MyNotice", "UserSpace", "",new RouteValueDictionary(new { pageIndex = Model.PageIndex }))&status=@status'+"&t="+new Date().getTime(), function (data) {
+                            $("#showNotice").html(data);
+                        })
+                    }
+                    else {
+                        layer.msg("操作失败", { icon: 2 });
+                    }
+                })
+            }
+            else {
+                return false;
+            }
+        })
+
+        //全选方法
+        $("input[id=selectAll]").click(function () {
+            var flag = this.checked;
+            $("input[class=noticeCheckBox]").prop('checked', flag);
+        })
+
+        //取消全选
+        $("input[class=noticeCheckBox]").click(function () {
+            var flag = this.checked;
+            if (!flag) {
+                var f = $("#selectAll").prop('checked')
+                if (f) {
+                    $("#selectAll").prop('checked', false)
+                }
+            }
+        })
+    })
+    })
+</script>

@@ -1,0 +1,95 @@
+﻿@model PagingDataSet<Advertising>
+@{
+    var positionId = ViewData.Get<long>("PositionId", 0);
+}
+@Styles.Render("~/Bundle/Styles/fancyBox")
+@if (Model.Count() > 0)
+{
+    <table class="table tn-va-middle">
+        <thead>
+            <tr>
+                <th>广告名称</th>
+                <th>是否启用</th>
+                <th>广告位</th>
+                <th>投放时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var advertising in Model)
+            {
+                <tr>
+                    <td>
+                        @advertising.Name
+                    </td>
+                    <td>
+                        @if (advertising.IsEnable)
+                        {
+                            <i class="fa fa-check"></i>
+                        }
+                        else
+                        {
+                            <i class="fa fa-times"></i>
+                        }
+                    </td>
+                    <td>
+                        @foreach (var position in advertising.AdvertisingsPositions)
+                        {
+                            <p title="@position.Description" class="tn-no-mb">
+                               @StringUtility.Trim(position.Description,20)
+                                @if (position.ImageAttachmentId != 0)
+                                {
+                                <a class="fancybox tn-ml-5" href="@position.GetImageUrl()" data-fancybox-group="@position.PositionId" title="@position.Description">查看图例</a>
+                                }
+                            </p>
+                        }
+                    </td>
+                    <td>@advertising.StartDate.ToUserDateString() 至 @advertising.EndDate.ToUserDateString()</td>
+                    <td class="text-nowrap">
+                        <a href="@SiteUrls.Instance()._EditAdvertising(advertising.AdvertisingId)" class="edit-advertiding tn-mr-10"><i class="fa fa-pencil"></i></a>
+                        <a href="javascript:;" data-id="@advertising.AdvertisingId" class="delete-advertiding tn-mr-10"><i class="fa fa-trash"></i></a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="text-center clearfix text-warning">暂无广告</div>
+}
+<div class="text-center">
+    @Html.AjaxPagingButton(Model, "_listAdvertising", SiteUrls.Instance()._ListAdvertising(positionId))
+</div>
+
+<script>
+    require(['jquery', 'tnfancyBox', 'page'], function () {
+         $(function () {
+            //图例放大图
+            $(document).ready(function () {
+                $(".fancybox").fancybox();
+                arrows: true
+            });
+            //删除点击
+            $(".delete-advertiding").click(function () {
+                var advertisingId = $(this).data("id");
+                layer.confirm("是否确认删除广告", { btn: ['确认', '取消'] }, function () {
+                    $.post('@CachedUrlHelper.Action("_DeleteAdvertising","ControlPanel")', { advertisingId: advertisingId }, function (data) {
+                        if (data.state == 1) {
+                            $.get('@SiteUrls.Instance()._ListAdvertising(positionId)', function (data) {
+                                if (data) {
+                                    $("#_listAdvertising").html(data);
+                                }
+                            })
+                            layer.msg(data.successmsg, { icon: 1 });
+                        }
+                        else {
+                            layer.msg(data.errormsg, { icon: 2 });
+                        }
+                    })
+                })
+            })
+        })
+    })
+
+</script>

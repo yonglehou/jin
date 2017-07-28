@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <script src="js/jquery-1.12.0.min.js"></script>
+    <script src="js/jquery-ui.min.js"></script>
+    <script src="js/jquery.tagsinput.js"></script>
+    <link href="css/jquery.tagsinput.css" rel="stylesheet" />
+    <link href="css/jquery-ui.css" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width" />
+    <title>标签</title>
+    <script>
+
+        function onAddTag(tag) {
+
+            alert("Added a tag: " + tag);
+
+        }
+        function onRemoveTag(tag) {
+
+            alert("Removed a tag: " + tag);
+        }
+        function onChangeTag(input, tag) {
+
+            alert("Changed a tag: " + tag);
+        }
+        $(function () {
+            $('#tags_3').tagsInput({
+
+                width: 'auto',
+                //autocomplete_url:'test/fake_plaintext_endpoint.html' //jquery.autocomplete (not jquery ui)
+
+                autocomplete_url: 'test/fake_json_endpoint.html' // jquery ui autocomplete requires a json endpoint
+
+            });
+
+        });
+    </script>
+</head>
+
+<body>
+    <div>
+        <input id='tags_3' type='text' class='tags'>
+    </div>
+</body>
+</html>

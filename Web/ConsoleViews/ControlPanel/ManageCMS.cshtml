@@ -1,0 +1,335 @@
+﻿@model ContentItem
+@{
+    TempData["subMenu-check"] = new string[] { "CMS", "ManageCMS" };
+    ViewData["Title"] = new string[] { "资讯管理" };
+    var categories = ViewData.Get<IEnumerable<ContentCategory>>("categories", null);
+    var contentCategoryId = Request.QueryString.Get("contentCategoryId", 0);
+    var contentCategoryParentId = ViewData.Get<int>("contentCategoryParentId", 0);
+    var actives = new List<string> { "false", "in", "collapsed", "active", "nones", "noarrow" };
+    var contentTypes = ViewData.Get<IEnumerable<ContentModel>>("contentTypes", new List<ContentModel>());
+    var contentModelKeys = contentTypes != null ? string.Join("、", contentTypes.Select(n => n.ModelKey)) : "";
+    var auditStatus = ViewData.Get<List<SelectListItem>>("auditStatus", new List<SelectListItem>());
+    var user = UserContext.CurrentUser;
+    var isCategoryManager = new Authorizer().IsCategoryManager(TenantTypeIds.Instance().ContentItem(), user, contentCategoryId);
+}
+
+<div class="tn-side-bar">
+    <div class="panel-group tn-column-menu tn-mb-20" id="accordion" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4>
+                    栏目列表
+                    <a @if (!new Authorizer().IsCategoryManager(TenantTypeIds.Instance().ContentItem(), user, null)) { <text> class="pull-right small maintenance" href="javascript:;" </text>                   } else { <text> class="pull-right small" href="@SiteUrls.Instance().ManageContentCategories()" </text>                   } style="color:#337ab7">管理</a>
+                </h4>
+            </div>
+
+        </div>
+        @if (categories == null)
+        {
+        <div class="panel panel-default">
+            <div class="panel-body text-center">
+                没有栏目
+            </div>
+        </div>
+        }
+        else
+        {
+            var count = categories.Count();
+            for (var i = 0; i < count; i++)
+            {
+                var category = categories.ElementAt(i);
+                if (!category.IsEnabled)
+                {
+                    continue;
+                }
+                if (category.Depth == 0)
+                {
+                    var identicalCategory = false;
+                    if (category.CategoryId == contentCategoryParentId || category.CategoryId == contentCategoryId)
+                    {
+                        identicalCategory = true;
+                    }
+                    var hasChildrens = false;
+                    if (category.Children.Where(n => n.IsEnabled == true).Any())
+                    {
+                        hasChildrens = true;
+                    }
+                    <div class="panel panel-default">
+                        <div class="panel-heading" role="tab" id="heading_@category.CategoryId">
+                            <h4 class="panel-title @if (category.Children.Count() == 0){@actives[4];}">
+                                <a class="menus @if (hasChildrens) { if (!identicalCategory) {@actives[2]; } } else {@actives[5];  }  @if(identicalCategory){@actives[3]}" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse_@category.CategoryId" aria-expanded="@actives[0]" aria-controls="collapse_@category.CategoryId">
+                                    <span class="activeUrl" href="#collapse_@category.CategoryId">@category.CategoryName</span>
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="collapse_@category.CategoryId" class="panel-collapse collapse @if (identicalCategory){@actives[1]} " role="tabpanel" aria-labelledby="heading_@category.CategoryId">
+                            <div class="list-group">
+                                @foreach (var item in category.Children)
+                                {
+                                    if (!item.IsEnabled)
+                                    {
+                                        continue;
+                                    }
+                                    var tfChildren = false;
+                                    if (contentCategoryId == item.CategoryId)
+                                    {
+                                        tfChildren = true;
+                                    }
+                                    <a class="list-group-item @if(tfChildren){@actives[3]}" href="@CachedUrlHelper.Action("ManageCMS","ControlPanel")?contentCategoryId=@item.CategoryId">@item.CategoryName</a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        }
+    </div>
+</div>
+
+<div class="tn-main">
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div class="form-inline tn-tool-column">
+                @using (Html.BeginForm("ManageCMS", "ControlPanel", FormMethod.Get, new { @class = "form-inline", @id = "CMSSelset" }))
+                {
+                @Html.Hidden("ContentCategoryId", contentCategoryId)
+                    <div class="form-group" style="width:265px;">
+                        <label>关键字：</label>
+                        @Html.TextBox("keyword", string.Empty, new RouteValueDictionary { { "id", "keyword" }, { "class", "color form-control" }, { "style", "width:200px" }, { "placeholder", "可搜索标题 、作者" } })
+                    </div>
+                    <div class="form-group" style="width:170px;">
+                        <label>状态：</label>
+                        @Html.DropDownList("auditStatus", auditStatus, new { @class = "form-control" })
+                    </div>
+                    <div class="form-group has-feedback" style="width:308px;">
+                        <label>发布时间：</label>
+                        @Html.DateTimePicker("Daterangepicker", null, Request.QueryString.Get("minDate", string.Empty), Request.QueryString.Get("maxDate", string.Empty), true)
+                        <span class="form-control-feedback"><i class="fa fa-calendar"></i></span>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary" type="button" id="search">搜索</button>
+                    </div>
+                }
+            </div>
+            <hr>
+            <div class="form-inline tn-tool-column">
+                <div class="form-group">
+                    <!--单按钮下拉菜单-->
+                    <div class="btn-group">
+                        @if ((contentTypes.Count() <= 1 && !(string.IsNullOrEmpty(contentModelKeys))) && isCategoryManager)
+                        {
+                            if ((contentModelKeys.Contains(ContentModelKeys.Instance().Article()) || string.IsNullOrEmpty(contentModelKeys)) && isCategoryManager)
+                            {
+                            <a class="btn btn-default btn-block" href="@CachedUrlHelper.Action("EditCMS","ControlPanel")?contentCategoryId=@contentCategoryId"><i class="fa fa-edit"></i> 发布文章</a>
+                            }
+                            if ((contentModelKeys.Contains(ContentModelKeys.Instance().Video()) || string.IsNullOrEmpty(contentModelKeys)) && isCategoryManager)
+                            {
+                            <a class="btn btn-default btn-block" href="@CachedUrlHelper.Action("EditCMSVideo","ControlPanel")?contentCategoryId=@contentCategoryId"><i class="fa fa-edit"></i> 发布视频</a>
+                            }
+                            if ((contentModelKeys.Contains(ContentModelKeys.Instance().Image()) || string.IsNullOrEmpty(contentModelKeys)) && isCategoryManager)
+                            {
+                            <a class="btn btn-default btn-block" href="@CachedUrlHelper.Action("EditCMSImg","ControlPanel")?contentCategoryId=@contentCategoryId"><i class="fa fa-edit"></i> 发布组图</a>
+                            }
+                        }
+                        else
+                        {
+                            if (!string.IsNullOrEmpty(contentModelKeys) && isCategoryManager)
+                            {
+
+                            <button type="button" class="btn btn-default btn-block" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa fa-edit"></i> 发布资讯&nbsp;&nbsp;<span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                @if (contentModelKeys.Contains(ContentModelKeys.Instance().Article()) && isCategoryManager)
+                                {
+                                <li><a href="@CachedUrlHelper.Action("EditCMS","ControlPanel")?contentCategoryId=@contentCategoryId">发布文章</a></li>
+                                }
+                                @if (contentModelKeys.Contains(ContentModelKeys.Instance().Video()) && isCategoryManager)
+                                {
+                                <li><a href="@CachedUrlHelper.Action("EditCMSVideo","ControlPanel")?contentCategoryId=@contentCategoryId">发布视频</a></li>
+                                }
+                                @if (contentModelKeys.Contains(ContentModelKeys.Instance().Image()) && isCategoryManager)
+                                {
+                                <li><a href="@CachedUrlHelper.Action("EditCMSImg","ControlPanel")?contentCategoryId=@contentCategoryId">发布组图</a></li>
+                                }
+                            </ul>
+                            }
+                        }
+                    </div>
+                    <a class="btn btn-default" id="passauditt" href="javascript:;"><i class="fa fa-check"></i> 通过审核</a>
+                    <a class="btn btn-default" id="passauditf" href="javascript:;"><i class="fa fa-times-circle"></i> 不通过审核</a>
+                    <a class="btn btn-default" id="Stickyt" href="javascript:;"><i class="fa fa-chevron-up"></i> 置顶</a>
+                    <a class="btn btn-default" id="Stickyf" href="javascript:;"> 取消置顶</a>
+                    <a class="btn btn-default" id="delall" href="javascript:;"><i class="fa fa-trash"></i> 删除</a>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    <div class="panel panel-default" id="listCMS">
+        @Html.Action("_ListCMS", "ControlPanel")
+    </div>
+</div>
+@Styles.Render("~/Bundle/Styles/Uploader")
+@Styles.Render("~/Bundle/Styles/daterangepicker")
+
+<script>
+    require(['jquery', 'livequery', 'datepicker'], function () {
+        function selectcms() {
+            var keyword = $("#keyword").val();
+            var auditStatus = $("#auditStatus").val();
+            var contentCategoryId = $("#ContentCategoryId").val();
+            var startDate = $("#minDate").val();
+            var endDate = $("#maxDate").val();
+            var pageIndex = $("#pageIndex").val();
+            var parm = jQuery.param({ contentCategoryId: contentCategoryId, keyword: keyword, auditStatus: auditStatus, startDate: startDate, endDate: endDate, pageIndex: pageIndex, t: new Date().getTime() }, true);
+            $.get('@CachedUrlHelper.Action("_ListCMS", "ControlPanel")', parm, function (data) {
+                $("#listCMS").html(data);
+            });
+        }
+        //搜索
+        $("#search").click(function () {
+            selectcms();
+        });
+            
+        //菜单跳转
+        $(".activeUrl").click(function (e) {
+            var id = $(this).attr("href").replace(/[^0-9]/ig, "");
+            window.location.href = "@CachedUrlHelper.Action("ManageCMS", "ControlPanel")?contentCategoryId=" + id;
+        });
+
+        //删除
+        $(document).on('click', 'a[id^=delete-]', function () {
+            //添加时间戳
+            var id = $(this).attr("id").replace(/[^0-9]/ig, "");
+            layer.confirm("确定删除么？", {
+                btn: ['确认', '取消'],//按钮
+                scrollbar: false
+            }, function () {
+                var parm = jQuery.param({ contentItemId: id, t: new Date().getTime() }, true);
+                $.post('@CachedUrlHelper.Action("_DeleteCMS", "ControlPanel")', parm, function (data) {
+                    if (data.MessageType) {
+                        layer.msg(data.MessageContent, {
+                            icon: 1
+                        });
+                        selectcms();
+                    }
+                    else {
+                        layer.msg(data.MessageContent, {
+                            icon: 2
+                        });
+                    }
+                });
+            });
+        });
+
+        //批量删除
+        $("#delall").click(function (e) {
+            e.preventDefault();
+            if (!$("input[name='cmsIds']:checked").length) {
+                layer.msg("请至少选择一篇资讯进行操作", { icon: 2 })
+            } else {
+                layer.confirm("确定删除么？", {
+                    btn: ['确认', '取消'],//按钮
+                    scrollbar: false
+                }, function () {
+                    $.post('@CachedUrlHelper.Action("_DeleteCMSList", "ControlPanel")', $("#Form-CMS").serialize(), function (data) {
+                        if (data.MessageType) {
+                            layer.msg(data.MessageContent, {
+                                icon: 1
+                            });
+                            selectcms();
+                        }
+                        else {
+                            layer.msg(data.MessageContent, {
+                                icon: 2
+                            });
+                        }
+                    });
+                });
+            }
+        });
+
+        //置顶和取消置顶
+        $("#Stickyt").click(function (e) {
+            e.preventDefault();
+            cmsSticky(true);
+        });
+        //置顶和取消置顶
+        $("#Stickyf").click(function (e) {
+            e.preventDefault();
+            cmsSticky(false);
+        });
+        function cmsSticky(sticky) {
+            if (!$("input[name='cmsIds']:checked").length) {
+                layer.msg("请至少选择一篇资讯进行操作", { icon: 2 })
+            } else {
+                var condition = "确定置顶么？";
+                if (!sticky) {
+                    condition = "确定取消置顶么？";
+                }
+                layer.confirm(condition, {
+                    btn: ['确认', '取消'],//按钮
+                    scrollbar: false
+                }, function () {
+                    $.post('@CachedUrlHelper.Action("StickyCMSs", "ControlPanel")?isSticky=' + sticky, $("#Form-CMS").serialize(), function (data) {
+                        if (data.MessageType) {
+                            layer.msg(data.MessageContent, {
+                                icon: 1
+                            });
+                            selectcms();
+                        }
+                        else {
+                            layer.msg(data.MessageContent, {
+                                icon: 2
+                            });
+                        }
+                    });
+                });
+            }
+        }
+
+        //批量通过审核
+        $("#passauditt").click(function () {
+            UpdateAuditStatus(true);
+        });
+        //批量不通过审核
+        $("#passauditf").click(function () {
+            UpdateAuditStatus(false);
+        });
+        function UpdateAuditStatus(isApproved) {
+            if (!$("input[name='cmsIds']:checked").length) {
+                layer.msg("请至少选择一篇资讯进行操作", { icon: 2 })
+            } else {
+                var condition = "确定通过审核么？";
+                if (!isApproved) {
+                    condition = "确定不通过审核么？";
+                }
+                layer.confirm(condition, {
+                    btn: ['确认', '取消'],//按钮
+                    scrollbar: false
+                }, function () {
+                    $.post('@CachedUrlHelper.Action("AuditStatusCMS", "ControlPanel")?isApproved=' + isApproved, $("#Form-CMS").serialize(), function (data) {
+                        if (data.MessageType) {
+                            layer.msg(data.MessageContent, {
+                                icon: 1
+                            });
+                            selectcms();
+                        }
+                        else {
+                            layer.msg(data.MessageContent, {
+                                icon: 2
+                            });
+                        }
+                    });
+                });
+            }
+        };
+
+
+
+
+    })
+</script>
+

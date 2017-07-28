@@ -1,0 +1,189 @@
+﻿@{
+    var user = UserContext.CurrentUser;
+    var experiencePoints = ViewData.Get<int>("experiencePoints", 0);
+    var pointItems = ViewData.Get<IEnumerable<PointItem>>("pointItems", new List<PointItem>());
+    var listUserRank = ViewData.Get<List<UserRank>>("listUserRank", new List<UserRank>());
+    var experience = ViewData.Get<PointCategory>("experience", new PointCategory());
+    var trade = ViewData.Get<PointCategory>("trade", new PointCategory());
+}
+
+<div role="tabpanel" class="active">
+    <div class="row" style="margin-left:-10px;">
+        <div class="col-xs-2">
+            <ul class="list-inline star">
+                <li style="margin:-2px;">
+                    <img alt="..." src="/img/star3.png">
+                </li>
+                <li>(1级)</li>
+            </ul>
+        </div>
+        <div class="col-xs-2">
+            <ul class="list-inline star">
+                <li style="margin:-2px;">
+                    <img alt="..." src="/img/star2.png">
+                </li>
+                <li style="margin:-2px;">
+                    <img alt="..." src="/img/star3.png">
+                </li>
+                <li>(4级)</li>
+            </ul>
+        </div>
+        <div class="col-xs-2">
+            <ul class="list-inline star">
+                <li style="margin:-2px;">
+                    <img alt="..." src="/img/star2.png">
+                </li>
+                <li style="margin:-2px;">
+                    <img alt="..." src="/img/star2.png">
+                </li>
+                <li style="margin:-2px;">
+                    <img alt="..." src="/img/star3.png">
+                </li>
+                <li>(7级)</li>
+            </ul>
+        </div>
+        <div class="col-xs-2">
+            <ul class="list-inline star">
+                <li style="margin:-2px;">
+                    <img alt="..." src="/img/star1.png">
+                </li>
+                <li style="margin:-2px;">
+                    <img alt="..." src="/img/star3.png">
+                </li>
+                <li>(10级)</li>
+            </ul>
+        </div>
+        <div class="col-xs-2">
+            <ul class="list-inline star">
+                <li style="margin:-2px;">
+                    <img alt="..." src="/img/star1.png">
+                </li>
+                <li style="margin:-2px;">
+                    <img alt="..." src="/img/star2.png">
+                </li>
+                <li style="margin:-2px;">
+                    <img alt="..." src="/img/star3.png">
+                </li>
+                <li>(13级)</li>
+            </ul>
+        </div>
+        <div class="col-xs-2">
+            <ul class="list-inline star">
+                <li style="margin:-2px;">
+                    <img alt="..." src="/img/star1.png">
+                </li>
+                <li style="margin:-2px;">
+                    <img alt="..." src="/img/star1.png">
+                </li>
+                <li>(18级)</li>
+            </ul>
+        </div>
+    </div>
+    <div class="jh-progress">
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" aria-valuenow="48" aria-valuemin="0" aria-valuemax="100" style="width: @(((float)user.Rank/18)*100)%;">
+            </div>
+        </div>
+        <div class="jh-progress-detail">
+            <p>当前等级：@user.Rank<br />目前已有 @user.ExperiencePoints@(experience.Unit)@(experience.CategoryName)，还有 @experiencePoints@(experience.Unit)@(experience.CategoryName)即升级到 @(user.Rank + 1)级</p>
+        </div>
+    </div>
+    <h5>积分规则</h5>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>操作</th>
+                <th>@experience.CategoryName</th>
+                <th>@trade.CategoryName</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in pointItems)
+            {
+                <tr>
+                    <td>@item.ItemName</td>
+                    <td>@item.ExperiencePoints</td>
+                    <td>@item.TradePoints</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="alert alert-warning" role="alert">
+        • 每人每日积分上限：  @(experience.QuotaPerDay)@(experience.Unit)@(experience.CategoryName)/@(trade.QuotaPerDay)@(trade.Unit)@(trade.CategoryName)
+    </div>
+    <h5>等级与积分对应表</h5>
+    <div class="row">
+        <div class="col-xs-6">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th style="width:100px">等级</th>
+                        <th>图标</th>
+                        <th style="width:100px">所需@(experience.CategoryName)值</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in listUserRank)
+                    {
+                        var n = listUserRank.Count() % 2 == 0 ? listUserRank.Count() / 2 : (listUserRank.Count() / 2) + 1;
+                        if (item.Rank <=n)
+                        {
+                            <tr>
+                                <td>@item.Rank</td>
+                                <td>
+                                    @Html.UserRankIcon(item.Rank)
+                                </td>
+                                <td>@item.PointLower</td>
+                            </tr>
+                        }
+                    }
+
+                </tbody>
+            </table>
+        </div>
+        <div class="col-xs-6">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th style="width:100px">等级</th>
+                        <th>图标</th>
+                        <th style="width:100px">所需@(experience.CategoryName)值</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in listUserRank)
+                    {
+                        var n = listUserRank.Count() % 2 == 0 ? listUserRank.Count() / 2 : (listUserRank.Count() / 2) + 1;
+                        if (item.Rank > n)
+                        {
+                            <tr>
+                                <td>@item.Rank</td>
+                                <td>
+                                    @Html.UserRankIcon(item.Rank)
+                                </td>
+                                <td>@item.PointLower</td>
+                            </tr>
+                        }
+
+                    }
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+   
+    $(function () {
+        if ($(".progress-bar").width() < 640) {
+            $(".jh-progress-detail").addClass("left");
+            $(".jh-progress-detail").attr("style", "left:" + ($(".progress-bar").width() - 20) + "px");
+        }
+        else {
+            $(".jh-progress-detail").addClass("right");
+            $(".jh-progress-detail").attr("style", "left:" + ($(".progress-bar").width() - 325) + "px");
+        }
+    })
+    })
+</script>

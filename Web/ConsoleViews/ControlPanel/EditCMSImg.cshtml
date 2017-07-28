@@ -1,0 +1,215 @@
+﻿@model ContentItemEditModel
+@{
+    TempData["subMenu-check"] = new string[] { "CMS", "ManageCMS" };
+    ViewData["Title"] = new string[] { (Model.ContentItemId > 0 ? "编辑" : "发布") + "组图" };
+    var user = UserContext.CurrentUser;
+    var category = ViewData.Get<ContentCategory>("contentCategory", new ContentCategory());
+}
+<style>
+    /*进度条*/
+    .progress {
+        float: left;
+        margin: 5px !important;
+        width: 200px !important;
+    }
+</style>
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-xs-12">
+        <ol class="breadcrumb">
+            <li><a href="@SiteUrls.Instance().ManageCMS()">资讯管理</a></li>
+            @if (!string.IsNullOrEmpty(category.CategoryName))
+            {
+            <li><a href="@CachedUrlHelper.Action("ManageCMS","ControlPanel")?contentCategoryId=@category.CategoryId">@category.CategoryName</a></li>
+            }
+            <li class="tn-active">发布资讯</li>
+        </ol>
+    </div>
+</div>
+<div class="tn-box tn-box-v1">
+    @using (Html.BeginForm("EditCMS", "ControlPanel", FormMethod.Post, new { @class = "form-horizontal tn-form-validation", @id = "EditCMS" }))
+    {
+    @Html.HiddenFor(n => n.ContentItemId)
+        @Html.HiddenFor(n => n.ContentModelId)
+        @Html.Hidden("Author", user.DisplayName)
+        @Html.Hidden("CategoryId", category.CategoryId)
+        @Html.ValidationMessageFor(n => n.ContentItemId)
+        @Html.ValidationMessageFor(n => n.ContentModelId)
+        @Html.ValidationMessage("Author")
+        @Html.ValidationMessage("CategoryId")
+        @Html.HiddenFor(n => n.BodyImageAttachmentId)
+        @Html.ValidationMessageFor(n => n.BodyImageAttachmentId)
+        <div class="form-group">
+            <label for="" class="col-xs-2 control-label tn-width-90">标题</label>
+            <div class="col-xs-4">
+                @Html.TextBoxFor(n => n.Subject, new { @class = "form-control", @placeholder = "标题" })
+                @Html.ValidationMessageFor(n => n.Subject)
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="" class="col-xs-2 control-label tn-width-90">所属栏目</label>
+            <div class="col-xs-4">
+                @Html.TextBox("CategoryId", category.CategoryName, new { @class = "form-control", @disabled = "" })
+                @Html.ValidationMessage("CategoryId")
+            </div>
+        </div>
+        <div class="form-group has-feedback">
+            <label for="" class="col-xs-2 control-label tn-width-90">发布时间</label>
+            <div class="col-xs-3">
+                @Html.DateTimePickerFor(n => n.DatePublished, new DateTimePicker { EnabledTime = true })
+                <span class="form-control-feedback"><i class="fa fa-calendar"></i></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="" class="col-xs-2 control-label tn-width-90">设置</label>
+            <div class="col-xs-4">
+                <label class="checkbox-inline">
+                    <input value="true" name="IsComment" type="checkbox" @(Model.IsComment ? "checked" : "")>
+                    禁止评论
+                </label>
+            </div>
+        </div>
+        <hr />
+        <div class="form-group">
+            <div class="col-xs-8">
+                <label for="" class="col-xs-2 control-label tn-width-90"></label>
+
+                <button id="answer" type="button" class="btn btn-primary btn-submit tn-btn-wp">确定</button>
+                <a type="button" class="btn btn-default tn-btn-wp" href="@CachedUrlHelper.Action("ManageCMS","ControlPanel")?contentCategoryId=@category.CategoryId">取消</a>
+            </div>
+        </div>
+    }
+    <div class="form-group">
+        <div style="width:100px;float:left;">
+            @Html.FileUploader("UploadFile", TenantTypeIds.Instance().CMS_Image(), user.UserId, "<i class=\"fa fa-upload\"></i> 上传图片", extensions: "jpg,jpeg,png,bmp,gif", associateId: Model.ContentItemId, callbacks: new { uploadSuccess = "succeedImageSyntony" })
+        </div>
+    </div>
+    <div class="row tn-mt-20 tn-album-list" id="photoslist">
+        @Html.Action("_EditCMSImg", "ControlPanel", new { contentItemId = Model.ContentItemId })
+    </div>
+
+</div>
+
+@Styles.Render("~/Bundle/Styles/daterangepicker")
+@Styles.Render("~/Bundle/Styles/Uploader")
+
+<script>
+     require(['jquery','datepicker','tnlayer','validate.unobtrusive','uploader'],function(){
+        //上传成功回调
+        $.fn.succeedImageSyntony=function(){
+            var parm = jQuery.param({ contentItemId: @Model.ContentItemId, t: new Date().getTime() }, true);
+            $.get("@CachedUrlHelper.Action("_EditCMSImg", "ControlPanel")",parm, function(data) {
+                $("#photoslist").html(data)
+            });
+        }
+
+        function haveContent() {
+            if ($("#photoslist").find('img').length > 0) {return true;}
+            if ($("#Subject").val().length>0) {return true;}
+            return false;
+        }
+        beforeunload();
+        function beforeunload() {
+            $(window).bind('beforeunload', function () {
+                if (!haveContent()) { beforeunloadn() }
+                else
+                {
+                    return "离开后页面上的内容将不会被保存，确定要离开么？";
+                }
+            });
+        }
+
+        function beforeunloadn() {
+            $(window).unbind('beforeunload');//取消提醒
+        }
+
+        //提交表单
+        $('.btn-submit').on('click', function () {
+            beforeunloadn()
+            if ($("#photoslist").find('img').length > 0) {
+                var bodyImageId = $("#BodyImageAttachmentId");
+                var bodyImageIds = [];
+                //组图附件
+                var _attachments = $("#photoslist").find("img")
+                $(_attachments).each(function () {
+                    bodyImageIds.push($(this).data('id'));
+                });
+                bodyImageId.val(bodyImageIds.join(','));
+                $('#EditCMS').submit();
+            }
+            else {
+                layer.msg("请上传图片", {
+                    icon: 2
+                });
+            }
+        });
+
+        $(document).on('click', 'a[id^=delete-]', function (e) {
+            beforeunloadn()
+            var id = $(this).attr("id").replace(/[^0-9]/ig, "");
+
+            layer.confirm("确定删除么？ 删除后将永久删除！", {
+                btn: ['确认', '取消'],//按钮
+                scrollbar: false
+            }, function () {
+                var parm = jQuery.param({ attachmentId: id, t: new Date().getTime() }, true);
+                $.post('@CachedUrlHelper.Action("_DeleteAttachmentCMSImg", "ControlPanel")',parm, function(data) {
+                    if (data.MessageType) {
+                        layer.msg(data.MessageContent, {
+                            icon: 1
+                        });
+                        var parms = jQuery.param({ contentItemId: @Model.ContentItemId, t: new Date().getTime() }, true);
+                        $.get("@CachedUrlHelper.Action("_EditCMSImg", "ControlPanel")",parms, function(data) {
+                            $("#photoslist").html(data)
+                        });
+                    }
+                    else {
+                        layer.msg(data.MessageContent, {
+                            icon: 2
+                        });
+                    }
+                });
+            },function () {
+                beforeunload();
+            });
+        });
+
+        //上移
+        $(document).on('click', 'a[id^=upAttachment-]', function (e) {
+            var id = $(this).attr("id").replace(/[^0-9]/ig, "");
+            var toid = $(this).data("change");
+            changeAttachment(id, toid)
+        });
+        //下移
+        $(document).on('click', 'a[id^=downAttachment-]', function (e) {
+            var id = $(this).attr("id").replace(/[^0-9]/ig, "");
+            var toid = $(this).data("change");
+            changeAttachment(id, toid)
+        });
+        function changeAttachment(fromid, toid) {
+            var parm = jQuery.param({ fromAttachmentId: fromid, toAttachmentId: toid, t: new Date().getTime() }, true);
+            $.post('@CachedUrlHelper.Action("ChangeAttachmentOrder", "ControlPanel")',parm, function(data) {
+                if (data.MessageType) {
+                    layer.msg(data.MessageContent, {
+                        icon: 1
+                    });
+                    var parms = jQuery.param({ contentItemId: @Model.ContentItemId, t: new Date().getTime() }, true);
+                    $.get("@CachedUrlHelper.Action("_EditCMSImg", "ControlPanel")",parms, function(data) {
+                        $("#photoslist").html(data)
+                    });
+                }
+                else {
+                    layer.msg(data.MessageContent, {
+                        icon: 2
+                    });
+                }
+            });
+        }
+
+
+
+    })
+
+</script>
+
+
+

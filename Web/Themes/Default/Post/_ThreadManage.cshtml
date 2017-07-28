@@ -1,0 +1,220 @@
+﻿@model Section
+<div class="jh-padding-white">
+    <div class="tn-title">
+        <h4>贴子管理</h4>
+    </div>
+    <div class="row">
+        <div class="col-xs-8">
+            <a id="passaudit" class="btn btn-default" href="javascript:;"><i class="fa fa-check"></i> 通过审核</a>
+            <a id="nopassaudit" class="btn btn-default" href="javascript:;"><i class="fa fa-ban"></i> 不通过审核</a>
+            <a id="essential" class="btn btn-default" href="javascript:;"><i class="fa fa-star"></i> 精华</a>
+            <a id="cancelessential" class="btn btn-default" href="javascript:;"> 取消精华</a>
+            <a id="sticky" class="btn btn-default" href="javascript:;"><i class="fa fa-chevron-up"></i> 置顶</a>
+            <a id="cancelsticky" class="btn btn-default" href="javascript:;"> 取消置顶</a>
+            <a id="delete" class="btn btn-default" href="javascript:;"><i class="fa fa-trash"></i> 删除</a>
+        </div>
+        <div class="col-xs-4 text-right">
+            <div class="btn-group" role="group">
+                <form class="form-inline">
+                    <select class="form-control" id="categoryId" onchange="search()">
+                        <option value="0">贴子分类</option>
+                        @foreach (var item in Model.ThreadCategories)
+                        {
+                            <option value="@item.CategoryId">@item.CategoryName</option>
+                        }
+                    </select>
+                    <select class="form-control" id="sortBy_BarDateThread" onchange="">
+                        <option value="0">发帖时间</option>
+                        <option value="1">近三天</option>
+                        <option value="2">近一周</option>
+                        <option value="3">近一月</option>
+                    </select>
+                </form>
+            </div>
+        </div>
+    </div>
+    <hr />
+    <div id="_ListThreadManage">
+        @Html.Action("_ListThreadManage", "Post", new { sectionId = Model.SectionId })
+    </div>
+</div>
+<script type="text/javascript">
+    require(['jquery', 'tnlayer','page'], function ($, tnlayer) {
+        //查询
+        function search() {
+            $.get("@CachedUrlHelper.Action("_ListThreadManage", "Post")", { sectionId: @Model.SectionId, categoryId: $("#categoryId").val(), sortBy_BarDateThread: $("#sortBy_BarDateThread").val() }, function (data) {
+                $("#_ListThreadManage").html(data);
+            })
+        }    
+
+        //批量删除
+        $("#delete").click(function () {
+            var ids = [];
+            var threadIds = "";
+            var getTimestamp = new Date().getTime();
+            if (!$("input[name='checks']:checked").length) {
+                layer.msg("请至少选择一篇贴子进行操作", { icon: 2 })
+            }
+            else {
+                $('[name="checks"]:checked').each(function () {
+                    ids.push($(this).data('id'));
+                });
+                threadIds = ids.join(';');
+                layer.confirm("确定删除么？", {
+                    btn: ['确认', '取消']
+                }, function () {
+                    $.post('@CachedUrlHelper.Action("DeleteThreads", "Post")', { threadIds: threadIds,sectionId:@Model.SectionId }, function (data) {
+                        if (data.state == 1) {
+                            layer.msg("删除成功", {
+                                icon: 1
+                            });
+                            var ids = threadIds.split(';');
+                            for (var i = 0; i < ids.length; i++) {
+                                $('#thread-' + ids[i]).remove();
+                            }
+                        }
+                    });
+                });
+            }
+        });
+        //批量精华
+        $("#essential").on("click", function () {
+            UpdateEssential(true);
+        });
+
+        //批量取消精华
+        $("#cancelessential").on("click", function () {
+            UpdateEssential(false);
+        });
+        //批量置顶
+        $("#sticky").on("click", function () {
+            UpdateStick(true);
+        });
+        //批量取消置顶
+        $("#cancelsticky").on("click", function () {
+            UpdateStick(false);
+        });
+        //批量通过审核
+        $("#passaudit").click(function () {
+            UpdateAuditStatus(true);
+
+        });
+        //批量不通过审核
+        $("#nopassaudit").click(function () {
+            UpdateAuditStatus(false);
+        });
+        function UpdateAuditStatus(isApproved) {
+            var icon = '<i class="fa fa-check-circle tn-green-color fa-2x" title="@AuditStatus.Success.GetDisplayName()"></i>';
+            if (!isApproved) {
+                icon = ' <i class="fa fa-ban tn-red-color fa-2x" title="@AuditStatus.Fail.GetDisplayName()"></i>';
+            }
+            var threadIds = [];
+            if (!$("input[name='checks']:checked").length) {
+                layer.msg("请至少选择一篇贴子进行操作", { icon: 2 })
+            } else {
+                $('[name="checks"]:checked').each(function () {
+                    threadIds.push($(this).data('id'));
+                });
+                $.post('@CachedUrlHelper.Action("AuditStatusThreads", "Post")', { threadIds: threadIds.join(';'), isApproved: isApproved }, function myfunction(data) {
+                    if (data.state) {
+                        layer.msg(data.message, {
+                            icon: 1
+                        });
+
+                        for (var i = 0; i < threadIds.length; i++) {
+                            $("#audit-" + threadIds[i]).html(icon);
+                        }
+                    }
+                    else {
+                        layer.msg(data.message, {
+                            icon: 2
+                        });
+                    }
+                });
+            }
+        };
+        //全选
+        $(document).on("click", "#select-all", function () {
+            if (this.checked == true) {
+                $(".tn-checkbox").each(function () {
+                    this.checked = true;
+                });
+                checkedActive($(this));
+            } else {
+                $(".tn-checkbox").each(function () {
+                    this.checked = false;
+                });
+            }
+        });
+        function UpdateEssential(isApproved) {
+
+            var threadIds = [];
+            var getTimestamp = new Date().getTime();
+            if (!$("input[name='checks']:checked").length) {
+                layer.msg("请至少选择一篇贴子进行操作", { icon: 2 })
+            } else {
+                $('[name="checks"]:checked').each(function () {
+                    threadIds.push($(this).data('id'));
+                });
+                $.post('@CachedUrlHelper.Action("UpdateEssential", "Post")', { threadIds: threadIds.join(';'), isApproved: isApproved, sectionId:@Model.SectionId }, function (data) {
+                    if (data.state==1) {
+                        layer.msg("操作成功", {
+                            icon: 1
+                        });
+                        if (isApproved) {
+                            for (var i = 0; i < threadIds.length; i++) {
+                                $("#Essential-" + threadIds[i]).removeClass('hidden');
+                            }
+                        }
+                        else {
+                            for (var i = 0; i < threadIds.length; i++) {
+                                $("#Essential-" + threadIds[i]).addClass('hidden');
+                            }
+                        }
+
+                    }
+                    else {
+                        layer.msg("操作失败", {
+                            icon: 2
+                        });
+                    }
+                });
+            }
+        };
+
+        function UpdateStick(isApproved) {
+            var threadIds = [];
+            var getTimestamp = new Date().getTime();
+            if (!$("input[name='checks']:checked").length) {
+                layer.msg("请至少选择一篇贴子进行操作", { icon: 2 })
+            } else {
+                $('[name="checks"]:checked').each(function () {
+                    threadIds.push($(this).data('id'));
+                });
+                $.post('@CachedUrlHelper.Action("UpdateStick", "Post")', { threadIds: threadIds.join(';'), isApproved: isApproved , sectionId:@Model.SectionId  }, function (data) {
+                    if (data.state==1) {
+                        layer.msg("操作成功", {
+                            icon: 1
+                        });
+                        if (isApproved) {
+                            for (var i = 0; i < threadIds.length; i++) {
+                                $("#sticky-" + threadIds[i]).removeClass('hidden');
+                            }
+                        }
+                        else {
+                            for (var i = 0; i < threadIds.length; i++) {
+                                $("#sticky-" + threadIds[i]).addClass('hidden');
+                            }
+                        }
+                    }
+                    else {
+                        layer.msg("操作失败", {
+                            icon: 2
+                        });
+                    }
+                });
+            }
+        };
+    })
+
+</script>

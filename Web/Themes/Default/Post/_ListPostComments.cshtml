@@ -1,0 +1,127 @@
+﻿@model PagingDataSet<Comment>
+
+@{
+    var sectionId = ViewData.Get<long>("sectionId", 0);
+}
+<style>
+    .table {
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 0px;
+    }
+
+        .table :hover {
+            background-color: #f5f5f5;
+        }
+
+
+        .table > tbody > tr > td {
+            border-top: 1px solid transparent;
+            padding: 10px;
+        }
+
+        .table tr + tr td {
+            padding-top: 0;
+        }
+</style>
+
+<div>
+    @if (Model.Count() > 0)
+    {
+    @Html.Hidden("pageIndex", Model.PageIndex)
+        foreach (var comment in Model)
+        {
+            var commentedObject = comment.GetCommentedObject();
+            <table class="table" rules="none" style="table-layout:fixed;">
+                <tbody>
+                    <tr>
+                        <td style="padding:10px 0px 8px" width="20px">
+                            <input name="commentId" class="tn-checkbox" type="checkbox" data-commentid="@comment.Id" />
+                        </td>
+                        <td width="32px">
+                            @if (comment.ApprovalStatus == AuditStatus.Success)
+                            {
+                            <i class="fa fa-check-circle tn-green-color fa-lg" title="@AuditStatus.Success.GetDisplayName()"></i>
+                            }
+                            else if (comment.ApprovalStatus == AuditStatus.Pending)
+                            {
+                            <i class="fa fa-circle-o tn-orange-color fa-lg" title="@AuditStatus.Pending.GetDisplayName()"></i>
+                            }
+                            else if (comment.ApprovalStatus == AuditStatus.Fail)
+                            {
+                            <i class="fa fa-ban tn-red-color fa-lg" title="@AuditStatus.Fail.GetDisplayName()"></i>
+                            }
+                            else if (comment.ApprovalStatus == AuditStatus.Again)
+                            {
+                            <i class="fa fa-circle tn-orange-color fa-lg" title="@AuditStatus.Again.GetDisplayName()"></i>
+                            }
+                            else
+                            {
+                            <i class="fa fa-ban tn-red-color fa-lg" title="@AuditStatus.Fail.GetDisplayName()"></i>
+                            }
+
+                        </td>
+                        <td width="340px">
+                            <span><a href="@SiteUrls.Instance().SpaceHome(comment.UserId)" target="_blank">@comment.Author</a></span>
+                            于 <span>@comment.DateCreated.ConvertToUserDate().ToString("yyyy-MM-dd HH:mm")</span> 评论
+                            <span>贴子 :</span>
+                        </td>
+                        <td class="text-nowrap">
+                            @if (commentedObject != null)
+                            {
+                                var commentedObjectDetailUrl = commentedObject.DetailUrl;
+                                var commentedObjectName = commentedObject.Name;
+                                <a href="@commentedObjectDetailUrl" target="_blank" title="@commentedObjectName">@HtmlUtility.TrimHtml(commentedObjectName, 40)</a>
+                            }
+                            else
+                            {
+                            <span style="color:#bf0a10">被评论的贴子已被删除</span>
+                            }
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td></td>
+                        <td colspan="3">
+                            <p class="commentbody" style="display:inline;word-wrap:break-word;word-break:break-all;">@(Html.Raw(HtmlUtility.StripHtml(comment.Body, true, true).Length > 700 ? HtmlUtility.TrimHtml(comment.Body, 700) : comment.Body))</p>
+                            @if (HtmlUtility.StripHtml(comment.Body, true, true).Length > 700)
+                            {
+                            <a href="javascript:;" class="showorhide" data-commentbody="@comment.Body" data-isshow="true">  展开>>></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        }
+    }
+    else
+    {
+    <div class="text-center text-warning">
+        暂无任何符合条件的回贴
+    </div>
+    }
+</div>
+
+<div class="text-center">
+    @Html.AjaxPagingButton(Model, "ListPostComments", CachedUrlHelper.Action("_ListPostComments", "Post", null, new RouteValueDictionary { { "sectionId", sectionId } }))
+</div>
+<script type="text/javascript">
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+        //展开和收起
+        $('.showorhide').on('click', function () {
+            var $this = $(this);
+            var commentbody = $this.data('commentbody');
+            var swapcommentbody = $this.prev().html();
+            $this.prev().empty();
+            $this.prev().html(commentbody);
+            $this.data('commentbody', swapcommentbody);
+            if ($this.data('isshow') == true) {
+                $this.text('<<<收起');
+                $this.data('isshow', false);
+            }
+            else {
+                $this.text('展开>>');
+                $this.data('isshow', true);
+            }
+        });
+    })
+</script>

@@ -1,0 +1,125 @@
+﻿@{
+    IUser currentUser = UserContext.CurrentUser;
+    User user = ViewData.Get<User>("user", null);
+    var userProfile = ViewData.Get<UserProfile>("userProfile", new UserProfile());
+    bool isFollowed = ViewData.Get<bool>("IsFollowed", false);
+    bool seeMessage = ViewData.Get<bool>("seeMessage", false);
+    var cmsCount = ViewData.Get("cmsCount", 0L);
+    var threadCount = ViewData.Get("threadCount", 0L);
+    //用户等级
+    Func<int, string> rankimage = (n) =>
+    {
+        string rankimages = string.Empty;
+        var one = n / 9;
+        var two = (n - 9 * one) / 3;
+        var thr = n - 9 * one - 3 * two;
+        for (int i = 0; i < one; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star1.png'></li>";
+        }
+        for (int i = 0; i < two; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star2.png'></li>";
+        }
+        for (int i = 0; i < thr; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star3.png'></li>";
+        }
+        return rankimages;
+    };
+}
+<!--用户卡片-->
+<div class="panel  jh-user-card" style="width:330px;">
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-xs-3">
+                @Html.ShowUserAvatar(userId: user.UserId, avatarSizeType: AvatarSizeType.Small, isShowUserCard: false)
+            </div>
+            <div class="col-xs-9">
+                <div class="jh-user-name">
+                    <h4 title="@user.DisplayName">
+                        @HtmlUtility.TrimHtml(user.DisplayName, 5)
+                        @{
+                            var noteName = currentUser.GetNoteName(user.UserId);
+                        }
+                        @if (!string.IsNullOrEmpty(noteName))
+                        {
+                        <a title="@noteName">(@HtmlUtility.TrimHtml(noteName, 5))</a>
+                        }
+                        <i class="fa @(userProfile.Gender == GenderType.FeMale?"fa-female":"fa-male") " aria-hidden="true"></i>
+                    </h4>
+                    <ul class="list-inline star" title="@user.Rank 级">
+                        @Html.Raw(rankimage(user.Rank))
+                    </ul>
+                </div>
+                <ul class="list-inline">
+                    <li><a href="@SiteUrls.Instance().SpaceHome(user.UserId)#cms">文章：@cmsCount</a> </li>
+                    <li><a href="#">|</a> </li>
+                    <li><a href="@SiteUrls.Instance().SpaceHome(user.UserId)#post">贴子：@threadCount</a> </li>
+                    <li><a href="#">|</a> </li>
+                    <li><a href="@SiteUrls.Instance().SpaceHome(user.UserId)#follow#fans">粉丝：@user.FollowerCount</a> </li>
+                </ul>
+            </div>
+        </div>
+        <p class="text-muted" title="@userProfile.Introduction">
+            @if (userProfile.HasIntroduction)
+            {
+            @HtmlUtility.TrimHtml(userProfile.Introduction, 50)
+            }
+        </p>
+        <ul class="list-inline">
+            @if (currentUser!=null&&currentUser.UserId != user.UserId)
+            {
+                if (!isFollowed && currentUser != null)
+                {
+                <li><a class="a" href="javascript:;" onclick="$.post('@SiteUrls.Instance().Follow(user.UserId)', $.fn.followCallBack)">关注</a> </li>
+                }
+                else
+                {
+                <li><a class="a" href="javascript:;" onclick="layer.confirm('是否确认取消关注', { btn: ['确定', '取消'] }, function () {$.post('@SiteUrls.Instance().Follow(user.UserId)', $.fn.cancelFollowCallBack)})">取消关注</a> </li>
+
+                }
+            }
+
+            <li><a class="a" href="@SiteUrls.Instance().SpaceHome(user.UserId)" target="_blank">个人主页</a> </li>
+        </ul>
+    </div>
+</div>
+<script type="text/javascript">
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+        //关注回调函数
+        $.fn.followCallBack = function (data) {
+            if ('@currentUser' == "") {
+                window.location.href = "@SiteUrls.Instance().Login()";
+            }
+            else {
+                if (data.state == 1) {
+                    layer.msg(data.successmsg, { icon: 1 })
+                    window.location.reload();
+
+                }
+                else {
+                    layer.msg(data.errormsg, { icon: 2 })
+                }
+            }
+        }
+        //取消关注回调函数
+        $.fn.cancelFollowCallBack = function (data) {
+            if (data.state == 1) {
+                layer.msg(data.successmsg, { icon: 1 })
+                window.location.reload();
+                //try {
+                //    if (followFunction && typeof (followFunction) == "function") {
+                //        followFunction();
+                //    }
+
+                //} catch (e) {
+
+                //}
+            }
+            else {
+                layer.msg(data.errormsg, { icon: 2 })
+            }
+        }
+    })
+</script>

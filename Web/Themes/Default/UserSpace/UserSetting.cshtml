@@ -1,0 +1,115 @@
+﻿@model UserProfileEditModel
+
+@{
+    ViewData["Title"] = new string[] { "用户资料" };
+    TempData["SidebarType"] = "UserSetting";
+    var registerType = ViewData.Get<RegisterType>("RegisterType", RegisterType.MobileOrEmail);
+    var user = UserContext.CurrentUser;
+
+}
+
+<div class="row jh-space-setup">
+    @Html.Partial("_Sidebar")
+    <div class="col-xs-10">
+        <div class="jh-space-right jh-padding-white">
+            <div class="tn-title">
+                <h4>用户资料</h4>
+            </div>
+            <div id="gengxin">
+                @Html.Action("_UserProfile", "UserSpace")
+            </div>
+
+            <hr />
+            @using (Html.BeginForm("UserSetting", "UserSpace", FormMethod.Post, new { @id = "UserSettingForm", @class = "form-horizontal tn-form-validation" }))
+            {
+                @Html.HiddenFor(n => n.UserId)
+                @Html.ValidationMessageFor(n => n.UserId)
+
+                <div class="form-group">
+                    @Html.LabelFor(n => n.TrueName, new { @class = "col-xs-2 control-label" })
+                    <div class="col-xs-4">
+                        @Html.TextBoxFor(n => n.TrueName, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(n => n.TrueName)
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(n => n.Gender, new { @class = "col-xs-2 control-label" })
+                    <div class="col-xs-4">
+                        <label class="radio-inline">
+                            @Html.RadioButtonFor(n => n.Gender, GenderType.Male, new { @id = "inlineRadio1" })男
+                        </label>
+                        <label class="radio-inline">
+                            @Html.RadioButtonFor(n => n.Gender, GenderType.FeMale, new { @id = "inlineRadio1" })女
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(n => n.NowAreaCode, new { @class = "col-xs-2 control-label" })
+
+                    <div class="col-xs-9 tn-ml-15">
+                        <div class="row jh-space-row">
+                            @Html.AreaDropDownListFor(n => n.NowAreaCode)
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(n => n.Introduction, new { @class = "col-xs-2 control-label" })
+                    <div class="col-xs-6">
+                        @Html.TextAreaFor(n => n.Introduction, new { @class = "form-control", @rows = "5" })
+                        @Html.ValidationMessageFor(n => n.Introduction)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-offset-2 col-xs-10">
+                        <button id="tijiao" type="button" class="btn btn-primary tn-btn-wp">确定</button>
+                    </div>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    require(['jquery', 'tnlayer', 'linkageDropDownList'], function ($, tnlayer) {
+  
+
+        //倒计时
+        var count = 60;
+        function GetNumber() {
+            $("#getCode").attr("disabled", "disabled");
+            $("#getCode").val(count + "秒之后再次获取")
+            count--;
+            if (count >= 0) {
+                setTimeout(GetNumber, 1000);
+            }
+            else {
+                $("#getCode").val("免费获取短信激活码");
+                $("#getCode").removeAttr("disabled");
+                count = 60;
+            }
+        };
+        $("#tijiao").click(function myfunction() {
+            $("#UserSettingForm").validate();
+            if ($("#UserSettingForm").valid()) {
+                $.post("@SiteUrls.Instance().UserSetting()", $("#UserSettingForm").serialize(), function myfunction(data) {
+                    if (data) {
+                        layer.msg("保存成功", {
+                            icon: 1
+
+                        });
+                        window.setTimeout(function myfunction() {
+                            location.replace("@SiteUrls.Instance().UserSetting()");
+                        }, 2000)
+
+                    } else {
+                        layer.msg("保存失败", {
+                            icon: 2
+                        });
+                    }
+                })
+            }
+        });
+    })
+
+</script>

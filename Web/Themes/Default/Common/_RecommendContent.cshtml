@@ -1,0 +1,224 @@
+﻿@model SpecialContentitemEditModel
+@{
+    var recommendedItemList = ViewData.Get<IEnumerable<SpecialContentItem>>("recommendedItemList", null);
+    var specialContentTypeSelectList = ViewData.Get<List<SelectListItem>>("specialContentTypeSelectList", new List<SelectListItem>());
+    var typeId = ViewData.Get<int>("TypeId", 0);
+}
+@Styles.Render("~/Bundle/Styles/Uploader")
+@if (recommendedItemList != null && recommendedItemList.Count() > 0)
+{
+    <div class="panel-body">
+        <div class="form-group">
+            <div>已推荐到</div>
+            <div>
+                @foreach (var type in recommendedItemList)
+                {
+                <span class="label label-default">
+                    @type.GetSpecialContentType().Name
+                    @if (typeId == 0)
+                    {
+                    <a href="javascript:;" data-id="@type.Id" class="removeType"><i class="fa fa-times"></i></a>
+
+                    }
+
+
+                </span>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<div id="recommendPanel" class="panel tn-survey-form">
+    <div class="panel-body">
+        @using (Html.BeginAjaxForm("_RecommendContent", "Common", "", FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "recommendCallBack" }, new { @id = "RecommendForm", @class = "tn-form-validation " }))
+        {
+        @Html.HiddenFor(m => m.Id)
+            @Html.HiddenFor(m => m.ItemId)
+            @Html.HiddenFor(m => m.TenantTypeId)
+            @Html.HiddenFor(m => m.RecommenderUserId)
+            @Html.HiddenFor(m => m.IsLink)
+            if (!Model.IsLink)
+            {
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-xs-12" style="width:100px">
+                        @Html.LabelFor(m => m.TypeId)
+                    </div>
+                </div>
+                <div>
+                    @if (Model.TypeId == 0)
+                    {
+                    @Html.DropDownListFor(m => m.TypeId, specialContentTypeSelectList, "请选择内容推荐类型", htmlAttributes: new { @class = "form-control" })
+                    }
+                    else
+                    {
+                    @Html.DropDownListFor(m => m.TypeId, specialContentTypeSelectList, new { @class = "form-control" })
+                    }
+                </div>
+                @Html.ValidationMessageFor(m => m.TypeId)
+            </div>
+            @Html.HiddenFor(m => m.Link)
+                @Html.ValidationMessageFor(m => m.Link)
+            }
+            else
+            {
+            @Html.HiddenFor(m => m.TypeId)
+                @Html.ValidationMessageFor(m => m.TypeId)
+            }
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-xs-12" style="width:100px">
+                        @Html.LabelFor(m => m.ItemName)
+                    </div>
+                </div>
+                @Html.TextBoxFor(m => m.ItemName, new { @class = "form-control" })
+                @*@Html.TextBox("ItemName",EncryptionUtility.Base64_Decode(Model.ItemName),  new { @class = "form-control" })*@
+                @Html.ValidationMessageFor(m => m.ItemName)
+            </div>
+            if (Model.IsLink)
+            {
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-xs-12" style="width:100px">
+                        @Html.LabelFor(m => m.Link)
+                    </div>
+                </div>
+                @Html.TextBoxFor(m => m.Link, new { @class = "form-control", @placeholder = "http://" })
+                @Html.ValidationMessageFor(m => m.Link)
+            </div>
+            }
+            <div class="form-group" id="titlePicture">
+                <div id="lable_Image" hidden="hidden">
+                    <div class="row">
+                        <div class="col-xs-3">
+                            @Html.LabelFor(m => m.FeaturedImageAttachmentId)
+                        </div>
+                        <div class="col-xs-9">
+                            <span class="help-block" style="margin-top:0px" id="imageDescription"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row form-group">
+                    <div id="UploadFileImgs" class="col-xs-5">
+                    </div>
+                </div>
+                @Html.HiddenFor(m => m.FeaturedImageAttachmentId)
+                @Html.ValidationMessageFor(m => m.FeaturedImageAttachmentId)
+            </div>
+            <div class="form-group">
+                <button type="submit" id="submit" class="btn btn-primary tn-mr-10 tn-btn-wp">确定</button>
+                <button type="button" class="btn btn-default tn-btn-wp" onclick="$.fn.CloseCurrent()">关闭</button>
+            </div>
+        }
+    </div>
+</div>
+<script>
+    require(['jquery','tnlayer','uploader'],function(){
+        //关闭当前模态窗
+        $.fn.CloseCurrent=function() {
+            layer.close($("#recommendPanel").parent().parent().attr("times"));
+        }
+        $("#submit").click(function myfunction() {
+            if ( $("#TypeId").val()=="") {
+                layer.msg("请选择推荐类别", { icon: 2 });
+                return false;
+            }
+        });
+        //设置输入框 下拉框初始值
+        $(document).ready(function () {
+            var type = "@Model.TypeId";
+            if (type==0) {
+                $("input[id='TypeId']").val("")
+            }
+            else {
+                $("#TypeId option[value="+type+"]").attr("selected","selected")
+            }
+            getImageArea(type);
+        })
+        //下拉框选中事件
+        $("#TypeId").change(function () {
+            var typeId = $("#TypeId option:selected").val();
+            if (typeId!="") {
+                getImageArea(typeId);
+            }
+            else {
+                $("#lable_Image").hide();
+                $("#UploadFileImgs").html("");
+                $('input[name="FeaturedImageAttachmentId"]').val("0");
+            }
+        })
+        function getImageArea(typeId) {
+            $.get("@CachedUrlHelper.Action("_CheckRequireFeaturedImage", "Common")", { typeId: typeId, requestTime: new Date().getTime() }, function (data) {
+                if (data.state==1) {
+                    $("#lable_Image").show();
+                    $("#imageDescription").text(data.descrption);
+                    if (@Model.FeaturedImageAttachmentId != 0)
+                    {
+                        $('input[name="FeaturedImageAttachmentId"]').val("@Model.FeaturedImageAttachmentId");
+                        var innerHtml = '<div class="tn-pic-attachment">\
+                                        <img class="img-thumbnail img-responsive" src="@Model.GetFeaturedImageUrl()" alt="titleImg">\
+                                        <button class="btn btn-default btn-xs btn-removeImage" type="button"><i class="fa fa-remove"></i></button>\
+                                    </div>';
+                        $("#UploadFileImgs").html(innerHtml)
+                    }
+                    else
+                    {
+                        $('input[name="FeaturedImageAttachmentId"]').val("");
+                        $("#UploadFileImgs").html('@Html.FileUploader("UploadRecommendTitle", TenantTypeIds.Instance().Recommend(), UserContext.CurrentUser.UserId, "+", extensions: "jpg,jpeg,png,gif", callbacks: new { uploadSuccess = "succeedImageCallback" })');
+                    }
+                }
+                else {
+                    $("#lable_Image").hide();
+                    $("#UploadFileImgs").html("");
+                    $('input[name="FeaturedImageAttachmentId"]').val("0");
+                }
+            })
+        }
+
+        //上传成功回调
+        $.fn.succeedImageCallback=function(file, data) {
+            var $this = $("#UploadFileImgs");
+            var itemTmpl = '<div class="tn-pic-attachment">\
+                                <img class="img-thumbnail img-responsive" src="' + data.path + '" alt="titleImg">\
+                                <button class="btn btn-default btn-xs btn-removeImage" type="button"><i class="fa fa-remove"></i></button>\
+                                </div>';
+            $('input[name="FeaturedImageAttachmentId"]').val(data.id);
+            $this.append(itemTmpl);
+            $this.find("div[id^='uploader-UploadRecommendTitle']").remove();
+        }
+
+        //移除图片
+        $('#RecommendForm').on('click', '.btn-removeImage', function () {
+            var $this = $(this);
+            var temp = '@Html.FileUploader("UploadRecommendTitle", TenantTypeIds.Instance().Recommend(), UserContext.CurrentUser.UserId, "+", extensions: "jpg,jpeg,png,gif", callbacks: new { uploadSuccess = "succeedImageCallback" })';
+            $('input[name="FeaturedImageAttachmentId"]').val("");
+            $this.parent().parent().html(temp);
+        });
+
+        //移除推荐类别
+        $(".removeType").click(function () {
+            $this = $(this);
+            itemId = $this.data("id");
+            var ItemName = $("#ItemName").val();
+            $.post("@CachedUrlHelper.Action("_DeleteSpecialContentItem", "Common")",{specialContentItemId:itemId},function (data) {
+                if(data.state==1){
+
+                    $.get('@CachedUrlHelper.Action("_RecommendContent","Common")',{itemId:'@Model.ItemId',tenantTypeId:'@Model.TenantTypeId',itemName:'@Model.ItemName',featuredImageAttachmentId:'@Model.FeaturedImageAttachmentId',TypeId:'@Model.TypeId',specialContentItemId:'@Model.Id',requestTime:new Date().getTime()},
+                        function (data) {
+                            $("#recommendPanel").parent().html(data);
+                            $("#ItemName").val(ItemName);
+                        })
+                    @*$.get('@SiteUrls.Instance()._RecommendContent(Model.ItemId,Model.TenantTypeId,Model.ItemName,Model.FeaturedImageAttachmentId,Model.TypeId,Model.Id)',
+                            function (data) {
+                            $("#recommendPanel").parent().html(data);
+                        })*@
+                }
+                else {
+
+                }
+            })
+        })
+    })
+
+</script>

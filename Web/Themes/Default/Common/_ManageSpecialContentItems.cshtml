@@ -1,0 +1,41 @@
+﻿@model IEnumerable<SpecialContentItem>
+@{
+    var typeId = ViewData.Get<int>("typeId", 0);
+    var topNumber = ViewData.Get<int>("topNumber", 0);
+    var allowExternalLink = ViewData.Get<bool>("AllowExternalLink", false);
+}
+<div class="panel">
+    @if (allowExternalLink)
+    {
+        <a id="layerrecommendContent" class="btn btn-default col-xs-3 " href="javascript:;"><i class="fa fa-plus"></i>添加外链</a>
+    }
+ 
+    <div id="_listSpecialContentItems" class="panel-body">
+        @Html.Action("_ListSpecialContentItems", "Common", new RouteValueDictionary(new { typeId = typeId, topNumber = topNumber }))
+    </div>
+</div>
+<script>
+    //提交推荐表单回调
+      require(['jquery','tnlayer'],function($,tnlayer){
+          $("#layerrecommendContent").click(function(){
+              tnlayer.layermodal('添加外部链接', '@SiteUrls.Instance()._RecommendContent(0,TenantTypeIds.Instance().Link(),"",typeId:typeId)'.replace(/&amp;/g, "&"), '450px', '480px')
+          })
+
+            $.fn.recommendCallBack=function(data) {
+            if (data.state == 1) {
+                $.fn.CloseCurrent();
+                layer.msg("操作成功", { icon: 1 });
+                @*var type = "@typeId";
+                if (type == 0) {
+                    type = $("#TypeId option:selected").val();
+                }*@
+                $.get("@CachedUrlHelper.Action("_ListSpecialContentItems", "Common")", { typeId: "@typeId", requestTime: new Date().getTime() }, function (data) {
+                    $("#_listSpecialContentItems").html(data);
+                })
+            }
+            else {
+                layer.msg("操作失败", { icon: 2 });
+            }
+        }
+      })
+</script>

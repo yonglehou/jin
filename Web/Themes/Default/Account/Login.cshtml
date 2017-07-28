@@ -1,0 +1,118 @@
+﻿@model LoginEditModel
+@{
+    ViewData["Title"] = new string[] { "登录" };
+}
+<style type="text/css">
+    .form-horizontal .form-group {
+        margin-right: 0px;
+        margin-left: 0px;
+    }
+</style>
+<!--微信第三方登录js-->
+<script src="http://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js"></script>
+
+@{
+    var errorMessage = TempData.Get<string>("errorMessage", string.Empty);
+    var SiteName = ViewData.Get<string>("SiteName", string.Empty);
+    var registerType = ViewData.Get<RegisterType>("RegisterType", RegisterType.MobileOrEmail);
+    var accountTypes = ViewData.Get<IEnumerable<AccountType>>("accountTypes", null);
+    var placeholder = string.Empty;
+    switch (registerType)
+    {
+        case RegisterType.Mobile:
+            placeholder = "手机号码/昵称";
+            break;
+        case RegisterType.Email:
+            placeholder = "邮箱/昵称";
+            break;
+        case RegisterType.MobileOrEmail:
+            placeholder = "手机号码/邮箱/昵称";
+            break;
+        case RegisterType.EmailOrMobile:
+            placeholder = "邮箱/手机号码/昵称";
+            break;
+
+    }
+}
+<div class="jh-login-home">
+    <h1 class="tn-mb-30 tn-space-xlg-hor">欢迎登录@(SiteName)</h1>
+    @using (Html.BeginForm("Login", "Account", FormMethod.Post, new { @id = "LoginForm", @class = "tn-space-xlg-hor tn-form-validation form-horizontal " }))
+    {
+        @Html.HiddenFor(n => n.ReturnUrl)
+        <div class="form-group ">
+            @Html.TextBoxFor(n => n.Name, new { @class = "form-control", @placeholder = @placeholder, @style = "padding-left:35.5px" })
+            <span style="left:0px" class="glyphicon  form-control-feedback" aria-hidden="true"><i class="fa fa-user"></i></span>
+            @Html.ValidationMessageFor(n => n.Name)
+        </div>
+        <div class="form-group">
+            @Html.PasswordFor(n => n.PassWord, new { @class = "form-control", @placeholder = "请输入密码", @style = "padding-left:35.5px" })
+            <span style="left:0px" class="glyphicon  form-control-feedback" aria-hidden="true"><i class="fa fa-lock"></i></span>
+            @Html.ValidationMessageFor(n => n.PassWord)
+            <span id="qtts" style="color:red;display:none">@errorMessage</span>
+        </div>
+        var mathBuildInfoModel = new ViewDataDictionary();
+
+        mathBuildInfoModel.Add("InputText", "换一换");
+        mathBuildInfoModel.Add("ErrorMessage", errorMessage);
+        mathBuildInfoModel.Add("RequiredMessage", "请输入正确验证码");
+        mathBuildInfoModel.Add("IsRequired", true);
+        @Html.Captcha(4, "_DefaultCaptchaView", mathBuildInfoModel).AsIntelligent()
+
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary btn-block">登录</button>
+        </div>
+        <div class="form-group">
+            <div class="row">
+                <div class="col-xs-5">
+                    <div class="checkbox">
+                        <label>
+                            @Html.CheckBoxFor(n => n.RememberPassword)<small> 下次自动登录</small>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <a href="@SiteUrls.Instance().ResetPassword()" class="btn btn-link a">忘记密码？</a>
+                </div>
+                <div class="col-xs-3 text-right">
+                    <a onclick="window.location.href='@SiteUrls.Instance().Register(null)'" class="btn btn-link a">注册帐号</a>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            @if (accountTypes != null && accountTypes.Any()&&Utility.CheckThirdPartyLogin())
+            {
+                <hr class="tn-m
+                    t-0 tn-mb-10" />
+                <ul class="list-inline jh-share-icon">
+                    <li>第三方登录</li>
+                    @if (accountTypes.Where(n => n.AccountTypeKey == AccountTypeKeys.Instance().QQ()).Count() > 0)
+                    {
+                        <li><button type="button" class="btn btn-link" onclick="window.location='@SiteUrls.Instance().LoginToThird(AccountTypeKeys.Instance().QQ())'"><i class="fa fa-qq"></i></button></li>
+                    }
+                    @if (accountTypes.Where(n => n.AccountTypeKey == AccountTypeKeys.Instance().WeChat()).Count() > 0)
+                    {
+                        <li><button type="button" class="btn btn-link layerwechat" ><i class="fa fa-weixin"></i></button></li>
+                    }
+                </ul>
+
+            }
+        </div>
+    }
+
+</div>
+
+<script>
+    require(['jquery', 'tnlayer', "validate"], function ($, tnlayer) {
+       $(".layerwechat").click(function(){
+           tnlayer.layermodal('微信登录', '@SiteUrls.Instance().LoginToThird(AccountTypeKeys.Instance().WeChat())', '550px', '550px')
+       })
+    
+        //其他错误提示
+        $(function () {
+            var type = typeof ($("#CaptchaDeTextmp").attr("type"));
+            if (type == "string") {
+                $("#qtts").show();
+            }
+        });
+    })
+</script>

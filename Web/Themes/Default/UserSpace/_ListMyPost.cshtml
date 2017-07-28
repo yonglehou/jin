@@ -1,0 +1,59 @@
+﻿@model PagingDataSet<Thread>
+@{
+    var user = ViewData.Get<IUser>("user", null);
+}
+
+@if (Model != null)
+{
+    foreach (var item in Model)
+    {
+        <div class="media">
+            <div class="media-left">
+                @Html.ShowUserAvatar(userId: item.UserId, htmlAttributes: new RouteValueDictionary { { "width", "50" }, { "height", "50" } })
+            </div>
+            <div class="media-body">
+                <h5 class="media-heading"><a href="@CachedUrlHelper.Action("ThreadDetail","Post",null,new RouteValueDictionary { { "threadId",item.ThreadId }})" title="@item.Subject" target="_blank">@HtmlUtility.TrimHtml(item.Subject, 30)</a></h5>
+                <ul class="list-inline text-muted">
+                    <li><a href="@SiteUrls.Instance().MyHome(item.UserId)?type=home" target="_blank"> @item.Author</a></li>
+                    <li><i class="fa fa-clock-o" aria-hidden="true"></i> @item.LastModified.ToFriendlyDate()</li>
+                    <li>
+                        <a href="@CachedUrlHelper.Action("BarSectionDetail","Post",null,new RouteValueDictionary { {"sectionId",item.BarSection.SectionId }})" target="_blank" title="@item.BarSection.Name">
+                            <i class="fa fa-tags" aria-hidden="true"></i>
+                            @HtmlUtility.TrimHtml(item.BarSection.Name, 10)
+                        </a>
+                    </li>
+                    <li class="pull-right"><i class="fa fa-commenting" aria-hidden="true"></i> @item.CommentCount</li>
+                    <li class="pull-right"><i class="fa fa-eye" aria-hidden="true"></i> @item.HitTimes</li>
+                    @if (item.LastModifiedUserId != 0)
+                    {
+                    <li>@UserIdToUserNameDictionary.GetDisplayName(item.LastModifiedUserId) 最后回复于 @item.LastModified.ToFriendlyDate()</li>
+                    }
+                </ul>
+                <div class="tn-chat-photo">
+                    <ul class="tn-nine-squares list-unstyled clearfix">
+                        @{ int i = 1;}
+                        @foreach (var img in item.Attachments)
+                        {
+                            if (img.MediaType != MediaType.Image)
+                            {
+                                continue;
+                            }
+                        <li class="tn-photo-item"><a class="tn-block" target="_blank" href="@CachedUrlHelper.Action("ThreadDetail","Post",null,new RouteValueDictionary { { "threadId",item.ThreadId }})"><img class="tn-block" src="@img.GetDirectlyUrl("Small")" alt=""></a></li>
+                            {
+                                i++;
+                                if (i == 4)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+                            }
+
+                            <div class="text-center">
+                                @Html.AjaxPagingButton(Model, "_ListMyPost", CachedUrlHelper.Action("_ListMyPost", "UserSpace", null, new RouteValueDictionary { { "userId", user.UserId } }))
+                            </div>
+                            }

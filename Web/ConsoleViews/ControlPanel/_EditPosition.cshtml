@@ -1,0 +1,112 @@
+﻿@model AdvertisingPositionEditModel
+
+<div class="panel tn-survey-form">
+    <div class="panel-body">
+        @using (Html.BeginAjaxForm("_EditPosition", "ControlPanel", "", FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "EditCallBack" }, new { @id = "positionForm", @class = "tn-form-validation" }))
+        {
+        @Html.HiddenFor(m => m.IsNew)
+            @Html.HiddenFor(m => m.IsLocked)
+            if (!Model.IsNew)
+            {
+            <div class="form-group">
+                @Html.LabelFor(m => m.PositionId)
+                @Html.TextBoxFor(m => m.PositionId, htmlAttributes: new { @class = "form-control", @readonly = "readonly" })
+                @Html.ValidationMessageFor(m => m.PositionId)
+            </div>
+            }
+            else
+            {
+            <div class="form-group">
+                @Html.LabelFor(m => m.PositionId)
+                @Html.TextBoxFor(m => m.PositionId, htmlAttributes: new { @class = "form-control", @maxlength = "8" })
+                @Html.ValidationMessageFor(m => m.PositionId)
+            </div>
+            }
+            <div class="form-group">
+                @Html.LabelFor(m => m.Description)
+                @Html.TextBoxFor(m => m.Description, htmlAttributes: new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.Description)
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.ImageAttachmentId)
+                @Html.HiddenFor(m => m.ImageAttachmentId, htmlAttributes: new { @class = "form-control" })
+                @if (Model.ImageAttachmentId == 0)
+                {
+                <div id="UploadFileImgs">
+                    @Html.FileUploader("UploadImage", TenantTypeIds.Instance().AdvertisingPosition(), UserContext.CurrentUser.UserId, "+", extensions: "jpg,jpeg,png,gif", callbacks: new { uploadSuccess = "succeedImageCallback" })
+                </div>
+                }
+                else
+                {
+                <div id="UploadFileImgs">
+                    <div class="tn-pic-attachment">
+                        <img class="img-thumbnail img-responsive" src="@Model.GetImageUrl()" alt="...">
+                        <button class="btn btn-default btn-xs btn-removeImage" type="button"><i class="fa fa-remove"></i></button>
+                    </div>
+                </div>
+                }
+                @Html.ValidationMessageFor(m => m.ImageAttachmentId)
+            </div>
+            <div class="form-group row">
+                <div class="form-group col-xs-6 row">
+                    @Html.LabelFor(m => m.Width, new { @class = "col-xs-12" })
+                    <div class="col-xs-9">
+                        @Html.TextBoxFor(m => m.Width, new { @class = "form-control" })
+                    </div>
+                    <p class="help-block col-xs-3 text-left">px</p>
+                    <label class="help-block col-xs-12">0表示不限</label>
+                    @Html.ValidationMessageFor(m => m.Width)
+                </div>
+                <div class="form-group col-xs-offset-1 col-xs-6 row">
+                    @Html.LabelFor(m => m.Height, new { @class = "col-xs-12" })
+                    <div class="col-xs-9">
+                        @Html.TextBoxFor(m => m.Height, new { @class = "form-control" })
+                    </div>
+                    <p class="help-block col-xs-3 text-left">px</p>
+                    <label class="help-block col-xs-12">0表示不限</label>
+                    @Html.ValidationMessageFor(m => m.Height)
+                </div>
+                @*<div class="help-block col-xs-6">不填表示不限</div>
+                    <div class="help-block col-xs-offset-1 col-xs-5">不填表示不限</div>*@
+            </div>
+            <div class="form-group">
+                @Html.CheckBoxFor(m => m.IsEnable)
+                @Html.LabelFor(m => m.IsEnable)
+            </div>
+                <div class="form-group">
+                    <button type="submit" id="submit" class="btn btn-primary tn-mr-10 tn-btn-wp">确定</button>
+                    <button type="button" class="btn btn-default tn-btn-wp" data-dismiss="modal" id="cancel">关闭</button>
+                </div>
+
+        }
+    </div>
+</div>
+
+@Styles.Render("~/Bundle/Styles/Uploader")
+<script>
+    require(['jquery', 'uploader'], function () {
+        //上传成功回调
+        $.fn.succeedImageCallback = function (file, data) {
+            var $this = $("#UploadFileImgs");
+            var itemTmpl = '<div class="tn-pic-attachment">\
+                                <img class="img-thumbnail img-responsive" src="' + data.path + '" alt="...">\
+                                <button class="btn btn-default btn-xs btn-removeImage" type="button"><i class="fa fa-remove"></i></button>\
+                                </div>';
+            $('input[name="ImageAttachmentId"]').val(data.id);
+            $this.append(itemTmpl);
+            $this.find("div[id^='uploader-UploadImage']").remove();
+        }
+        //移除图片
+        $('#positionForm').on('click', '.btn-removeImage', function () {
+            var $this = $(this);
+            var temp = '@Html.FileUploader("UploadImages", TenantTypeIds.Instance().AdvertisingPosition(), UserContext.CurrentUser.UserId, "+", extensions: "jpg,jpeg,png,gif", callbacks: new { uploadSuccess = "succeedImageCallback" })';
+            $this.parent().parent().html(temp);
+            $('input[name="ImageAttachmentId"]').val(0);
+        });
+
+        //取消
+        $("#cancel").click(function () {
+            layer.closeAll();
+        });
+    })
+</script>

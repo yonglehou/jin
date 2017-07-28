@@ -1,0 +1,82 @@
+﻿@model UserProfileEditModel
+@{
+    ViewData["Title"] = new string[] { "用户资料" };
+    var thirdUser = ViewData.Get<ThirdUser>("thirdUser", null);
+    var user = UserContext.CurrentUser;
+}
+@Styles.Render("~/Bundle/Styles/Uploader")
+
+<div class="jh-login-home">
+    <h1 class="tn-mb-30 tn-space-xlg-hor text-center">完善资料，仅需一步了</h1>
+    <div class="jh-user-head text-center">
+        <!--第三方登录的完善信息-->
+        @if (thirdUser != null)
+        {
+            <img class="img-circle" alt="用户头像" src="@thirdUser.UserAvatarUrl" width="120" height="120">
+            <button class="btn btn-default layeravatar" ><i class="fa fa-pencil" aria-hidden="true"></i></button>
+        }                                            
+        else
+        {
+            <img class="img-circle" alt="..." src="@SiteUrls.Instance().UserAvatarUrl(user, AvatarSizeType.Big)" width="120" height="120">
+            <button class="btn btn-default layeravatar" ><i class="fa fa-pencil" aria-hidden="true"></i></button>
+        }
+    </div>
+    @using (Html.BeginForm("PerfectInformation", "Account", FormMethod.Post, new { @id = "RegisterForm", @class = "form-horizontal tn-form-validation  tn-space-xlg-hor" }))
+    {
+        @Html.HiddenFor(n => n.HasAvatar)
+        @Html.HiddenFor(n => n.UserId)
+        <div class="form-group">
+            @Html.LabelFor(n => n.UserName)
+            @Html.TextBoxFor(n => n.UserName, new { @class = "form-control" })
+            @Html.ValidationMessageFor(n => n.UserName)
+            <span class="help-block tn-mb-0">请输入3-16位字符，支持中文、英文、数字和"-"、"_"</span>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(n => n.TrueName)
+            @Html.TextBoxFor(n => n.TrueName, new { @class = "form-control" })
+            @Html.ValidationMessageFor(n => n.TrueName)
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(n => n.Gender)
+            <div>
+                <label class="radio-inline">
+                    <input type="radio" value="Male" name="Gender" />
+                    <small>男</small>
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" value="FeMale" name="Gender" />
+                    <small>女</small>
+                </label>
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(n => n.NowAreaCode)
+            <div class="row">
+                <div class="col-xs-12" style="width:700px;">
+                    @Html.AreaDropDownListFor(model => model.NowAreaCode, 3)
+                    @Html.ValidationMessageFor(n => n.NowAreaCode)
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(n => n.Introduction)
+            @Html.TextAreaFor(n => n.Introduction, new { @class = "form-control", @placeholder = "一句话介绍，在空间主页显示", @rows = "3" })
+            @Html.ValidationMessageFor(n => n.Introduction)
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary tn-btn-wm">确定</button>
+        </div>
+    }
+</div>
+<script>
+    
+    require(['jquery','tnlayer','uploader','linkageDropDownList'],function($,tnlayer){
+        $(".layeravatar").click(function(){
+            tnlayer.layermodal('头像设置','@CachedUrlHelper.Action("_Avatar", "UserSpace")','550px','510px')
+        })
+
+    
+    })
+
+
+</script>

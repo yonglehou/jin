@@ -1,0 +1,63 @@
+﻿@{
+    TempData["myhome-check"] = "mycms";
+    var userHolder = ViewData.Get<IUser>("userHolder", null);
+    var categoryCount = ViewData.Get<int>("categoryCount", 0);
+}
+<div class="row jh-my-news">
+    <div class="tn-plr-15">
+        <div class="col-xs-9" id="mycmslist">
+            @Html.Action("_ListMyCMS", "UserSpace", new RouteValueDictionary { { "userId", userHolder.UserId } })
+        </div>
+        <div class="col-xs-3">
+            @if (userHolder != null && UserContext.CurrentUser != null && userHolder.UserId == UserContext.CurrentUser.UserId && categoryCount > 0)
+            {
+                <a data-href="@CachedUrlHelper.Action("_EditCMS","UserSpace")" class="btn btn-primary tn-mb-20 btn-block" name="maintabnav" data-type="cms-edit">
+                    写文章
+                </a>
+            }
+            @Html.Action("_Hotarticle", "CMS")
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    require(['jquery'], function () {
+        $.fn.showoperation = function (e) {
+            if (e.children[1]) {
+                e.children[1].children[2].children[3].style.display = "block";
+                if (e.children[1].children[2].children[4]) {
+                    e.children[1].children[2].children[4].style.display = "block";
+                }
+                else {
+                    e.children[1].children[2].children[2].style.display = "block";
+                }
+            } else {
+                e.children[0].children[2].children[3].style.display = "block";
+                if (e.children[0].children[2].children[4]) {
+                    e.children[0].children[2].children[4].style.display = "block";
+                }
+                else {
+                    e.children[0].children[2].children[2].style.display = "block";
+                }
+            }
+        }
+        $.fn.hideoperation = function (e) {
+            if (e.children[1]) {
+                e.children[1].children[2].children[3].style.display = "none";
+                if (e.children[1].children[2].children[4]) {
+                    e.children[1].children[2].children[4].style.display = "none";
+                }
+                else {
+                    e.children[1].children[2].children[2].style.display = "none";
+                }
+            } else {
+                e.children[0].children[2].children[3].style.display = "none";
+                if (e.children[0].children[2].children[4]) {
+                    e.children[0].children[2].children[4].style.display = "none";
+                }
+                else {
+                    e.children[0].children[2].children[2].style.display = "none";
+                }
+            }
+        }
+    })
+</script>

@@ -1,0 +1,32 @@
+﻿@model IEnumerable<ContentItem>
+@{
+    var contentModelService = DIContainer.Resolve<ContentModelService>();
+}
+
+@if (Model.Any())
+{
+    <div class="tn-gray-bg">
+        <div class="tn-title">
+            <h5>一周热文</h5>
+        </div>
+        @foreach (var item in Model)
+        {
+        <div class="jh-thumbnail">
+            <a href="@SiteUrls.Instance().CMSDetail(item.ContentItemId)" title="@item.Subject">
+                @if (item.FeaturedImageAttachmentId > 0)
+                    {
+                    <div class="jh-vedio-img">
+                        <img class="lazy" data-original="@item.FristFeaturedImage("List")" width="225" height="127" />
+                        @if (item.ContentModelId == contentModelService.GetContentModelsByContentModeKey(ContentModelKeys.Instance().Video()).ModelId)
+                        {
+                        <div class="jh-vedio-mask"><i class="fa fa-play-circle-o" aria-hidden="true"></i></div>
+                        }
+                    </div>
+                }
+                <p>@HtmlUtility.TrimHtml(item.Subject, 32)</p>
+            </a>
+        </div>
+        }
+
+    </div>
+}

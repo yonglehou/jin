@@ -1,0 +1,57 @@
+﻿@model List<UserRank>
+@{
+    var experience = ViewData.Get<PointCategory>("experience", null);
+}
+<style>
+    .list-inline li {
+        padding-right: 0px;
+        padding-left: 0px;
+    }
+</style>
+@if (Model.Any())
+{
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th class="col-xs-1">等级</th>
+                <th class="col-xs-1">等级名称</th>
+                <th>等级图标</th>
+                <th class="col-xs-2">@(experience.CategoryName)下限</th>
+                <th class="col-xs-1">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Rank</td>
+                    <td>@item.RankName</td>
+                    <td>@Html.UserRankIcon(item.Rank)</td>
+                    <td>@item.PointLower</td>
+                    <td>
+                        <a class="layeruserrankedit" data-id="@item.Rank" role="button" title="编辑">
+                            <i class="fa fa-pencil fa-lg"></i>
+                        </a>
+                        <a data-href="" id="delete-@item.Rank" role="button" title="删除">
+                            <i class="fa fa-trash fa-lg"></i>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="text-center text-warning">
+        还没有任何用户等级
+    </div>
+}
+<script>
+    require(['jquery','tnlayer'], function ($, tnlayer) {
+        $('.layeruserrankedit').click(function () {
+            var rank = $(this).data("id");
+            tnlayer.layermodal('编辑用户等级', '@CachedUrlHelper.Action("_EditUserRank", "ControlPanel")?userRank='+rank+'&t=' + new Date().getTime(), '450px', '450px')
+        })
+    })
+</script>

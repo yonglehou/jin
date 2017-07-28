@@ -1,0 +1,66 @@
+﻿@model List<SelectListItem>
+@{
+    TempData["subMenu-check"] = new string[] { "Public", "ManageTags" };
+    ViewData["Title"] = new string[] { "标签管理" };
+}
+
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-xs-12">
+        <h3>标签管理</h3>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="form-inline tn-tool-column">
+            <div class="form-group">
+                <label>关键字:</label>
+                @Html.TextBox("keyword", string.Empty, new { @class = "form-control", @placeholder = "标签名称" })
+            </div>
+            <div class="form-group">
+                <label>所属：</label>
+                @Html.DropDownList("tenantTypeIds", Model, new { @class = "form-control", @style = "width:179px" })
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary" type="button" id="select">搜索</button>
+            </div>
+        </div>
+        <hr>
+        <div class="form-inline tn-tool-column">
+            <div class="form-group">
+                <a class="btn btn-default" id="btn-createtag">
+                    <i class="fa fa-plus"></i>
+                    添加标签
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="listtag">
+    @Html.Action("_ListTags", "ControlPanel")
+</div>
+@*分页*@
+<!--@Scripts.Render("~/Bundle/Scripts/page")-->
+@*文件上传*@
+@Styles.Render("~/Bundle/Styles/Uploader")
+<!--@Scripts.Render("~/Bundle/Scripts/Uploader")-->
+
+<script>
+    require(['jquery','tnlayer', 'page'], function ($,tnlayer) {
+        //标签弹窗创建
+        $("#btn-createtag").click(function (e) {
+            e.preventDefault();
+            var url = "@CachedUrlHelper.Action("_EditTag", "ControlPanel")" + "?tenantTypeId=" + $("#tenantTypeIds").val() + "&t=" + new Date().getTime();
+            tnlayer.layermodal('添加标签', url, '450px', '520px');
+        });
+
+
+        //搜索
+        $("#select").click(function myfunction() {
+            var param = jQuery.param({ keyWord: $("#keyword").val(), tenantTypeId: $("#tenantTypeIds").val(), t: new Date().getTime() });
+            $.get("@CachedUrlHelper.Action("_ListTags", "ControlPanel")", param, function (data) {
+                $("#listtag").html(data);
+            });
+        });
+
+    })
+</script>

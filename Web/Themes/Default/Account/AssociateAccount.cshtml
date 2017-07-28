@@ -1,0 +1,63 @@
+﻿@model LoginEditModel
+
+@{
+    var errorMessage = TempData.Get<string>("errorMessage", string.Empty);
+    var registerType = ViewData.Get<RegisterType>("registerType", RegisterType.MobileOrEmail);
+    var placeholder = string.Empty;
+    switch (registerType)
+    {
+        case RegisterType.Mobile:
+            placeholder = "手机号码/昵称";
+            break;
+        case RegisterType.Email:
+            placeholder = "邮箱/昵称";
+            break;
+        case RegisterType.MobileOrEmail:
+            placeholder = "手机号码/邮箱/昵称";
+            break;
+        case RegisterType.EmailOrMobile:
+            placeholder = "邮箱/手机号码/昵称";
+            break;
+    }
+}
+<div class="jh-login-home">
+    <h1 class="tn-mb-30 tn-space-xlg-hor">请登录关联已有帐号</h1>
+    @using (Html.BeginForm("AssociateAccount", "Account", FormMethod.Post, new { @id = "LoginForm", @class = "tn-space-xlg-hor form-horizontal tn-form-validation" }))
+    {
+        <div class="form-group">
+            @Html.TextBoxFor(n => n.Name, new { @class = "form-control", @placeholder = @placeholder, @style = "padding-left:35.5px" })
+            <span style="left:0px" class="glyphicon  form-control-feedback" aria-hidden="true"><i class="fa fa-user"></i></span>
+            @Html.ValidationMessageFor(n => n.Name)
+        </div>
+        <div class="form-group">
+            @Html.PasswordFor(n => n.PassWord, new { @class = "form-control", @placeholder = "请输入密码", @style = "padding-left:35.5px" })
+            <span style="left:0px" class="glyphicon  form-control-feedback" aria-hidden="true"><i class="fa fa-lock"></i></span>
+            @Html.ValidationMessageFor(n => n.PassWord)
+            <span id="qtts" style="color:red;display:none">@errorMessage</span>
+        </div>
+        var mathBuildInfoModel = new ViewDataDictionary();
+
+        mathBuildInfoModel.Add("InputText", "换一换");
+        mathBuildInfoModel.Add("ErrorMessage", errorMessage);
+        mathBuildInfoModel.Add("RequiredMessage", "请输入正确验证码");
+        mathBuildInfoModel.Add("IsRequired", true);
+        @Html.Captcha(4, "_DefaultCaptchaView", mathBuildInfoModel).AsIntelligent()
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary btn-block tn-btn-wm">登录</button>
+        </div>
+    }
+</div>
+
+<script>
+    require(['jquery'],function(){
+        
+
+        $("#Password").blur(function myfunction() {
+            if ($(this).val().length > 0) {
+                $("#codemessage").hide();
+            }
+        });
+
+
+    })
+</script>

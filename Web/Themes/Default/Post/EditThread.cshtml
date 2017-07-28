@@ -1,0 +1,197 @@
+﻿@model ThreadEditModel
+
+@{
+    ViewData["Title"] = new string[] { Model.ThreadId > 0 ? "编辑贴子" : "发布贴子" };
+    var user = UserContext.CurrentUser;
+    var Section = ViewData.Get<Section>("Section", new Section());
+    var selectListItems = ViewData.Get<List<SelectListItem>>("SelectListItems", new List<SelectListItem>());
+}
+
+@Styles.Render("~/Bundle/Styles/Uploader")
+
+<div class="tn-doc">
+    <div class="tn-content">
+        <div class="container tn-survey-form">
+            <div class="jh-post-top tn-mb-20 jh-top-center">
+                <div class="row">
+                    <div class="col-xs-1">
+                        <img src="@(new AttachmentService(TenantTypeIds.Instance().Section()).Get(Section.FeaturedImageAttachmentId).GetDirectlyUrl("Small"))" width="60" height="60" alt="...">
+                    </div>
+                    <div class="jh-post-title col-xs-11">
+                        <div class="jh-title-left">
+                            <h4><a href="@CachedUrlHelper.Action("BarSectionDetail", "Post", null, new RouteValueDictionary { { "sectionId", Section.SectionId } })"><strong>@Section.Name</strong></a></h4>
+                        </div>
+                        <div class="jh-title-right">
+                            <ul class="list-inline">
+                                <li>主题数：@Section.ThreadCount</li>
+                                <li>回贴数：@(Section.ThreadAndPostCount - Section.ThreadCount)</li>
+                                <li>用户数：@Section.GetFavoritedUserCount()</li>
+                                @if (Section.Category != null)
+                                {
+                                    <li>所属分类： <a href="@CachedUrlHelper.Action("BarSection", "Post", null, new RouteValueDictionary { { "categoryId", Section.Category.CategoryId } })">@Section.Category.CategoryName</a></li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="jh-padding-white">
+                <h5 class="tn-mb-20">
+                    @if (Model.ThreadId == 0)
+                    {
+                        <text>发布贴子</text>
+                    }
+                    else
+                    {
+                        <text>编辑贴子</text>
+                    }
+                </h5>
+                @using (Html.BeginAjaxForm("EditThread", "Post", "", FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "editThreadCallBack" }, new { @id = "EditThreadForm", @class = "form-horizontal tn-form-validation" }))
+                {
+                    @Html.HiddenFor(n => n.ThreadId)
+                    @Html.HiddenFor(n => n.SectionId)
+                    @Html.HiddenFor(n => n.BodyImageAttachmentId)
+                    @Html.ValidationMessageFor(n => n.BodyImageAttachmentId)
+
+                    <div class="form-group">
+                        <div class="col-xs-12">
+                            @Html.TextBoxFor(n => n.Subject, new { @class = "form-control", placeholder = "贴子标题" })
+                            @Html.ValidationMessageFor(n => n.Subject)
+                        </div>
+                    </div>
+
+                    <div class="form-group ">
+                        <div class="col-xs-12">
+                            @Html.HtmlEditor("Body", TenantTypeIds.Instance().Thread(), Model.ThreadId, Model.Body, new Dictionary<string, object> { { "style", "height:400px;" }, { "maximumWords", 20000 } }, "allsattachment")
+                            @Html.ValidationMessageFor(n => n.Body)
+                        </div>
+                    </div>
+                    <div class="form-group ">
+                        <div class="col-xs-12" id="TemporaryAttachments">
+                            @Html.Action("_TemporaryAttachments", "Common", new { tenantTypeId = TenantTypeIds.Instance().Thread() })
+                        </div>
+                        <div class="col-xs-12" id="Attachments">
+                            @Html.Action("_Attachments", "Common", new { contentItemId = Model.ThreadId, tenantTypeId = TenantTypeIds.Instance().Thread() })
+                        </div>
+                    </div>
+                    if (selectListItems.Count > 0)
+                    {
+                        <div class="form-group">
+                            <label class="col-xs-1 control-label">贴子分类</label>
+                            <div class="col-xs-3">
+                                @Html.DropDownList("CategoryId", selectListItems, new { @class = "form-control", value = Model.CategoryId })
+                            </div>
+                        </div>
+                    }
+                    <div class="form-group">
+                        <div class="col-xs-1">
+
+                        </div>
+                        <div class="col-xs-2">
+                            <button class="btn btn-primary btn-submit" type="button">确定</button>
+                            <button type="button" class="btn btn-default cancel">取消</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    require(['jquery', 'ZeroClipboard', 'tnlayer', 'ueditor'], function ($, ZeroClipboard, tnlayer) {
+        window['ZeroClipboard'] = ZeroClipboard;
+        function operateAttachment() {
+            //编辑器 img
+            var bodyImageIds = [];
+            var bodyImageId = $("#BodyImageAttachmentId");
+            var _img = $(UE.getEditor("Body").getContent()).find("img")
+            $(_img).each(function () {
+                bodyImageIds.push($(this).data('id'));
+            });
+            //临时附件
+            var _temporarya = $("#TemporaryAttachments").find("a")
+            $(_temporarya).each(function () {
+                bodyImageIds.push($(this).data('id'));
+            });
+            //正式附件
+            var _attachments = $("#Attachments").find("a")
+            $(_attachments).each(function () {
+                bodyImageIds.push($(this).data('id'));
+            });
+
+            bodyImageId.val(bodyImageIds);
+        }
+
+        //提交
+        $('.btn-submit').on("click", function () {
+
+            if ($.trim($('input[name="Subject"]').val()).length == 0) {
+                layer.msg("标题不能为空", {
+                    icon: 2
+                });
+                return false;
+            }
+            operateAttachment();
+            $('#EditThreadForm').submit();
+
+        })
+        //删除附件
+        $(document).on('click', 'a[id^=delete-]', function (e) {
+            var $this = $(this);
+            //添加时间戳
+            var getTimestamp = new Date().getTime();
+            var id = $(this).attr("id").replace(/[^0-9]/ig, "");
+            $.post('@CachedUrlHelper.Action("_DeleteAttachments", "Common")?attachmentId=' + id + '&timestamp=' + getTimestamp, function myfunction(data) {
+                if (data.MessageType) {
+                    layer.msg(data.MessageContent, {
+                        icon: 1
+                    });
+                    $this.parent().remove();
+                }
+                else {
+                    layer.msg(data.MessageContent, {
+                        icon: 2
+                    });
+                }
+            });
+        });
+        //回调
+        $.fn.editThreadCallBack = function (data) {
+            if (data.state == 1) {
+                layer.msg("操作成功", {
+                    icon: 1
+                });
+                setTimeout(function () {
+                    window.location.href = "@CachedUrlHelper.Action("ThreadDetail", "Post")?threadId=" + data.threadId;
+                }, 1500);
+            }
+        }
+
+        function formIsDirty(form) {
+            for (var i = 0; i < form.elements.length; i++) {
+                var element = form.elements[i];
+                var type = element.type;
+                if (type == "text" || type == "textarea") {
+                    if (element.value != element.defaultValue) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        //取消
+        $('.cancel').on("click", function () {
+            if (formIsDirty(document.forms["EditThreadForm"])) {
+                layer.confirm("编辑的内容还未提交，是否返回？", { btn: ['确认', '取消'] }, function () {
+                    history.go(-1);
+                })
+            } else {
+                history.go(-1);
+            }
+        })
+    });
+   
+</script>

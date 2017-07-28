@@ -1,0 +1,52 @@
+﻿@model PagingDataSet<ContentItem>
+@if (Model.Any())
+{
+    <ul class="list-unstyled img-list clearfix">
+
+        @foreach (var item in Model)
+        {
+        <li class="img-item">
+            <a href="@SiteUrls.Instance().CMSImgDetail(item.ContentItemId)" target="_blank">
+                <div class="img-box clearfix">
+                    @if (item.FeaturedImageList().Count() >= 3)
+                    {
+                    <div class="image-wrap small pull-right">
+                        <img class="lazy" data-original="@item.FeaturedImageList().ElementAt(1).GetDirectlyUrl("List")" alt="">
+                    </div>
+                    <div class="image-wrap middle pull-left">
+                        <img class="lazy" data-original="@item.FeaturedImageList().ElementAt(0).GetDirectlyUrl("Insets")" alt="">
+                    </div>
+                    <div class="image-wrap small pull-right">
+                        <img class="lazy" data-original="@item.FeaturedImageList().ElementAt(2).GetDirectlyUrl("List")" alt="">
+                    </div>
+                    }
+                    else
+                    {
+                    <div class="image-wrap large">
+                        <img class="lazy" data-original="@item.FristFeaturedImage("List")" alt="">
+                    </div>
+                    }
+                </div>
+            </a>
+            <div class="info">
+                <a href="@SiteUrls.Instance().CMSImgDetail(item.ContentItemId)" target="_blank">
+                    <p title="@item.Subject">@HtmlUtility.TrimHtml(item.Subject, 30)</p>
+                </a>
+                <ul class="list-inline text-muted tn-mb-20">
+                    <li><i class="fa fa-eye"></i> @item.ReadCount()</li>
+                    <li><i class="fa fa-commenting"></i> @item.CommentCount()</li>
+                    <li><i class="fa fa-clock-o"></i> @item.DateTimeDisplay()</li>
+                </ul>
+            </div>
+        </li>
+        }
+    </ul>
+    <div class="text-center">
+        @Html.AjaxPagingButton(Model, "CMSImgList", CachedUrlHelper.Action("_ListCMSImg", "CMS", null), PaginationMode.NextLoadMore)
+    </div>
+    <div class="tn-mb-10"></div>
+}
+else
+{
+    <div class="text-center text-warning">暂无文章</div>
+}

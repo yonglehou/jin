@@ -1,0 +1,41 @@
+// Font
+$font-stack: "Microsoft Yahei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+// Basic Colors
+$theme-color: #bf0a10;            // zhuti color
+$primary-color: #337ab7;            // Primary color
+$dark-gray: #c2c2c2;              // Default color
+$green: #5cb85c;                  // Info color
+$blue: #5bc0de;                   // Success color
+$yellow: #f0ad4e;                 // Warrning color
+$red: #d9534f;                    // Danger color
+$dark: #0f2540;                   // Dark color
+
+// Text color
+$text-color: #333;                // Primary text color
+$text-muted: #777;                // Muted gray text
+$inverse-color: #fff;             // Text color in dark background
+
+// General gray background
+$white-bg: white;
+$gray: #f6f6f6;
+
+// The color of the content box
+$box-bg: #fff;
+$gray-border: #ccc;
+$light-bg: #ffeff0;
+$light-border: #e5e5e5;
+
+// Title bottom border color
+$title-border: #bbb;
+
+// Bootstrap Theme
+$nav-bg: white;
+$boot-border-color: #ccc;
+$input-focus-border: #66afe9;
+$valid-border-color: #3c763d;
+$error-border-color: #a94442;
+
+// Admin page Side Nav
+$side-width: 200px;
+$narrow-side: 80px;

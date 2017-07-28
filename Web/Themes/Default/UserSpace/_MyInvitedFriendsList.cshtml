@@ -1,0 +1,105 @@
+﻿@model PagingDataSet<long>
+@{
+    var friendsList = ViewData.Get<List<User>>("friendsList", new List<User>());
+    var friendsProfile = ViewData.Get<List<UserProfile>>("friendsProfile",new List<UserProfile>());
+    var currentUser = UserContext.CurrentUser;
+    //用户等级
+    Func<int, string> rankimage = (n) =>
+    {
+        string rankimages = string.Empty;
+        var one = n / 9;
+        var two = (n - 9 * one) / 3;
+        var thr = n - 9 * one - 3 * two;
+        for (int i = 0; i < one; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star1.png'></li>";
+        }
+        for (int i = 0; i < two; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star2.png'></li>";
+        }
+        for (int i = 0; i < thr; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star3.png'></li>";
+        }
+        return rankimages;
+    };
+}
+<div class="row">
+    @if (Model.Count() > 0)
+    {
+        for (int i = 0; i < Model.Count(); i++)
+        {
+            <div class="col-xs-6">
+                <div class="media">
+                    <div class="media-left">
+                        @Html.ShowUserAvatar(Model[i], AvatarSizeType.Small)
+                    </div>
+                    <div class="media-body">
+                        <div class="jh-user-name">
+                            <h4>
+                                <a href="@SiteUrls.Instance().SpaceHome(Model[i])" target="_blank">@friendsList[i].UserName</a> 
+                            @if (friendsProfile.Where(u => u.UserId == Model[i]).FirstOrDefault()?.Gender == GenderType.FeMale)
+                            {
+                                <i class="fa fa-female" aria-hidden="true"></i>
+                            }
+                            else
+                            {
+                                <i class="fa fa-male" aria-hidden="true"></i>
+                            }
+                            </h4>
+                            <ul class="list-inline" title="@friendsList[i].Rank">
+                                @Html.Raw(rankimage(friendsList[i].Rank))
+                            </ul>
+                            @if (currentUser.IsFollowed(Model[i]))
+                            {
+                                if (friendsList[i].IsFollowed(currentUser.UserId))
+                                {
+                                    <div  class="pull-right"><i class="fa fa-exchange"></i>相互关注</div>
+                                }
+                                else
+                                {
+                                    <div class="pull-right"><i class="fa fa-check"></i>已关注</div>
+                                }
+                            }
+                            else
+                            {
+                                <a class="pull-right a add-follow" onclick="$.post('@SiteUrls.Instance().Follow(Model[i])', followCallBack)"><i class="fa fa-plus"></i>关注</a>
+                            }
+                        </div>
+                        <ul class="list-inline text-muted">
+                            <li>粉丝：<span class="tn-theme-color">@friendsList[i].FollowerCount </span></li>
+                            <li>关注：<span class="tn-theme-color">@friendsList[i].FollowedCount</span></li>
+                        </ul>
+                            <p class="text-muted">@(friendsProfile.Where(u => u.UserId == Model[i]).FirstOrDefault()?.Introduction)</p>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="text-center clearfix text-warning">
+            无邀请注册的朋友
+        </div>
+    }
+    <div style="clear:both;text-align:center">
+        @Html.AjaxPagingButton(Model, "invitedFriendsList", CachedUrlHelper.Action("_MyInvitedFriendsList", "UserSpace"))
+    </div>
+</div>
+<script type="text/javascript">
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+    
+    function followCallBack(data) {
+        if (data.state = 1) {
+            layer.msg(data.successmsg, { icon: 1 })
+            $.get("@CachedUrlHelper.Action("_MyInvitedFriendsList","UserSpace")", { requestTime: new Date().getTime() }, function (data) {
+                $("#invitedFriendsList").html(data);
+            })
+        }
+    else {
+            layer.msg(data.errormsg, { icon: 2 })
+        }
+    }
+    })
+</script>

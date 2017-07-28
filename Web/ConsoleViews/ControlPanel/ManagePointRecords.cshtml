@@ -1,0 +1,52 @@
+﻿@{
+    ViewData["Title"] = new string[] { "积分记录" };
+    TempData["subMenu-check"] = new string[] { "User", "Managepointrecords" };
+}
+
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-xs-12">
+        <h3>积分记录</h3>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="form-inline tn-tool-column">
+            <div class="form-group">
+                用户：
+            </div>
+            <div class="form-group">
+                @Html.UserSelector("selectUser", mode: UserOrOrgSelectorMode.User, selectionUserIds: null, selectionNum: 1, innerText: "选择用户", validation: false, sourceUrl: SiteUrls.Instance().GetAllOguUser())
+            </div>
+        
+            <div class="form-group has-feedback" style="width:308px">
+                <label for="registeDate">日期：</label>
+                @Html.DateTimePicker("Daterangepicker", null, Request.QueryString.Get("minDate", string.Empty), Request.QueryString.Get("maxDate", string.Empty), true)
+                <span class="form-control-feedback"><i class="fa fa-calendar"></i></span>
+            </div>
+            <button class="btn btn-primary smssubmit" type="button">搜索</button>
+        </div>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body" id="listpointrecords">
+        @Html.Action("_ListPointRecords", "ControlPanel")
+    </div>
+</div>
+@Styles.Render("~/Bundle/Styles/daterangepicker")
+@Styles.Render("~/Bundle/Styles/zTree")
+<!--
+@Scripts.Render("~/Bundle/Scripts/daterangepicker")
+@Scripts.Render("~/Bundle/Scripts/page")
+@Scripts.Render("~/Bundle/Scripts/zTree")-->
+
+<script>
+    require(['jquery', 'moment', 'daterangepicker', 'datepicker', 'page', 'ztree', 'userSelector'], function () {
+        //搜索
+        $(".smssubmit").on("click", function myfunction() {
+            var param = jQuery.param({ userId: $(".tn-choice-item").data("value"), startDate: $("#minDate").val(), endDate: $("#maxDate").val() });
+            $.get("@CachedUrlHelper.Action("_ListPointRecords", "ControlPanel")", param, function (data) {
+                $("#listpointrecords").html(data)
+            })
+        });
+    })
+</script>

@@ -1,0 +1,130 @@
+﻿@model IEnumerable<SpecialContentItem>
+@{
+    var currentuser = UserContext.CurrentUser;
+   
+}
+@if (Model.Count() > 0)
+{
+    <div class="ly-slider tn-mb-30 slider-home">
+        @if (currentuser != null && currentuser.IsSuperAdministrator())
+                {
+            <button class="btn btn-default layermanageSpecialContentItems" style="position:absolute;right:0;display:none;z-index:100" id="recommend-manage"><i class="fa fa-cog"></i></button>
+        }
+        <div id="example3" class="slider-pro jh-slider-home">
+            <div class="sp-slides">
+                @foreach (var item in Model)
+                {
+                    <div class="sp-slide">
+                        @if (item.Link != null && item.Link != string.Empty)
+                        {
+                            <a href="@item.Link" target="_blank">
+                                <img class="sp-image" src="~/js/lib/slider-pro/css/images/blank.gif"
+                                     data-src="@item.FeaturedImageUrl("Slider")" />
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="@item.GetCommentedObjectUrl()" target="_blank">
+                                <img class="sp-image" src="~/js/lib/slider-pro/css/images/blank.gif"
+                                     data-src="@item.FeaturedImageUrl("Slider")" />
+                            </a>
+                        }
+                        <div class="sp-layer sp-black sp-padding"
+                             data-position="bottomLeft" data-vertical="0" data-width="100%"
+                             data-show-transition="up">
+                            <div class="col-xs-5" title="@item.ItemName">
+                                @HtmlUtility.TrimHtml(item.ItemName, 30)
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <a href="javascript:;;" class="jh-prev" onclick="$.fn.previousimg()"></a>
+            <div class="sp-thumbnails">
+                @{
+                    foreach (var item in Model)
+                    {
+                        <img class="sp-thumbnail" src="@item.FeaturedImageUrl("Small")" />
+                    }
+                }
+            </div>
+            <a href="javascript:;" class="jh-next" onclick="$.fn.nextimg()"></a>
+        </div>
+    </div>
+@Html.Hidden("hiddenlabindexs", 1)
+                    }
+@Styles.Render("~/Bundle/Styles/slider")
+
+
+
+<link type="text/css" href="~/js/lib/slider-pro/css/jh-img-style.css" rel="stylesheet" />
+<script src="~/js/tn.onscroll.js"></script>
+@if (currentuser != null && currentuser.IsSuperAdministrator())
+{
+    <script>
+        require(['jquery'], function () {
+            $(".slider-home").hover(function myfunction() {
+                $("#recommend-manage").show();
+            }, function myfunction() {
+                var xoda2 = $("#recommend-manage");
+                $("#recommend-manage").hide();
+            }
+               )
+          })
+    </script>
+}
+
+
+<script>
+    require(['jquery', 'tnlayer', 'page', 'uploader', 'sliderpro'], function ($, tnlayer) {
+     
+
+        $(".layermanageSpecialContentItems").click(function(){
+            tnlayer.layermodal('资讯推荐', '@SiteUrls.Instance()._ManageSpecialContentItems(Model.Count()>0?Model.First().TypeId:0)'.replace(/&amp;/g, "&"), '450px', 'auto')
+        })
+
+
+          window.onscroll = function () {
+          if (getScrollTop() + getClientHeight() == getScrollHeight()) {
+            var count = Math.ceil($(".hiddenlabindex").val());
+            if (count == Math.ceil($("#hiddenlabindexs").val())) {
+                    if (count < 3) {
+                        var _that = $(".pagenext");
+                        $("#hiddenlabindexs").val(count + 1);
+                        _that.click();
+                    }
+                }
+            }
+          }
+           $.fn.nextimg=function() {
+                $(".sp-next-arrow").click()
+            }
+           $.fn.previousimg=function() {
+                $(".sp-previous-arrow").click()
+            }
+
+            $('#example3').sliderPro({
+                width: 1140,
+                height: 460,
+                fade: true,
+                //箭头导航按钮
+                arrows: true,
+                //圆点导航按钮
+                buttons: false,
+                //“全屏”按钮是否可用
+                fullScreen: false,
+                //是否打乱图片顺序
+                shuffle: false,
+                smallSize: 10,
+                mediumSize: 10,
+                largeSize: 10,
+                //设置幻灯片是否无限循环
+                loop: false,
+                //箭头按钮是否可用
+                thumbnailArrows: true,
+                autoplay: false
+            });
+
+
+     })
+</script>

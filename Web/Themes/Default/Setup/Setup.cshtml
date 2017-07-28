@@ -1,0 +1,47 @@
+﻿@{
+    Layout = null;
+}
+<!doctype html>
+<html class="no-js" lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge, chrome=1">
+    <title>安装</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../css/bootstrap.css">
+    <link rel="stylesheet" href="../css/font-awesome.css">
+    <!--框架样式-->
+    <link rel="stylesheet" href="../css/tnui.css">
+    <link rel="stylesheet" href="../css/jh-install.css">
+    <script type="text/javascript" src="../js/modernizr-2.8.3.min.js"></script>
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="../js/html5shiv.min.js"></script>
+    <script type="text/javascript" src="../js/respond.js"></script>
+    <![endif]-->
+    <style type="text/css">
+        input:-webkit-autofill, select:-webkit-autofill, textarea:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+        }
+    </style>
+</head>
+<body>
+    @ViewData["path"]
+    <div class="tn-doc">
+        <div class="tn-content">
+            <div class="container">
+                <div class="jh-install-block">
+                    <div class="jh-install-start">
+                        <h3><i class="fa  fa-exclamation-circle fa-2x tn-orange-color tn-mr-15"></i>近乎似乎还没有安装！</h3>
+                        <p>您可以选择以下方式进行安装：</p>
+                        <p><a href="http://c.jinhusns.com/bar/t-4064">手动安装</a></p>
+                        <p><a href="@CachedUrlHelper.Action("SetupProtocol", "Setup")">启动安装向导</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>       
+    </div>
+    <script type="text/javascript" src="../js/jquery-1.12.0.min.js"></script>
+    <script type="text/javascript" src="../js/main.js"></script>
+</body>
+</html>

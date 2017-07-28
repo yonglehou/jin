@@ -1,0 +1,28 @@
+﻿@model ThirdAccountGetter
+@{
+    Layout = null;
+    var accountType = ViewData.Get<AccountType>("accountType", null);
+}
+<script src="http://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js"></script>
+
+<div class="panel">
+    <div class="panel-body">
+        <div id="login_container" style="text-align:center;">
+
+        </div>
+    </div>
+</div>
+
+<script>
+  require(['jquery'],function(){
+         var obj = new WxLogin({
+            id: "login_container",
+            appid: "@accountType.AppKey",
+            scope: "snsapi_login",
+            redirect_uri: "@SiteUrls.FullUrl(CachedUrlHelper.Action("ThirdCallBack", "Account", null, new RouteValueDictionary { { "accountTypeKey", "WeChat" } }))",
+            state: "",
+            style: "black",
+            href: ""
+        });
+    })
+</script>

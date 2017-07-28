@@ -1,0 +1,123 @@
+﻿@model IEnumerable<TaskDetail>
+@{
+    ViewData["Title"] = new string[] { "任务管理" };
+    TempData["subMenu-check"] = new string[] { "Tool", "ManageaTasks" };
+    var msg = TempData.Get<string>("StatusMessageData", string.Empty);
+
+}
+
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-lg-12">
+        <h3>任务管理</h3>
+    </div>
+</div>
+<div class="tn-main">
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <table class="table tn-va-middle">
+                <thead>
+                    <tr>
+                        <th>任务名</th>
+                        <th>上次结束时间</th>
+                        <th>上次执行状态</th>
+                        <th>下次运行时间</th>
+                        <th>当前运行状态</th>
+                        <th>注册位置</th>
+                        <th>是否启用</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        bool isExpired = item.EndDate.HasValue && item.EndDate.Value.ToLocalTime() < DateTime.Now;
+
+                        <tr>
+                            <td>@item.Name</td>
+                            <td>
+                                @if (isExpired)
+                                {
+                                    <text>已过期</text>
+                                }
+                                else
+                                {
+                                    @(item.LastEnd.HasValue ? item.LastEnd.Value.ToFriendlyDate() : item.LastEnd.ToString())
+                                }
+                            </td>
+                            <td>@(item.LastIsSuccess.HasValue ? item.LastIsSuccess.Value ? "成功" : "失败" : "")</td>
+                            <td>
+                                @if (isExpired)
+                                {
+                                    <text>已过期</text>
+                                }
+                                else
+                                {
+                                    @(item.NextStart.HasValue ? item.NextStart.Value.AddHours(8) : item.NextStart)
+                                }
+                            </td>
+                            <td>
+                                @(item.IsRunning ? "正在运行" : "空闲")
+                            </td>
+                            <td>
+                                @{switch (item.RunAtServer)
+                                    {
+                                        case Tunynet.Tasks.RunAtServer.Master:
+                                            <text>Web服务器</text>
+                                            break;
+                                        case Tunynet.Tasks.RunAtServer.Slave:
+                                            <text>WabApi服务器</text>
+                                            break;
+                                        case Tunynet.Tasks.RunAtServer.Search:
+                                            <text>搜索服务器</text>
+                                            break;
+                                    }
+                                }
+                            </td>
+                            <td>
+                                @if (item.Enabled)
+                                {
+                                    <i class="fa fa-check-circle tn-green-color fa-2x" title="启用"></i>
+                                }
+                                else
+                                {
+                                    <i class="fa fa-ban tn-red-color fa-2x" title="禁用"></i>
+                                }
+                            </td>
+                            <td>
+                                <a role="button" data-code="" href="@CachedUrlHelper.Action("EditTask","ControlPanel",null,new RouteValueDictionary { { "id", item.Id } })" class="reBuildIndex">编辑</a>
+                                <a role="button" id="run-@item.Id" data-code="" class="reBuildIndex">立即运行</a>
+                            </td>
+                        </tr>
+                                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script type="text/javascript">
+    require(["jquery"], function myfunction() {
+
+        $(document).ready(function () {
+            if ("@msg" != "") {
+                layer.msg("@msg", { icon: 1 })
+            }
+            $('a[id^="run-"]').click(function () {
+                var id = $(this).attr("id").replace(/[^0-9]/ig, "");
+                layer.msg("正在执行", { icon: 1 })
+                $.post('@SiteUrls.Instance().RunTask(null)', { id: id }, function (data) {
+
+
+                    if (data.success) {
+                        layer.msg(data.message, { icon: 1 })
+                    }
+                    else {
+                        layer.msg(data.message, { icon: 2 })
+                    }
+                });
+            });
+        });
+    });
+
+</script>

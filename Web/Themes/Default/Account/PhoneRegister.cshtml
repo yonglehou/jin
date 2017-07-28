@@ -1,0 +1,165 @@
+﻿@model RegisterEditModel
+@{
+    ViewData["Title"] = new string[] { "手机注册" };
+    var errorMessage = TempData.Get<string>("errorMessage", string.Empty);
+    var SiteName = ViewData.Get<string>("SiteName", string.Empty);
+    var registerType = ViewData.Get<RegisterType>("RegisterType", RegisterType.MobileOrEmail);
+    var accountTypes = ViewData.Get<IEnumerable<AccountType>>("accountTypes", null);
+}
+<style type="text/css">
+    .btn-default[disabled]:hover {
+        color: #333;
+    }
+</style>
+<div class="jh-login-home">
+    <h1 class="tn-mb-50">欢迎加入@(SiteName)</h1>
+    <div class="row">
+        <div class="col-xs-8"  style="@(Utility.CheckThirdPartyLogin()?"padding-right:150px;border-right:1px solid #ddd;":"padding-right:100px") ">
+            @using (Html.BeginForm("PhoneRegister", "Account", FormMethod.Post, new { @id = "RegisterForm", @class = "form-horizontal tn-form-validation " }))
+            {
+                <div class="form-group">
+                    @Html.LabelFor(n => n.AccountMobile)
+                    @Html.TextBoxFor(n => n.AccountMobile, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(n => n.AccountMobile)
+                    @if (registerType != RegisterType.Mobile)
+                    {
+                        <span class="help-block tn-mb-0">或使用<a href="@SiteUrls.Instance().Register(true)" class="a tn-ml-5">邮箱注册</a></span>
+                    }
+                </div>
+                <div class="form-group " id="passwordLoad">
+                    @Html.Action("_PassWordPoclaimed", "Account")
+                    <span style="top:25px; " class="glyphicon  form-control-feedback" aria-hidden="true"><i class="fa fa-eye-slash"></i></span>
+                    <input style="" class="tn-click-eye" type="button" />
+                    @Html.ValidationMessage("PassWord")
+
+                    <span class="help-block tn-mb-0">字母、数字至少6位</span>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(n => n.VerfyCode)
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <input id="getCode" type="button" class="btn btn-default" value="免费获取短信激活码" />
+                        </div>
+                        <div class="col-xs-6">
+                            @Html.TextBoxFor(n => n.VerfyCode, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(n => n.VerfyCode)
+                            <span id="errorMsg" style="color:red;display:none">@errorMessage</span>
+                        </div>
+                    </div>
+                </div>
+
+                var mathBuildInfoModel = new ViewDataDictionary();
+
+                mathBuildInfoModel.Add("InputText", "换一换");
+                mathBuildInfoModel.Add("ErrorMessage", errorMessage);
+                mathBuildInfoModel.Add("RequiredMessage", "请输入正确验证码");
+                mathBuildInfoModel.Add("IsRequired", true);
+                @Html.Captcha(4, "_DefaultCaptchaView", mathBuildInfoModel).AsIntelligent()
+                <div class="form-group">
+                    <div class="checkbox">
+                        <label>
+                            <input style="margin-top:6px" id="ispass" type="checkbox"><small> 我已看过并完全同意 <a href="javascript:;"  class="a tn-ml-5 layerprovision">《用户使用协议》</a> </small>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-submit tn-btn-wm">注册</button>
+                </div>
+            }
+        </div>
+        @if (Utility.CheckThirdPartyLogin())
+        {
+            <div class="col-xs-4" style="padding-left:30px;">
+                <p>已有帐号？<a href="@SiteUrls.Instance().Login()" class="a tn-ml-5">直接登录 >></a> </p>
+                @if (accountTypes != null && accountTypes.Any())
+                {
+                    <p>使用第三方帐号登录</p>
+                    <ul class="list-inline jh-share-icon">
+                        @if (accountTypes.Where(n => n.AccountTypeKey == AccountTypeKeys.Instance().QQ()).Count() > 0)
+                    {
+                            <li><button class="btn btn-default" onclick="window.location='@SiteUrls.Instance().LoginToThird(AccountTypeKeys.Instance().QQ())'"><i class="fa fa-qq"></i></button></li>
+                        }
+                        @if (accountTypes.Where(n => n.AccountTypeKey == AccountTypeKeys.Instance().WeChat()).Count() > 0)
+                    {
+                            <li><button class="btn btn-default layerwechat"><i class="fa fa-weixin"></i></button></li>
+                        }
+                    </ul>
+                }
+            </div>
+        }
+       
+    </div>
+</div>
+<script>
+require(['jquery','tnlayer'],function($,tnlayer){
+      $(".layerwechat").click(function(){
+          tnlayer.layermodal('微信登录', '@SiteUrls.Instance().LoginToThird(AccountTypeKeys.Instance().WeChat())', '550px', '550px')
+      })
+      $(".layerprovision").click(function(){
+          tnlayer.layermodal('注册条款','@CachedUrlHelper.Action("_Provision","Account")','700px','500px')
+      })
+      
+        $("#VerfyCode").blur(function() {
+            if ($(this).val().length > 0) {
+                $("#errorMsg").hide();
+            }
+            else {
+                $("#errorMsg").show();
+            }
+
+        });
+        //其他错误提示
+        $(function() {
+            var type = typeof ($("#CaptchaDeTextmp").attr("type"));
+            if (type == "string") {
+                $("#errorMsg").show();
+            }
+        });
+
+        $(".btn-submit").click(function() {
+            $("#RegisterForm").validate();
+            if ($("#RegisterForm").valid()) {
+                if (!$("#ispass")[0].checked) {
+                    layer.msg("请先阅读用户使用协议", {
+                        icon: 2
+                    });
+                    return false;
+                }
+            }
+        });
+        $("#getCode").click(function() {
+            var time = new Date().getTime();
+            var phone = $("#AccountMobile").val();
+            $.post("@CachedUrlHelper.Action("SMSSend", "Account")", { phone: phone, type: 0 }, function(data) {
+                if (data.state) {
+                    layer.msg(data.msg, {
+                        icon: 1
+                    });
+                    GetNumber();
+                } else {
+                    layer.msg(data.msg, {
+                        icon: 2
+                    });
+                }
+            })
+
+        });
+
+        //倒计时
+        var count = 60;
+        function GetNumber() {
+            $("#getCode").attr("disabled", "disabled");
+            $("#getCode").val(count + "秒之后再次获取")
+            count--;
+            if (count >= 0) {
+                setTimeout(GetNumber, 1000);
+            }
+            else {
+                $("#getCode").val("免费获取短信激活码");
+                $("#getCode").removeAttr("disabled");
+                count = 60;
+            }
+        };
+
+    })
+</script>

@@ -1,0 +1,110 @@
+﻿@model List<Role>
+@{
+    Layout = null;
+}
+@if (Model.Count > 0)
+{
+    <table class="table tn-va-middle">
+        <thead>
+            <tr>
+                <th>角色Id</th>
+                <th>对外显示的角色名称</th>
+                <th>描述</th>
+                <th>允许关联到用户</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var role in Model)
+            {
+                <tr>
+                    <td>@role.RoleId</td>
+                    <td>
+                        <div class="row">
+                            @if (role.RoleImageUrl() != string.Empty)
+                            {
+                                <div class="col-xs-1">
+                                    <img class="img" src="@role.RoleImageUrl()" />
+                                </div>
+                            }
+                            <div class="col-xs-10">
+                                @role.RoleName
+                            </div>
+                        </div>
+                    </td>
+                    <td>@role.Description</td>
+                    <td>
+                        @if (role.ConnectToUser)
+                    {
+                            <i class="fa fa-2x fa-check"></i>
+                        }
+                        else
+                        {
+                            <i class="fa fa-2x fa-times"></i>
+                        }
+                    </td>
+                    <td class="text-nowrap">
+                        <a href="javascript:;" title="修改" data-id="@role.RoleId" class="edit-role tn-mr-10 layerroleedit"><i class="fa fa-pencil"></i></a>
+                        @if (!role.IsBuiltIn)
+                    {
+                            <a href="javascript:;" class="delete-role" title="删除" data-id="@role.RoleId"><i class="fa fa-trash"></i></a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<script>
+    require(['jquery','tnlayer'], function (_,tnlayer) {
+        $('.layerroleedit').click(function () {
+            var roleId = $(this).data("id");
+            tnlayer.layermodal('修改角色信息', '@CachedUrlHelper.Action("_EditRole", "ControlPanel")?roleId=' + roleId, '450px', 'auto')
+        })
+
+        $(function () {
+            @*//编辑、添加角色
+            $(".edit-role").click(function () {
+                var rolename = $(this).data('name')
+                if (!rolename) {
+                    rolename = null;
+                }
+                $.get('@CachedUrlHelper.Action("_EditRole", "ControlPanel")', { roleName: rolename, requestTime: new Date().getTime() }, function (data) {
+                    if (data) {
+                        $("#manageRoleModal .modal-body").html(data)
+                        if (rolename) {
+                            $("#manageRoleModal .modal-title").html("修改用户角色")
+                        }
+                        else {
+                            $("#manageRoleModal .modal-title").html("添加用户角色")
+                        }
+                        $("#manageRoleModal").modal("show")
+                    }
+                })
+            })*@
+            //删除角色
+            $(".delete-role").click(function () {
+                var roleId = $(this).data('id')
+                layer.confirm("是否确认删除角色？", {
+                    btn: ['确认', '取消']
+                }, function () {
+                    layer.closeAll();
+                    $.post('@CachedUrlHelper.Action("_DeleteRole", "ControlPanel")', { roleId: roleId }, function (data) {
+                        if (data) {
+                            if (data.state == 1) {
+                                layer.msg("删除成功", { icon: 1 });
+                                $.get('@CachedUrlHelper.Action("_ListRoles","ControlPanel")', { requestTime: new Date().getTime() }, function (data) {
+                                    $("#_listRoles").html(data);
+                                })
+                            }
+                        }
+                        else {
+                            layer.msg("删除失败", { icon: 2 })
+                        }
+                    })
+                })
+
+            })
+        })
+    })
+</script>

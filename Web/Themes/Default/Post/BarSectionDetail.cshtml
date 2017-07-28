@@ -1,0 +1,348 @@
+﻿@model Section
+@{
+    ViewData["Title"] = new string[] { Model.Name };
+
+    var specialSections = ViewData.Get<IEnumerable<Section>>("specialSections", null);
+    var threadCategories = Model.ThreadCategories.Take(4);
+
+    Authorizer authorizer = DIContainer.Resolve<Authorizer>();
+    var _currentUser = UserContext.CurrentUser;
+}
+
+<div class="tn-doc">
+    <div class="tn-content">
+        <div class="container">
+            <div class="jh-post-top tn-mb-20">
+                <img class="img-thumbnail lazy" data-original="@(new AttachmentService(TenantTypeIds.Instance().Section()).Get(Model.FeaturedImageAttachmentId).GetDirectlyUrl("Medium"))" alt="...">
+                <div class="row follow">
+                    <div class="col-xs-10 col-xs-offset-2">
+                        @{
+                            var content = "加关注";
+                            var href = CachedUrlHelper.Action("FavoriteSection", "Post", null, new RouteValueDictionary { { "sectionId", Model.SectionId } });
+                        }
+                        @if (Model.IsSectionFavoriteByCurrentUser(_currentUser))
+                        {
+                            content = "已关注";
+                            href = CachedUrlHelper.Action("CancelFavoriteSection", "Post", null, new RouteValueDictionary { { "sectionId", Model.SectionId } });
+                        }
+                        <h4><strong>@Model.Name</strong><button class="btn btn-default btn-xs tn-ml-20" id="favorite" type="button" title="@if (Model.IsSectionFavoriteByCurrentUser(_currentUser)) {<text> 取消关注</text>}">@content</button></h4>
+                        <p class="tn-gray-color" title="@Model.Description">
+                            @if (string.IsNullOrEmpty(Model.Description))
+                        {<text> &nbsp;</text>} @HtmlUtility.TrimHtml(Model.Description, 120)
+                    </p>
+                    <div class="row">
+                        <div class="col-xs-10">
+                            <ul class="list-inline">
+                                <li>主题数：@Model.ThreadCount</li>
+                                <li>回贴数：@(Model.ThreadAndPostCount - Model.ThreadCount)</li>
+                                <li>用户数：@Model.GetFavoritedUserCount()</li>@if (Model.Category != null)
+                                {
+                                    <li>所属分类：<a href="@CachedUrlHelper.Action("BarSection", "Post", null, new RouteValueDictionary { { "categoryId", Model.Category.CategoryId } })">@Model.Category.CategoryName</a></li>
+                                }
+
+                            </ul>
+                        </div>
+                        <div class="col-xs-2 text-right">
+                            @if (_currentUser != null)
+                            {
+                                if (authorizer.IsCategoryManager(TenantTypeIds.Instance().Section(), _currentUser, Model.SectionId) || _currentUser.UserId == Model.UserId)
+                                {
+                                    <a href="@CachedUrlHelper.Action("BarSectionManage", "Post", null, new RouteValueDictionary { { "sectionId", Model.SectionId } })" class="btn btn-default">管理</a>
+                                }
+                            }
+
+                            <a href="javascript:;" class="btn btn-primary" id="EditThread">发贴</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row jh-my-post">
+            <div class="col-xs-9">
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs jh-nav-tabs" role="tablist" id="myTab">
+                    <li role="presentation">
+                        <a name="maintabnav" href="javascript:;" aria-controls="not-end-test" role="tab" data-toggle="tab" aria-expanded="true" class="threadCategory" data-id="0" data-special="0">全部</a>
+                    </li>
+                    <li role="presentation">
+                        <a name="maintabnav" href="javascript:;" aria-controls="end-test" role="tab" data-toggle="tab" aria-expanded="false" class="threadCategory" data-id="0" data-special="1">推荐</a>
+                    </li>
+                    @if (Model.ThreadCategorySettings != ThreadCategoryStatus.Disabled && threadCategories != null && threadCategories.Any())
+                    {
+                        foreach (var item in threadCategories)
+                        {
+                            <li role="presentation">
+                                <a name="maintabnav" href="javascript:;" class="threadCategory" aria-controls="end-test" role="tab" data-toggle="tab" aria-expanded="false" data-special="item.CategoryId" data-id="@item.CategoryId">@item.CategoryName</a>
+                            </li>
+                        }
+
+                        if (Model.ThreadCategories.Count() > 4)
+                        {
+                            <li class="dropdown">
+                                <a href="javascript:;" id="myTabDrop1" class="dropdown-toggle" data-toggle="dropdown">
+                                    更多
+                                    <b class="caret"></b>
+                                </a>
+                                <ul class="dropdown-menu" role="menu" aria-labelledby="myTabDrop1">
+                                    @foreach (var item in Model.ThreadCategories.Skip(4))
+                                    {
+                                        <li>
+                                            <a name="maintabnav" href="javascript:;" tabindex="-1" data-toggle="tab" data-special="@item.CategoryId" data-id="@item.CategoryId" class="threadCategory ">@item.CategoryName</a>
+                                        </li>
+                                    }
+
+                                </ul>
+                            </li>
+                        }
+                    }
+
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content jh-padding-white" id="myTabContent">
+                    <div role="tabpanel" class="tab-pane fade active in" id="not-end-test">
+                        <div class="row hidden" id="condition">
+                            <div class="col-xs-9 timecondition">
+                                <ul class="list-inline">
+                                    <li>排序：</li>
+                                    <li><a href="javascript:;" class="active sort" data-sort="1">回复时间</a></li>
+                                    <li><a href="javascript:;" class="sort" data-sort="0">发贴时间</a></li>
+                                    <li></li>
+                                    <li>时间：</li>
+                                    <li><a href="javascript:;" class="active time" data-time="0">全部时间</a></li>
+                                    <li><a href="javascript:;" data-time="1" class="time">近3天</a></li>
+                                    <li><a href="javascript:;" data-time="2" class="time">近1周</a></li>
+                                    <li><a href="javascript:;" data-time="3" class="time">近1月</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-xs-9 searchresult hidden">
+
+                            </div>
+                            <div class="col-xs-3">
+                                <div id="searchForm" class="input-group">
+                                    <input id="keyword" class="form-control" type="text" placeholder="吧内搜索">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default" id="search"><i class="fa fa-search"></i></button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tn-chat-list" id="_ListThread">
+                            <div class="text-center text-warning">
+                                <img src="/img/loading.gif" class="tn-mr-10" />Loading...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <div class="tn-gray-bg tn-mb-20">
+                    <div class="tn-title">
+                        <h5>吧管理员</h5>
+                    </div>
+                    <div class="jh-post-right">
+                        <ul class="list-unstyled">
+                            <li>@Html.ShowUserAvatar(userId: Model.User.UserId, htmlAttributes: new RouteValueDictionary { { "width", "50" }, { "height", "50" } })<a target="_blank" href="@SiteUrls.Instance().SpaceHome(Model.User.UserId)" title="@Model.User.UserName">@HtmlUtility.TrimHtml(Model.User.DisplayName, 10)</a></li>
+                            @foreach (var manager in Model.SectionManagers)
+                            {
+                                <li>@Html.ShowUserAvatar(userId: manager.UserId, htmlAttributes: new RouteValueDictionary { { "width", "50" }, { "height", "50" } })<a target="_blank" href="@SiteUrls.Instance().SpaceHome(manager.UserId)" title="@manager.DisplayName">@HtmlUtility.TrimHtml(manager.DisplayName, 10)</a></li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+                <div class="tn-mb-20" id="advertisingDiv">
+                </div>
+                @if (specialSections != null && specialSections.Any())
+                {
+                    <div class="tn-gray-bg tn-mb-20">
+                        <div class="tn-title">
+                            <h5>推荐贴吧</h5>
+                        </div>
+                        <div class="jh-post-right">
+                            <ul class="list-unstyled">
+                                @foreach (var item in specialSections)
+                                {
+                                    if (item.IsEnabled)
+                                    {
+                                        <li><a href="@CachedUrlHelper.Action("BarSectionDetail", "Post", null, new RouteValueDictionary { { "sectionId", item.SectionId } })" title="@item.Name">@HtmlUtility.TrimHtml(item.Name, 10)</a></li>
+                                    }
+
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<script type="text/javascript">
+    require(['jquery', 'tnlayer','page'], function ($, tnlayer) {
+
+        $(function () {
+            //加载广告
+            $.get("@CachedUrlHelper.Action("_Advertising","Common")", { positionId: "1000006", requesttime: new Date().getTime() }, function (data) {
+                $("#advertisingDiv").html(data);
+            })
+        })
+        //关注贴吧
+        $('#favorite').on("click", function () {
+            $.post("@href", { sectionId: @Model.SectionId }, function (data) {
+                if (data.state) {
+                    layer.msg(data.msg,{
+                        icon: 1
+                    });
+                    setTimeout(function(){window.location.reload();},1500);
+                }
+                else {
+                    layer.msg(data.msg,{
+                        icon: 2
+                    });
+                }
+            });
+        }
+
+        );
+        //时间范围
+        $('.time').on("click", function () {
+            var $this=$(this);
+            $('.time').removeClass("active");
+            $this.addClass("active");
+
+            $.get("@CachedUrlHelper.Action("_ListThread", "Post")",
+                {
+                    categoryId:  $(".threadCategory.active").data('id'),
+                    sectionId:@Model.SectionId,
+                    sortBy_BarThread: $('.sort.active').data('sort'),
+                    sortBy_BarDateThread: $('.time.active').data('time'),
+                    t:(new Date()).valueOf()
+                },
+                function (data)
+                {
+                    $('#_ListThread').html(data);
+                });
+        });
+        //排序
+        $('.sort').on("click", function () {
+            var $this=$(this);
+            $('.sort').removeClass("active");
+            $this.addClass("active");
+            $.get("@CachedUrlHelper.Action("_ListThread", "Post")",
+                {
+                    categoryId:  $(".threadCategory.active").data('id'),
+                    sortBy_BarThread: $('.sort.active').data('sort'),
+                    sortBy_BarDateThread: $('.time.active').data('time'),
+                    sectionId:@Model.SectionId,
+                    t:(new Date()).valueOf()},
+                function (data)
+                {
+                    $('#_ListThread').html(data);
+                });
+        });
+        //搜索
+        $("#search").on('click',function(){
+            var keyword=$.trim($('#keyword').val());
+            if(keyword==""){
+                return false;
+            }
+            $.get("@CachedUrlHelper.Action("_ListThread", "Post")",{ keyword:$('#keyword').val(),categoryId:$(".threadCategory.active").data('id'),sectionId:@Model.SectionId,t:(new Date()).valueOf()},
+                function(data){
+                    if ($('#keyword').val().length>0)
+                    {
+                        $('.searchresult').removeClass("hidden");
+                    }
+                    else {
+                        $('.timecondition').removeClass("hidden");
+                        $('.searchresult').addClass("hidden");
+                    }
+                    $('#_ListThread').html(data);
+                    $('#myTab').find('li.active').removeClass('active');
+                });
+        });
+
+        $("#searchForm").on("keyup", "#keyword", function (ev) {
+            if (ev.keyCode == 13) {
+                $('#search').trigger('click');
+            }
+        })
+
+        //发贴
+        $("#EditThread").on("click",function(){
+            window.location.href="@CachedUrlHelper.Action("EditThread", "Post", null, new RouteValueDictionary { { "sectionId", Model.SectionId } })&t="+(new Date()).valueOf();
+        })
+        //改变分类时获取贴子列表
+        $(".threadCategory").on("click",function(){
+            var $this=$(this);
+            $('.threadCategory').removeClass("active");
+            $this.addClass('active');
+            $('.threadCategory').parent().removeClass("active");
+            $this.parent().addClass("active");
+            //选择推荐贴子时隐藏筛选条件
+            if ($this.data('special')==1)
+            {
+                $('#condition').addClass("hidden");
+            }
+            else
+            {
+                $('#condition').removeClass("hidden");
+            }
+            //改变querystring
+            var categoryid=$this.data('id');
+            if (categoryid==0&&$this.data('special')==0)
+            {
+                replaceUrl("0")
+            }
+            else if (categoryid==0&&$this.data('special')==1) {
+                replaceUrl($this.data('special'));
+            }
+            else {
+                replaceUrl($this.data('special'))
+            }
+            $.get("@CachedUrlHelper.Action("_ListThread", "Post")",{
+                keyword:"",
+                categoryId: $(".threadCategory.active").data('id'),
+                sortBy_BarThread: $('.sort.active').data('sort'),
+                sortBy_BarDateThread: $('.time.active').data('time'),
+                isSpecial:$this.data('special'),
+                sectionId:@Model.SectionId},function(data){
+                    $('#_ListThread').html(data);
+                });
+        });
+
+        locationhash()
+        function locationhash() {
+            var _seperator = "#";
+            var _hashStr = window.location.hash;
+            var splitval = _hashStr.split(_seperator);
+            var tmp = new Array();
+            for (var i in splitval) {
+                var o = splitval[i];
+                if (typeof o !== 'undefined' && o != '') {
+                    tmp.push(splitval[i]);
+                }
+                else { }
+            }
+            if (tmp.length > 0) {
+                var maintabnavas = $("[name=maintabnav]");
+                for (var i = 0; i < maintabnavas.length; i++) {
+                    var _that = maintabnavas[i];
+                    var _special=$(_that).data("special");
+                    if (_special == tmp[0]) {
+                        _that.click()
+                    }
+                }
+            }
+            else {
+                var maintabnavas = $("[name=maintabnav]");
+                maintabnavas[0].click()
+            }
+        }
+
+
+
+        // Input group focus style
+        $("input.form-control").bind('focus blur', function(){
+            $(this).parent(".input-group").toggleClass("active");
+        });
+    })   
+</script>

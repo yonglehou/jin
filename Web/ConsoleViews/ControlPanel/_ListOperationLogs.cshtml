@@ -1,0 +1,55 @@
+﻿@model PagingDataSet<OperationLog>
+@{
+    var tenantTypes = ViewData.Get<Dictionary<string, string>>("tenantTypes", null);
+}
+<div>
+    @if (Model.Count() > 0)
+    {
+        foreach (var log in Model)
+        {
+            <table class="table table-bordered table-hover tn-va-middle">
+                <thead>
+                    <tr class="active">
+                        <td width="200px">
+                            @log.DateCreated.ConvertToUserDate().ToString("yyyy-MM-dd HH:mm")
+                        </td>
+                        <td width="270px">
+                            操作人：<a href="@SiteUrls.Instance().SpaceHome(log.OperationUserId)" target="_blank">@log.Operator</a>
+                        </td>
+                        <td width="150px" class="tenantTypeName">
+                            所属：@(tenantTypes.ContainsKey(log.TenantTypeId) ? tenantTypes[log.TenantTypeId] : "")
+                        </td>
+                        <td width="180px">操作类型：@log.GetOperationTypeDisplayName()</td>
+                        <td>操作人IP地址：@log.OperatorIP</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="3" width="620">
+                            操作对象：@Html.Raw(log.OperationObjectName)
+                        </td>
+                        <td colspan="2">
+                            URL：<span title="@log.AccessUrl">@HtmlUtility.TrimHtml(log.AccessUrl, 50)</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="5" rowspan="2">
+                            @Html.Raw(log.Description)
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        }
+    }
+    else
+    {
+        <div class="text-center text-warning">
+            暂无任何日志
+        </div>
+    }
+</div>
+
+<div class="text-center">
+    @Html.AjaxPagingButton(Model, "_ListOperationLogs", CachedUrlHelper.Action("_ListOperationLogs", "ControlPanel"))
+</div>
+

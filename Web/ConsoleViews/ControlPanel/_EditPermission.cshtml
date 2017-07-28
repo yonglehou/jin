@@ -1,0 +1,222 @@
+﻿@model IEnumerable<Permission>
+@{
+    //角色Id,角色Name字典
+    var rolesDictionary = ViewData.Get<Dictionary<long, string>>("rolesDictionary", null);
+    //获取所有的权限
+    var allPermissions = ViewData.Get<IEnumerable<PermissionItem>>("allPermissions", null);
+    //根据ownerType判定当前窗口是添加角色授权还是添加用户授权
+    var ownerType = ViewData.Get<OwnerType>("ownerType", OwnerType.Role);
+    //已经拥有权限的角色
+    var rolesHavePermissions = ViewData.Get<List<Permission>>("rolesHavePermissions", null);
+}
+<div class="panel">
+    <div class="panel-body">
+        <div class="tab-content ">
+            <div role="tabpanel" class="tab-pane active">
+                @if (Model == null)
+                {
+                    //添加授权
+                    if (ownerType == OwnerType.Role)
+                    {
+                    <div class="form-group form-inline col-xs-12">
+                        <label class="form-control-static col-xs-3 text-left">选择角色</label>
+                        <select id="selectRoleId" name="selectRoleId" class="form-control col-xs-5 ">
+                            <option value="">-请选择角色-</option>
+                            @foreach (var item in rolesDictionary)
+                            {
+                                if (rolesHavePermissions != null && rolesHavePermissions.Any() && rolesHavePermissions.Select(n => n.OwnerId).Contains(item.Key))
+                                {
+                                <option value="@item.Key" style="background-color:lightgray" disabled>@item.Value</option>
+                                }
+                                else
+                                {
+                                <option value="@item.Key">@item.Value</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    }
+                    else
+                    {
+                    <div class="form-group form-inline col-xs-12">
+                        <label class="form-control-static col-xs-4 text-left">选择用户</label>
+                        <div class="col-xs-10">
+                            @Html.UserSelector("OperationUserIds", null, mode: UserOrOrgSelectorMode.User, selectionNum: 50, innerText: "选择人员", validation: true, sourceUrl: SiteUrls.Instance().GetAllOguUser())
+                        </div>
+                    </div>
+                    }
+
+                    foreach (var item in allPermissions)
+                    {
+                    <div class="form-group col-xs-12">
+                        <input class="permissionItemKey" type="checkbox" data-permissionitemkey="@item.ItemKey" />
+                        <label>@item.ItemName</label>
+                        <div class="col-xs-12">
+                            <small class="text-muted">@item.Discription</small>
+                        </div>
+                    </div>
+                    }
+                    <div class="form-group col-xs-12">
+                        <button type="button" data-isnew="true" class="btn btn-primary tn-btn-wp submitpermission">保存</button>
+                        <button type="button" class="btn btn-default tn-btn-wp " id="cancel">取消</button>
+                    </div>
+                }
+                else
+                {
+                    //编辑授权
+                    var ownerId = Model.Select(n => n.OwnerId).FirstOrDefault();
+                    var ownerPermissions = Model.Select(n => n.PermissionItemKey);
+
+                    if (ownerType == OwnerType.Role)
+                    {
+                    <div class="form-group form-inline col-xs-12">
+                        <label class="form-control-static col-xs-3 text-left">角色</label>
+                        <select id="selectRoleId" class="form-control col-xs-5" disabled>
+                            <option value="@ownerId" selected>@rolesDictionary[ownerId]</option>
+                        </select>
+                    </div>
+                    }
+                    else
+                    {
+                    <div class="form-group form-inline col-xs-12">
+                        <label class="form-control-static col-xs-3 text-left">用户</label>
+                        <span class="tn-choice-item form-control-static" style="padding:7px 0px" data-value="@ownerId">@DefaultUserIdToUserNameDictionary.GetDisplayName(ownerId)</span>
+                    </div>
+                    }
+
+                    foreach (var item in allPermissions)
+                    {
+                    <div class="form-group col-xs-12">
+                        <input class="permissionItemKey" type="checkbox" data-permissionitemkey="@item.ItemKey" disabled="@(Model.Where(n=>n.PermissionItemKey==item.ItemKey).Select(n=>n.IsLocked).FirstOrDefault())" checked="@(ownerPermissions.Contains(item.ItemKey)?true:false)" />
+                        <label>@item.ItemName</label>
+                        <div class="col-xs-12">
+                            <small class="text-muted">@item.Discription</small>
+                        </div>
+                    </div>
+                    }
+                    <div class="form-group col-xs-12">
+                        <button type="button" data-isnew="false" class="btn btn-primary tn-btn-wp submitpermission ">保存</button>
+                        <button type="button" class="btn btn-default tn-btn-wp " id="cancel">取消</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    require(['jquery'], function () {
+
+        $('.submitpermission').on('click', function () {
+            //将选中的权限项组成一个字符串数组
+            var permissionItemKeysString = [];
+            $('.permissionItemKey:checked').each(function () {
+                permissionItemKeysString.push($(this).data('permissionitemkey'));
+            });
+            var ownerIds = [];
+            var ownerType = '@((int)ownerType)';
+            var isEditUser = '@(ownerType==OwnerType.User)';
+            if (isEditUser == 'True') {
+                if ($('.tn-choice-item').length == 0) {
+                    layer.msg('请选择一个用户', { icon: 2 });
+                }
+                else {
+                    if ($('.permissionItemKey:checked').length == 0) {
+                        layer.msg("请选择一项授权", { icon: 2 });
+                    }
+                    else {
+                        //用户是否已经拥有权限
+                        var isUserHavePermission = true;
+                        var userHasPermissions = "";
+                        if ($('.submitpermission').data('isnew') == true) {
+                            //添加用户授权
+                            //将选中的用户组成一个字符串数组
+                            $('.tn-choice-item').each(function () {
+                                var $this = $(this);
+                                var isHaveUser;
+                                $('.userid').each(function () {
+                                    if ($this.data('value') == $(this).data('userid')) {
+                                        isHaveUser = false;
+                                        userHasPermissions = $(this).data('username');
+                                        return false;
+                                    }
+                                });
+
+                                if (isHaveUser == false) {
+                                    isUserHavePermission = false;
+                                    return false;
+                                }
+                                else {
+                                    ownerIds.push($this.data('value'));
+                                }
+                            });
+                        }
+                        else {
+                            //编辑用户授权
+                            ownerIds.push($('.tn-choice-item').data('value'))
+                        }
+
+                        if (isUserHavePermission == false) {
+                            layer.msg('选择的用户中 "' + userHasPermissions + '" 已经被授权,请到权限列表中编辑权限', { icon: 2 });
+                        }
+                        else {
+                            //异步请求编辑/添加授权
+                            $.post('@CachedUrlHelper.Action("_EditPermission","ControlPanel")', { permissionItemKeysString: permissionItemKeysString.join(';'), ownerIds: ownerIds.join(';'), ownerType: ownerType }, function (data) {
+                                if (data.MessageType) {
+                                    //异步刷新授权列表
+                                    $.get('@CachedUrlHelper.Action("_ListPermissions","ControlPanel")', { t: (new Date()).valueOf() }, function (html) {
+                                        $('#_ListPermissions').html(html);
+                                    });
+                                    layer.closeAll();
+                                    layer.msg(data.MessageContent, { icon: 1 });
+                                }
+                                else {
+                                    layer.closeAll();
+                                    layer.msg(data.MessageContent, { icon: 2 });
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+            else {
+                if ($('#selectRoleId').val() == '') {
+                    layer.msg("请选择一个角色", { icon: 2 });
+                }
+                else {
+                    if ($('.permissionItemKey:checked').length == 0) {
+                        layer.msg("请选择一项授权", { icon: 2 });
+                    }
+                    else {
+                        //将选中的角色组成一个字符串数组
+                        ownerIds.push($('#selectRoleId').val());
+
+                        //异步请求编辑/添加授权
+                        $.post('@CachedUrlHelper.Action("_EditPermission","ControlPanel")', { permissionItemKeysString: permissionItemKeysString.join(';'), ownerIds: ownerIds.join(';'), ownerType: ownerType }, function (data) {
+                            if (data.MessageType) {
+                                //异步刷新授权列表
+                                $.get('@CachedUrlHelper.Action("_ListPermissions","ControlPanel")', { t: (new Date()).valueOf() }, function (html) {
+                                    $('#_ListPermissions').html(html);
+                                });
+                                layer.closeAll();
+                                layer.msg(data.MessageContent, { icon: 1 });
+                            }
+                            else {
+                                layer.closeAll();
+                                layer.msg(data.MessageContent, { icon: 2 });
+                            }
+                        });
+                    }
+                }
+            }
+        });
+
+        //取消
+        $("#cancel").click(function () {
+            layer.closeAll();
+        });
+    })
+
+
+</script>

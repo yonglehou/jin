@@ -1,0 +1,22 @@
+﻿@model PagingDataSet<ContentItem>
+
+@if (Model.Any())
+{
+    <div class="tn-gray-bg tn-mb-20">
+        <div class="tn-title">
+            <h5>作者最近的文章</h5>
+        </div>
+        @foreach (var item in Model)
+        {
+        <div class="jh-post-right">
+            <ul class="list-unstyled">
+                <li class="tn-text">
+                    <a href="@SiteUrls.Instance().CMSDetail(item.ContentItemId)" target="_blank" title="@item.Subject">
+                        @HtmlUtility.TrimHtml(item.Subject, 18)
+                    </a>
+                </li>
+            </ul>
+        </div>
+        }
+    </div>
+}

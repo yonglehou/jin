@@ -1,0 +1,31 @@
+﻿@model PagingDataSet<Comment>
+@{
+    var tenantTypeId = ViewData.Get<string>("tenantTypeId", string.Empty);
+    var commentedObjectId = ViewData.Get<long>("commentedObjectId", 0);
+    var currentUser = UserContext.CurrentUser;
+}
+@{
+    foreach (var item in Model)
+    {
+        <div class="tn-floor-box">
+            <h4 class="media-heading"><a target="_blank" href="@SiteUrls.Instance().SpaceHome(item.UserId)">@item.Author</a> 回复<a target="_blank" href="@SiteUrls.Instance().SpaceHome(item.OwnerId)">@DefaultUserIdToUserNameDictionary.GetDisplayName(item.OwnerId)</a></h4>
+            <p class="message">@Html.Raw(item.Body)</p>
+            <div class="tn-feedback">
+                <small class="pull-left text-muted">@item.DateCreated.ToFriendlyDate()</small>
+
+                <ul class="list-inline text-right text-muted" onmouseover="$.fn.showoperation(this);" onmouseout="$.fn.hideoperation(this);">
+                    <li>
+                        @if (currentUser != null)
+                        {
+                            if (currentUser.UserId == item.UserId)
+                            {
+                                <a href="javascript:;" id="commentdelete-@item.Id" style="display:none"><i class="fa fa-trash"></i> 删除</a>
+                            }
+                            <a id="commentcreate-@item.Id" href="javascript:;" data-href="@SiteUrls.Instance()._Comment(item.Id, tenantTypeId, commentedObjectId)"><i class="fa fa-reply"></i> 回复</a>
+                        }
+                    </li>
+                </ul>
+            </div>
+        </div>
+    }
+}

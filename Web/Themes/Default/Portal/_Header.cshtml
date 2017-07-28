@@ -1,0 +1,220 @@
+﻿@model IEnumerable<Navigation>
+@{
+    var currentUser = UserContext.CurrentUser;
+    var activeNavigation = ViewData.Get<IEnumerable<int>>("activeNavigation", new List<int>());
+    var noticeCount = ViewData.Get<long>("noticeCount", 0);
+    Func<int, bool> activeNavigationId = (n) =>
+    {
+        return activeNavigation.Contains(n);
+    };
+    var authorizeCore = ViewData.Get<bool>("AuthorizeCore", false);
+
+    var isUseCustomStyle = ViewData.Get<bool>("isUseCustomStyle", false);
+    var siteStyle = ViewData.Get<SiteStyleType>("siteStyle", SiteStyleType.Default);
+}
+@{
+    if (currentUser != null)
+    {
+        if (siteStyle == SiteStyleType.Graybg)
+        {
+        <link href="~/css/appearance-graybg.css" rel="stylesheet" />
+        }
+    }
+}
+
+@if (Model != null)
+{
+    <nav class="navbar tn-header">
+        <div class="container" id="tn-doc">
+            <div class="row">
+                <div class="col-xs-7">
+                    <a class="navbar-brand" href="@SiteUrls.Instance().Home()"><img src="/img/logo.png" /></a>
+                    <ul class="nav navbar-nav pull-left">
+                        @foreach (var nav in Model.Take(8))
+                        {
+                            <li class="@if (activeNavigationId(nav.NavigationId)) {<text>active</text> }">
+                                <a href="@nav.GetUrl()" target="@nav.NavigationTarget">
+                                    @nav.NavigationText
+                                </a>
+                            </li>
+                            if (nav.Childrens(false).Any())
+                            {
+                            <li class="dropdown @if (activeNavigationId(nav.NavigationId)) {<text>active</text> }">
+                                <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+                                <ul class="dropdown-menu" role="menu">
+                                    @foreach (var navc in nav.Children)
+                                    {
+                                    <li class="@if (activeNavigationId(navc.NavigationId)) {<text>active</text> }"><a href="@navc.GetUrl()" target="@navc.NavigationTarget">@navc.NavigationText</a></li>
+                                    }
+                                </ul>
+                            </li>
+                            }
+                        }
+                    </ul>
+                </div>
+                <div class="col-xs-5">
+                    <nav class="navbar">
+                        <ul class="nav navbar-right">
+                            <li><a id="searchSwitch" href="#"><i class="fa fa-search"></i></a></li>
+                            @if (currentUser != null)
+                            {
+                            <li><a href="@SiteUrls.Instance().MyNotice()"><i class="fa fa-bell-o"></i><span class="label label-danger">@(noticeCount == 0 ? "" : noticeCount.ToString())</span></a></li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                    @if (currentUser != null)
+                                    {
+                                    @Html.ShowUserAvatar(userId: currentUser.UserId, avatarSizeType: AvatarSizeType.Micro, enableClientCaching: false, enableNavigate: false, isShowUserCard: false)
+                                        <span title="@currentUser.DisplayName">@HtmlUtility.TrimHtml(currentUser.DisplayName, 5)</span>
+                                    }
+                                    <i class="fa fa-angle-down"></i>
+                                </a>
+
+                                <ul class="dropdown-menu">
+
+                                    <li>
+                                        <a href="@SiteUrls.Instance().MyHome(currentUser.UserId)">
+                                            我的主页
+                                        </a>
+                                    </li>
+                                    <li><a href="@SiteUrls.Instance().UserSetting()">设置</a></li>
+
+                                    @if (authorizeCore)
+                                    {
+                                    <li role="separator" class="divider"></li>
+                                    <li><a href="@SiteUrls.Instance().ControlPanelHome()" target="_blank">后台管理</a></li>
+                                    <li role="separator" class="divider"></li>
+                                    }
+                                    <li>
+                                        <div class="row jh-skin-switch">
+                                            <div class="col-xs-12">风格切换</div>
+                                            <div class="col-xs-3">
+                                                <span title="@SiteStyleType.Default.GetDisplayName()" data-style="@SiteStyleType.Default" class="sitestyletype @(isUseCustomStyle&&siteStyle==SiteStyleType.Default?"active":"")"></span>
+                                            </div>
+                                            <div class="col-xs-3">
+                                                <span title="@SiteStyleType.Graybg.GetDisplayName()" data-style="@SiteStyleType.Graybg" class="sitestyletype jh-gray-skin @(isUseCustomStyle&&siteStyle==SiteStyleType.Graybg?"active":"")"></span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li role="separator" class="divider"></li>
+                                    <li><a href="@SiteUrls.Instance().SignOut()">退出</a></li>
+                                </ul>
+                            </li>
+                            }
+                            else
+                            {
+                            <li><a href="@SiteUrls.Instance().Login()">登录</a></li>
+                            <li><a href="@SiteUrls.Instance().Register(null)">注册</a></li>
+                            }
+
+                        </ul>
+                        <div id="topSearchForm" class="navbar-form navbar-right tn-no-padding">
+                            <div class="form-group input-group">
+                                <input type="text" placeholder="搜索" id="searchContent" class="form-control">
+                                <a id="quickSearch" class="input-group-addon" href="javascript:;" style="border-top-right-radius:4px;border-bottom-right-radius:4px;"><i class="fa fa-search"></i></a>
+                                <div id="searchResult" class="jh-search-dropdown" style="display:none;width:300px;z-index:99;max-height:500px;">
+                                </div>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+}
+else
+{
+}
+<script type="text/javascript">
+    require(['jquery'], function () {
+        //换肤
+        $(".sitestyletype").click(function (e) {
+            var $this = $(this);
+            var sitestyle = $this.data('style');
+            var parm = jQuery.param({ sitestyle: sitestyle, t: new Date().getTime() }, true);
+            $.get('@CachedUrlHelper.Action("UserBackground", "Common")', parm, function myfunction(data) {
+                window.location.reload()
+            });
+        });
+
+        //快捷搜索
+        var $topSearchForm = $("#topSearchForm"),
+            $searchResult = $("#searchResult");
+        var keyMap = {
+            BACKSPACE: 8,
+            ESC: 27,
+            TAB: 9,
+            ENTER: 13,
+            ALT: 16,
+            CTRL: 17,
+            SHIFT: 18,
+            LEFT: 37,
+            UP: 38,
+            RIGHT: 39,
+            DOWN: 40
+        };
+
+        $topSearchForm.on("keyup", "#searchContent", function (ev) {
+            switch (ev.keyCode) {
+                case keyMap.ENTER:
+                    $('#quickSearch').trigger('click');
+                    break;
+                case keyMap.LEFT:
+                case keyMap.RIGHT:
+                case keyMap.UP:
+                case keyMap.DOWN:
+                case keyMap.ESC:
+                case keyMap.CTRL:
+                case keyMap.ALT:
+                case keyMap.SHIFT:
+                    break;
+                default:
+                    search($("#quickSearch"));
+                    break;
+            }
+        })
+        //点击事件
+        .on('click', '#quickSearch', function (ev) {
+            var _curFilter = $.trim($("#searchContent").val());
+            if (_curFilter == "") {
+                ev.stopPropagation();
+            } else {
+                window.location = '@CachedUrlHelper.Action("Search", "Portal")?keyword=' + _curFilter;
+            }
+        });
+
+        function search($this) {
+            var $quickSearchCms = $(".quickSearchCms"),
+                $quickSearchThread = $(".quickSearchThread"),
+                _curFilter = $.trim($("#searchContent").val());
+            $quickSearchCms.empty();
+            $quickSearchThread.empty();
+            if (_curFilter == "") {
+                $searchResult.hide();
+                return;
+            }
+            // 请求、渲染、添加至DOM
+            $.when(
+              $.ajax({
+                  url: "/Portal/_SearchQuick",
+                  async: true,
+                  data: { keyword: _curFilter },
+                  success: function (data) {
+                      $searchResult.html(data);
+                  }
+              })).done(function () {
+                  $searchResult.show(200);
+              });
+
+            $(document).on("click", fnMyFunc);
+        };
+
+        $(document).on("click", fnMyFunc = function (e) {
+            if ($(e.target || e.srcElement).closest("#quickSearch,#searchResult").length) {
+                return;
+            }
+            $searchResult.hide();
+            $(document).off("click", fnMyFunc);
+        });
+    })
+</script>

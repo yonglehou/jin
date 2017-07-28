@@ -1,0 +1,54 @@
+﻿@{
+    var userHolder = ViewData.Get<IUser>("userHolder", null);
+    var commentCount = ViewData.Get("commentCount", 0L);
+    var cmsCount = ViewData.Get<long>("cmsCount", 0L);
+    var currentUser = UserContext.CurrentUser;
+    //用户资料
+    var userProfile = ViewData.Get<UserProfile>("userProfile", new UserProfile());
+    //用户等级
+    Func<int, string> rankimage = (n) =>
+    {
+        string rankimages = string.Empty;
+        var one = n / 9;
+        var two = (n - 9 * one) / 3;
+        var thr = n - 9 * one - 3 * two;
+        for (int i = 0; i < one; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star1.png'></li>";
+        }
+        for (int i = 0; i < two; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star2.png'></li>";
+
+        }
+        for (int i = 0; i < thr; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star3.png'></li>";
+        }
+        return rankimages;
+    };
+
+}
+@if (userHolder != null)
+{
+    <div class="jh-post-right text-center">
+        <a href="@SiteUrls.Instance().MyHome(userHolder.UserId)" target="_blank">
+            @Html.ShowUserAvatar(userId: userHolder.UserId, avatarSizeType: AvatarSizeType.Medium, enableNavigate: false, isShowUserCard: false)
+        </a>
+        <div class="jh-user-name" style="margin-left:80px;">
+            <h4 style="font-size:16px;"><a href="@SiteUrls.Instance().MyHome(userHolder.UserId)" target="_blank">@DefaultUserIdToUserNameDictionary.GetUserName(userHolder.UserId)</a></h4>
+            <ul class="list-inline star">
+                @Html.Raw(rankimage(userHolder.Rank))
+            </ul>
+        </div>
+        @if (userProfile.HasIntroduction)
+        {
+            <h6>@userProfile.Introduction</h6>
+        }
+
+        <ul class="list-inline jh-ul">
+            <li><a href="@if (userHolder == currentUser) {<text>@SiteUrls.Instance().MyHome(userHolder.UserId)#cms</text>} else {<text>@SiteUrls.Instance().SpaceHome(userHolder.UserId)#cms</text> } " target="_blank">@(cmsCount>0?cmsCount:0)</a><div>文章</div></li>
+            <li><a href="@if (userHolder == currentUser) {<text>@SiteUrls.Instance().MyHome(userHolder.UserId)#comment</text>} else {<text>@SiteUrls.Instance().SpaceHome(userHolder.UserId)#comment</text> } " target="_blank">@commentCount</a><div>评论</div></li>
+        </ul>
+    </div>
+}

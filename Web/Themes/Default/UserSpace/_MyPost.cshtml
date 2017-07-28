@@ -1,0 +1,48 @@
+﻿@{
+    TempData["myhome_check"] = "mypost";
+    var user = ViewData.Get<IUser>("user", null);
+    var who = "我";
+    if (user!=UserContext.CurrentUser)
+    {
+        var userProfile = ViewData.Get<UserProfile>("userProfile", new UserProfile());
+        who = "他";
+        if (userProfile.Gender == GenderType.FeMale)
+        {
+            who = "她";
+        }
+    }
+    var mysections = ViewData.Get<IEnumerable<Section>>("mysections", null);
+}
+
+<div class="row jh-my-post">
+    <div class="tn-plr-15">
+        <div class="col-xs-9" id="_ListMyPost">
+            @Html.Action("_ListMyPost", "UserSpace", new { userId = user.UserId })
+        </div>
+        <div class="col-xs-3">
+            @if (mysections != null&&mysections.Any())
+            {
+                <div class="jh-post-right tn-gray-bg">
+                    <div class="tn-title">
+                        <h5>@(who)的贴吧</h5>
+                    </div>
+                    @foreach (var item in mysections)
+                {
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <a href="@CachedUrlHelper.Action("BarSectionDetail","Post",null,new RouteValueDictionary { { "sectionId", item.SectionId } })" target="_blank"><img alt="@item.Name" src="@(new AttachmentService(TenantTypeIds.Instance().Section()).Get(item.FeaturedImageAttachmentId).GetDirectlyUrl("Small"))" width="60" height="60"></a>
+                            </div>
+                            <div class="col-xs-9">
+                                <h5 class="tn-text"><a href="@CachedUrlHelper.Action("BarSectionDetail","Post",null,new RouteValueDictionary { { "sectionId", item.SectionId } })" target="_blank">@item.Name</a></h5>
+                                <p class="text-muted">总贴子：@item.ThreadAndPostCount</p>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+

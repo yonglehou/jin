@@ -1,0 +1,162 @@
+/* Doc Style */
+body{
+    background-color: $gray;
+}
+.jh-padding-white{
+    padding :20px;
+    background-color:$white-bg;
+}
+.tn-plr-15{
+    padding-left: 15px;
+	padding-right: 15px;
+}
+//主页
+.jh-user-message{
+     background-color:$white-bg;
+}
+.jh-home-content{
+     background-color:$white-bg;
+     .col-xs-3{
+         .tn-gray-bg{
+              background-color:$gray;
+         }
+     }
+}
+.jh-my-news .jh-news-list .jh-list-title {
+width: 532px;
+}
+/*.jh-my-news,.jh-my-post{
+    >.col-xs-9{
+        .jh-padding-white{
+            margin-right:-20px;
+        }
+    }
+}*/
+.jh-home-content {
+    .jh-nav-tabs {
+        background-color: #eee;
+        border-top:2px solid #eee;
+        >li >a{
+            color:#333;
+            border-bottom:none;
+        }
+        > li.active > a {
+            background-color: $white-bg;
+            border-bottom: none;
+            color:$theme-color;;
+        }
+        > li.active > a:hover,> li.active > a:focus {
+            border-bottom: none;
+        }
+    }
+}
+//资讯
+.tn-gray-bg{
+     padding :15px;
+    background-color:$white-bg;
+}
+.jh-my-news .jh-news-list.jh-news-first .jh-list-title {
+width: 287px;
+}
+ol+.tn-gray-bg{
+    padding :0px;
+}
+//post
+.jh-my-post{
+     .jh-nav-tabs {
+        border: 1px solid $light-border;
+        background-color:$white-bg;
+        margin-bottom :0;
+        /*margin-right: -20px;*/
+        >li{
+            >a{
+                border-bottom:2px solid transparent;                
+            }
+        }
+        >li.active{
+            >a{
+                border-bottom:2px solid $theme-color;
+            }
+        }
+    }
+}
+.jh-post-top{
+    background-color: $white-bg;
+}
+.jh-article-title{
+    h1{
+        margin-top:0;
+    }
+}
+.tn-article-detail{
+      h1{
+        margin-top:0;
+    }
+}
+.jh-post-management{
+    .jh-post-left{
+        background-color:$white-bg;
+        ul{
+            li.active{
+                background-color:$gray;
+            }
+        }
+    }
+}
+//空间
+.jh-space-setup{
+    .jh-space-left{
+        background-color:$white-bg;
+        ul{
+            li.active{
+                background-color:$gray;
+            }
+        }
+    }
+}
+.jh-notice-list .list-group-item .jh-list-title {
+    width: 874px;
+}
+//固定位置
+.jh-position-fixed,.jh-article-detail{
+    li{
+        background-color:$white-bg;
+    }
+}
+.jh-textarea-button .btn {
+    left: 44%;
+}
+//图片
+.jh-img-home{
+    .img-list{
+        width:837.5px;
+        .img-item{
+            margin-right:15px;
+        }
+    }
+}
+//视频
+.jp-video.jp-video-360p{
+    margin-left:-20px;
+}
+.jh-video-large{
+    margin-right:-5px;
+}
+.jh-video-small{
+    padding-left:10px;
+}
+//ask
+.jh-ask-top{
+     .pull-right{
+        width:665px;
+    }
+}
+.jh-ask-detail{
+    h1{
+        margin-top:10px;
+        width:96%;
+    }
+}
+.jh-states-best {
+    top:0px;
+}

@@ -1,0 +1,153 @@
+﻿@{
+    var categoryId = ViewData.Get<int>("contentCategoryId", 0);
+    var parentCategory = ViewData.Get<ContentCategory>("parentCategory", new ContentCategory());
+    ViewData["Title"] = new string[] { parentCategory!=null? parentCategory.CategoryName:null };
+}
+
+<style>
+    .active a {
+        color: #bf0a10;
+        text-decoration: none;
+        outline: none;
+        outline-offset: -2px;
+    }
+</style>
+
+<div class="container">
+    <div class="row jh-my-news">
+        <div class="col-xs-9">
+            <div class="jh-padding-white tn-mb-20">
+                <ol class="breadcrumb tn-no-mb ">
+                    <li>
+                        <a href="@CachedUrlHelper.Action("ContentItemHome", "CMS")" class="a">
+                            资讯
+                        </a>
+                    </li>
+                    <li class="active">
+                        @parentCategory.CategoryName
+                    </li>
+                </ol>
+                @if (parentCategory.Children != null && parentCategory.Children.Any())
+                {
+                <div class="tn-gray-bg ">
+                    <ul class="list-inline tn-no-mb" id="secondNav">
+                        <li name="childCategory" class="@(parentCategory.CategoryId==categoryId?"active":"")">
+                            <a href="@CachedUrlHelper.Action("_ListCategoryCMS","CMS",null,new RouteValueDictionary { { "categoryId",parentCategory.CategoryId} })">
+                                全部
+                            </a>
+                        </li>
+                        @foreach (var item in parentCategory.Children)
+                        {
+                            if (item.IsEnabled)
+                            {
+                            <li name="childCategory" data-child="@item.ChildCount" data-id="@item.CategoryId">
+                                <a href="@CachedUrlHelper.Action("_ListCategoryCMS","CMS",null,new RouteValueDictionary { {"categoryId",item.CategoryId } })" class="@(item.CategoryId == categoryId ? "active" : "")">
+                                    @item.CategoryName
+                                </a>
+                            </li>
+                            }
+                        }
+                    </ul>
+                </div>
+                    if (categoryId != parentCategory.CategoryId)
+                    {
+                        var currentCategory = parentCategory.Children.First(n => n.CategoryId == categoryId);
+                        if (currentCategory.ChildCount > 0)
+                        {
+                        <div class="tn-gray-bg ">
+                            <ul class="list-inline tn-no-mb" id="thirdNav">
+                                <li name="childD" id="thirdAll">
+                                    <a href="@CachedUrlHelper.Action("_ListCategoryCMS", "CMS", null, new RouteValueDictionary { { "categoryId", parentCategory.CategoryId } })" class="active">
+                                        全部
+                                    </a>
+                                </li>
+                                @foreach (var item in currentCategory.Children)
+                                {
+                                <li name="childD">
+                                    <a href="@CachedUrlHelper.Action("_ListCategoryCMS", "CMS",null,new RouteValueDictionary { { "categoryId",item.CategoryId} })" class="@(parentCategory.CategoryId == categoryId ? "active" : "")">
+                                        @item.CategoryName
+                                    </a>
+                                </li>
+                                }
+
+                            </ul>
+                        </div>
+                        }
+                    }
+                }
+            </div>
+            <div class="jh-padding-white" id="listContentItem">
+            </div>
+        </div>
+        <div class="col-xs-3">
+            @Html.Action("_Hotarticle", "CMS")
+        </div>
+    </div>
+</div>
+
+<!--@Scripts.Render("~/Bundle/Scripts/page")-->
+<script>
+    require(['jquery','page'],function(){
+        
+        $('[name=childCategory]').on('click', function (e) {
+            e.preventDefault();
+            $(this).addClass("active").siblings().removeClass("active");
+            var childCount = parseInt($(this).data('child'));
+            var url = $(this).children().eq(0).attr('href');
+            if (childCount > 0) {
+                if ($('#thirdNav').length > 0) {
+                    $('#thirdNav').show();
+                } else {
+                    var dom = '<ul class="list-inline tn-no-mb" id="thirdNav">' +
+                            '<li class="active tn-mt-10" name="childD" id="thirdAll">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>' +
+                            '</ul>';
+                    $('#secondNav').after(dom);
+                }
+                var id = $(this).data('id');
+
+                $.get('GetChildCategories', { contentcategoryid: id },function (data) {
+                    $('#thirdAll').children().eq(0).attr("href", url);
+                    var list = [];
+                    if ($.isArray(data)) {
+                        $.each(data, function () {
+                            var dom = ' <li name="childD"><a href="@CachedUrlHelper.Action("_ListCategoryCMS", "CMS")?categoryId=' + this.id + '" data-id="' + this.id + '">' + this.name + '</a></li>';
+                            list.push(dom);
+                        });
+                        var currentList = $('#thirdAll').nextAll();
+                        if (currentList.length > 0) {
+                            $('#thirdAll').nextAll().detach();
+                        }
+                        $('#thirdAll').after(list);
+                        $('#thirdNav').children().click(listHandle);
+                    }
+                })
+                $.get(url + '&t=' + new Date().valueOf(), function (data) {
+                    $('#listContentItem').html(data);
+                })
+            } else {
+                $('#thirdNav').hide();
+                $.get(url + '&t=' + new Date().valueOf(), function (data) {
+                    $('#listContentItem').html(data);
+                })
+            }
+        })
+
+        $('[name=childD]').on('click', listHandle)
+        function listHandle(e) {
+            e.preventDefault();
+            $(this).addClass("active").siblings().removeClass("active");
+            var url = $(this).children().eq(0).attr('href');
+            if (!url) {
+                var id = $(this).data('id');
+                url = '@CachedUrlHelper.Action("_ListCategoryCMS", "CMS")?categoryId=' + id;
+            }
+            $.get(url + '&t=' + new Date().valueOf(), function (data) {
+                $('#listContentItem').html(data);
+            })
+        }
+        $.get('@CachedUrlHelper.Action("_ListCategoryCMS", "CMS", null,new RouteValueDictionary { { "categoryId", categoryId } })', function (data) {
+            $('#listContentItem').html(data);
+        })
+    })
+</script>
+

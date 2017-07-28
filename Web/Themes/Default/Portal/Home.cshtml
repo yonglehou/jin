@@ -1,0 +1,329 @@
+﻿@{
+    Layout = null;
+    var imgLinks = ViewData.Get<List<LinkEntity>>("imgLinks", new List<LinkEntity>());
+    var wordLinks = ViewData.Get<List<LinkEntity>>("wordLinks", new List<LinkEntity>());
+    var attachmentService = new AttachmentService(TenantTypeIds.Instance().Link());
+    var siteSettings = ViewData.Get<SiteSettings>("siteSettings", null);
+    var contentItems = ViewData.Get<IEnumerable<ContentItem>>("contentItems", new List<ContentItem>());
+    var contentModelService = DIContainer.Resolve<ContentModelService>();
+    var listSpecialThread = ViewData.Get<IEnumerable<Thread>>("listSpecialThread", null);
+    var specialSections = ViewData.Get<IEnumerable<Section>>("specialSections", null);
+    var user = UserContext.CurrentUser;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge, chrome=1">
+    <title>@siteSettings.SiteName - @siteSettings.SiteDescription</title>
+    @*<meta name="description" content="@(ViewData.Get<string>("Description", string.Empty))">*@
+    @if (!string.IsNullOrEmpty(siteSettings.SearchMetaDescription))
+    {
+        <meta name="description" content="@siteSettings.SearchMetaDescription">
+    }
+    @if (!string.IsNullOrEmpty(siteSettings.SearchMetaKeyWords))
+    {
+        <meta name="keywords" content="@siteSettings.SearchMetaKeyWords">
+    }
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    @Styles.Render("~/Bundle/Styles/Site")
+    @Styles.Render("~/Bundle/Styles/SiteThemes")
+    @Styles.Render("~/Bundle/Styles/tipsy")
+    @Styles.Render("~/Bundle/Styles/layer")
+    <script src="~/js/require.js"></script>
+    <script src="~/js/config.js"></script>
+    <script src="~/js/frameThemes.js"></script>
+
+    @*去掉浏览器记住密码后的黄色背景*@
+    <style type="text/css">
+        input:-webkit-autofill, select:-webkit-autofill, textarea:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+        }
+    </style>
+
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="/js/html5shiv.min.js"></script>
+       <script type="text/javascript" src="/js/respond.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+    <div class="tn-doc">
+        @Html.Action("_Header", "Portal")
+        <div class="tn-content">
+            <div class="container">
+                @Html.AntiForgeryToken()
+                <!--Home 主体-->
+                <div class="col-xs-12" style="padding:0">
+                    @Html.Action("_HomePageSlider", "Common", new { requestTime = DateTime.Now.Ticks })
+                </div>
+                <div class="row jh-my-news">
+                    <div class="col-xs-9">
+                        <div class="jh-padding-white">
+                            <ul class="list-unstyled">
+                                @foreach (var item in contentItems)
+                                {
+                                    <li class="jh-news-list">
+                                        <ul class="list-inline">
+                                            @if (item.FeaturedImageAttachmentId > 0)
+                                            {
+                                                <li class="jh-list-img">
+                                                    <a href="@SiteUrls.Instance().CMSDetail(item.ContentItemId)" class="jh-vedio-img">
+                                                        <img class="lazy" data-original="@item.FristFeaturedImage("List")" width="260" height="146" />
+                                                        @if (item.ContentModelId == contentModelService.GetContentModelsByContentModeKey(ContentModelKeys.Instance().Video()).ModelId)
+                                                        {
+                                                            <div class="jh-vedio-mask"><i class="fa fa-play-circle-o" aria-hidden="true"></i></div>
+                                                        }
+                                                    </a>
+                                                </li>
+                                            }
+                                            <li class="jh-list-title @if (!(item.FeaturedImageAttachmentId > 0))
+                                            { <text>jh-no-img</text>} ">
+                                                <h5 class="tn-text"><a href="@SiteUrls.Instance().CMSDetail(item.ContentItemId)" title="@item.Subject">@HtmlUtility.TrimHtml(item.Subject, 60)</a></h5>
+                                                @{
+                                                    var displayBody = "";
+                                                    if (!string.IsNullOrEmpty(item.Summary))
+                                                    {
+                                                        displayBody = item.Summary;
+                                                    }
+                                                    if (string.IsNullOrEmpty(displayBody) && !string.IsNullOrEmpty(item.Body))
+                                                    {
+                                                        displayBody = HtmlUtility.TrimHtml(item.Body, 180);
+                                                    }
+                                                }
+                                                @if (!string.IsNullOrEmpty(displayBody))
+                                                {
+                                                    <p>
+                                                        @displayBody
+                                                    </p>
+                                                }
+                                                <ul class="list-inline text-muted">
+                                                    <li>
+                                                        @Html.ShowUserAvatar(userId: item.UserId, avatarSizeType: AvatarSizeType.Micro)
+                                                        <span><a href="@SiteUrls.Instance().MyHome(item.UserId)" target="_blank">@item.Author</a></span>
+                                                    </li>
+                                                    @if (item.ContentCategory != null)
+                                                    {
+                                                        <li><a href="@SiteUrls.Instance().CategoryCMS(item.ContentCategoryId)">@HtmlUtility.TrimHtml(item.ContentCategory.CategoryName, 20) </a></li>
+                                                    }
+                                                    <li><i class="fa fa-clock-o" aria-hidden="true"></i> @item.DatePublished.ToFriendlyDate()</li>
+                                                    <li><i class="fa fa-commenting" aria-hidden="true"></i> @item.CommentCount()</li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                                    }
+                            </ul>
+                            <ul class="pagination col-xs-12"><li><a class="pagenext btn btn-default tn-gray-color btn-block" href="/cms">更多......</a></li></ul>
+                            <div class="tn-mb-10"></div>
+                        </div>
+                    </div>
+                    <div class="col-xs-3">
+                        @if (specialSections != null && specialSections.Any())
+                        {
+                            <div class="tn-gray-bg tn-mb-20">
+                                <div class="tn-title">
+                                    <h5>推荐贴吧<a class="text-muted pull-right tn-mt-5" href="/post/list" target="_blank">所有贴吧 &gt;&gt;</a></h5>
+                                </div>
+                                <div class="jh-post-right">
+                                    @foreach (var item in specialSections)
+                                    {
+                                        if (item.IsEnabled)
+                                        {
+                                            <a role="button" href="@SiteUrls.Instance().SectionDetail(item.SectionId)" class="btn btn-default btn-sm" type="button" title="@item.Name" target="_blank">@HtmlUtility.TrimHtml(item.Name, 10) </a>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        }
+                        @if (listSpecialThread != null && listSpecialThread.Any())
+                        {
+                            <div class="tn-gray-bg tn-mb-20">
+                                <div class="tn-title">
+                                    <h5>贴子</h5>
+                                </div>
+                                <div class="jh-post-right">
+                                    <ul class="list-unstyled">
+                                        @foreach (var thread in listSpecialThread)
+                                        {
+                                            <li class="tn-text">
+                                                <a href="@SiteUrls.Instance().ThreadDetail(thread.ThreadId)" target="_blank">• @thread.Subject</a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        }
+                        <div id="advertisingDiv" class=" tn-mb-20">
+                          
+                          
+                        </div>
+
+
+
+                    </div>
+                </div>
+
+                <div class="jh-friend-link jh-padding-white">
+                    <div class="jh-link-img">
+                        <ul class="list-inline">
+                            @foreach (var item in imgLinks)
+                            {
+                                <li><a target="_blank" title="@item.Description" href="@item.LinkUrl"><img src="@item.GetImageUrl("")" /></a></li>
+                            }
+                        </ul>
+                    </div>
+                    <div class="jh-link-text">
+                        <ul class="list-inline">
+                            @foreach (var item in wordLinks)
+                            {
+                                <li><a target="_blank" title="@item.Description" href="@item.LinkUrl">@item.LinkName</a></li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+                <a target="_blank"></a>
+            </div>
+        </div>
+        <div class="tn-footer">
+            <div class="container text-center">
+                @Html.Action("_Footer", "Portal")
+            </div>
+        </div>
+    </div>
+    @*返回顶部*@
+    <div class="jh-position-fixed">
+        <ul class="list-unstyled jh-share-style">
+            <li id="topid"><a href="#"><i class="fa fa-chevron-up "></i><br>顶部</a></li>
+        </ul>
+    </div>
+    @*<script>
+        //懒加载
+        $("img.lazy").livequery(function () {
+            $("img.lazy").lazyload({ effect: "fadeIn", failurelimit: 20 });
+        });
+    </script>*@
+
+</body>
+
+</html>
+@if (Utility.IsMiniProfilerEnabled())
+{
+    @StackExchange.Profiling.MiniProfiler.RenderIncludes(position: StackExchange.Profiling.RenderPosition.Left, showTrivial: false, showTimeWithChildren: false, startHidden: false);
+}
+<script type="text/javascript">
+
+    require(['jquery'], function ($) {
+        /****返回顶部js代码 add by zhoums*****/
+        $(function () {
+            $("#topid").hide();
+        });
+        $(document).scroll(function () {
+            if ($(window).scrollTop() > 0) {
+                if ($(window).scrollTop() > 100) {
+                    $("#topid").show();
+                }
+            }
+            else {
+                $("#topid").hide();
+            }
+        })
+        $(document).on("click", "#topid", function () {
+            $('body,html').animate({ scrollTop: 0 }, 700);
+        });
+        /***************end add*************/
+
+        $(function () {
+            
+        //加载广告
+        $.get("@CachedUrlHelper.Action("_Advertising","Common")", { positionId: "1000001", requesttime: new Date().getTime() }, function (data) {
+                $("#advertisingDiv").html(data);
+        })
+    })
+   
+
+    })
+</script>
+@if (user != null)
+{
+    <script>
+
+        require(['jquery', 'tnlayer', 'signalr.hubs'], function ($, tnlayer) {
+       
+            $(function () {
+
+                //判断是否有发送通知权限
+                if (window.Notification && Notification.permission !== "granted") {
+                    //向用户请求获取通知权限
+                    Notification.requestPermission(function (status) {
+                        if (Notification.permission != status) {
+                            Notification.permission = status;
+                        }
+                    })
+                };
+                if ($.connection.NoticeHub!=null) {
+                    var chat = $.connection.NoticeHub;
+                    $.connection.hub.logging = false;
+                    //初始化连接
+                    chat.client.noticeUser = function sendNotice(id, message, userAvatarUrl, relativeObjectUrl) {
+
+                        if (localStorage["lastNoticeId"] != id) {
+                            localStorage["lastNoticeId"] = id;
+                            //如果用户允许发送通知 推送通知
+                            if (window.Notification && Notification.permission === "granted") {
+                                var n = new window.Notification(message, { icon: userAvatarUrl });
+                                n.onclick = function () {
+                                    window.open(relativeObjectUrl);
+                                }
+                            }
+                            else if (window.Notification && Notification.permission !== "denied") {
+                                Notification.requestPermission(function (status) {
+                                    if (Notification.permission !== status) {
+                                        Notification.permission = status;
+                                    }
+                                    if (status === "granted") {
+                                        var n = new Notification(message);
+                                    }
+                                    else {
+
+                                        layer.alert(message);
+                                    }
+                                })
+                            }
+                            else {
+
+                                layer.alert(message);
+                            }
+                        }
+                    }
+                    $.connection.hub.start();
+                }
+            });
+
+
+
+            //断开hub连接
+            $("a[href='/account/signout']").click(function () {
+                $.connection.hub.stop();
+            })
+
+        })
+
+    </script>
+}
+else
+{
+    <script>
+        require(['jquery', 'signalr.hubs'], function($) {
+            $(function() {
+            try
+            {
+                    $.connection.hub.stop();
+            }
+            catch (e) { }
+        });
+    })
+    </script>
+}

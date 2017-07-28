@@ -1,0 +1,205 @@
+﻿@model NavigationEditModel
+@{
+    var contentCategories = ViewData.Get<IEnumerable<ContentCategory>>("contentCategories", null);
+}
+<div class="panel">
+    <div class="panel-body">
+        <div class="tab-content ">
+            <div role="tabpanel" class="tab-pane active">
+                @using (Html.BeginAjaxForm("_EditNavigation", "ControlPanel", null, FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "_editSuccess" }, new { @class = "form-horizontal tn-form-validation", @id = "_EditNavigation" }))
+                {
+                @Html.HiddenFor(n => n.NavigationId)
+                    @Html.ValidationMessageFor(n => n.NavigationId)
+                    @Html.HiddenFor(n => n.ParentNavigationId)
+                    @Html.ValidationMessageFor(n => n.ParentNavigationId)
+
+                    if (Model.ParentNavigationId > 0)
+                    {
+                    <div class="form-group">
+                        <label class="col-xs-3 text-left">@Html.LabelFor(n => n.ParentNavigationText)</label>
+                        <div class="col-xs-12">
+                            @Html.TextBoxFor(n => n.ParentNavigationText, new { @class = "form-control col-xs-10", @readonly = "" })
+                            @Html.ValidationMessageFor(n => n.ParentNavigationText)
+                        </div>
+                    </div>
+                    }
+                    <div class="form-group">
+                        @Html.CheckBoxFor(n => n.isFromContent, new { @id = "isfromcontentfolders", @style = "margin:0px 0px 0px 15px" }) 来自于资讯栏目
+                    </div>
+                    <div id="fromcontentfolders" class="form-group hide" style="padding:0px 15px">
+                        <label class="col-xs-3 pull-left tn-no-padding">栏目名称</label>
+                        <select id="contentdropdownlist" data-selectedid="@Model.CategoryId" class="form-control">
+                            <option value="0">--请选择--</option>
+                            @foreach (var contentCategory in contentCategories)
+                            {
+                                var depth = contentCategory.Depth;
+                                if (contentCategory.Depth > 0)
+                                {
+                                <option value="@contentCategory.CategoryId" data-categoryname="@contentCategory.CategoryName">
+                                    @do
+                                    {
+                                    <text>&nbsp;</text>
+                                        depth--;
+                                    } while (depth > 0);
+
+                                    @if (contentCategory.ChildCount == 0)
+                                    {
+                                    <text>└─@contentCategory.CategoryName</text>
+                                    }
+                                    else
+                                    {
+                                    <text>├─@contentCategory.CategoryName</text>
+                                    }
+                                </option>
+                                }
+                                else
+                                {
+                                <option value="@contentCategory.CategoryId" data-categoryname="@contentCategory.CategoryName">@contentCategory.CategoryName</option>
+                                }
+                            }
+                        </select>
+                        @Html.HiddenFor(n => n.CategoryId, new { @id = "categoryid" })
+                    </div>
+
+                    <div id="textformgroup" class="form-group">
+                        <label class="col-xs-3 text-left">@Html.LabelFor(n => n.NavigationText)</label>
+                        <div class="col-xs-12">
+                            @Html.TextBoxFor(n => n.NavigationText, new { @class = "form-control col-xs-10", @id = "navigationText" })
+                            @Html.ValidationMessageFor(n => n.NavigationText)
+                        </div>
+                    </div>
+
+                    <div id="urlformgroup" class="form-group">
+                        <label class="col-xs-3 text-left">@Html.LabelFor(n => n.UrlFromEditModel)</label>
+                        <label for="isroutename" style="float:right;margin:0px 15px 0px 0px">使用路由</label>
+                        @Html.CheckBoxFor(n => n.IsRouteName, new { @id = "isroutename", @name = "isroutename", @style = "float:right" })
+                        <div class="col-xs-12">
+                            @Html.TextBoxFor(n => n.UrlFromEditModel, new { @class = "form-control col-xs-10", @id = "urlFromEditModel" })
+                            @Html.ValidationMessageFor(n => n.UrlFromEditModel)
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div style="padding:0px 15px">
+                            @Html.CheckBoxFor(n => n.IsBlank) 在新窗口打开链接
+                            <br />
+                            @Html.CheckBoxFor(n => n.IsEnabled) 是否启用
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-primary tn-btn-wp" id="submitnavigation">保存</button>
+                    <button type="button" class="btn btn-default tn-btn-wp" id="cancel">取消</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    require(['jquery'], function () {
+        //提交表单前手动验证
+        $('#submitnavigation').on('click', function () {
+            //如果来自栏目则检查是否选中了一个栏目
+            if ($('#isfromcontentfolders').is(':checked') && $('#categoryid').val() == '0') {
+                layer.msg('请选择一个栏目', { icon: 2 });
+            }
+                //检查路由名称长度是否过长
+            else if ($('#isroutename').is(':checked') && $('#urlFromEditModel').val().length > 64) {
+                layer.msg('路由名称长度不能超过64个字', { icon: 2 });
+            }
+                //检查导航名称 路由名称 链接 不能只输入空格
+            else if ($.trim($('#navigationText').val()) == '') {
+                layer.msg('导航名称不能为空', { icon: 2 });
+            }
+            else if ($.trim($('#urlFromEditModel').val()) == '' && $('#isroutename').is(':checked')) {
+                layer.msg('路由名称不能为空', { icon: 2 });
+            }
+            else if ($.trim($('#urlFromEditModel').val()) == '' && !$('#isroutename').is(':checked')) {
+                layer.msg('链接不能为空', { icon: 2 });
+            }
+            else {
+                $('#_EditNavigation').submit();
+            }
+        });
+
+        //beiginajaxform成功回调函数
+        $.fn._editSuccess = function (data) {
+            if (data.MessageType) {
+                $.get('@CachedUrlHelper.Action("ManageNavigations", "ControlPanel")', { t: (new Date()).valueOf() }, function (html) {
+                    $('#ManageNavigations').html(html);
+                });
+                layer.closeAll();
+                layer.msg(data.MessageContent, { icon: 1 });
+            }
+            else {
+                layer.msg(data.MessageContent, { icon: 2 });
+            }
+        };
+
+        //是否使用路由名称
+        $('#isroutename').on('click', function () {
+            if ($(this).is(':checked')) {
+                $('#isroutename').prev().prev().html('路由名称');
+            }
+            else {
+                $('#isroutename').prev().prev().html('链接');
+            }
+        });
+
+        //编辑根据不同选项显示不同输入框和文字
+        $(document).ready(function () {
+            //是否使用路由名称
+            if ($('#isroutename').is(':checked')) {
+                $('#isroutename').prev().prev().html('路由名称');
+            }
+            else {
+                $('#isroutename').prev().prev().html('链接');
+            }
+            //是否来自于资讯栏目
+            if ($('#isfromcontentfolders').is(':checked')) {
+                $('#fromcontentfolders').removeClass('hide');
+                $('#urlformgroup').addClass('hide');
+                $('#contentdropdownlist').val($('#contentdropdownlist').data('selectedid'));
+            }
+            else {
+                $('#fromcontentfolders').addClass('hide');
+                $('#urlformgroup').removeClass('hide');
+            }
+        });
+
+        //是否来自于资讯栏目
+        $('#isfromcontentfolders').on('click', function () {
+            if ($(this).is(':checked')) {
+                $('#fromcontentfolders').removeClass('hide');
+                $('#urlformgroup').addClass('hide');
+
+                //来自栏目时,为栏目Id,导航名称,URL赋值
+                $('#categoryid').val($('#contentdropdownlist :selected').val());
+                $('#navigationText').val($('#contentdropdownlist :selected').data('categoryname'));
+                $('#urlFromEditModel').val($('#contentdropdownlist :selected').text() + "URL");
+            }
+            else {
+                $('#fromcontentfolders').addClass('hide');
+                $('#urlformgroup').removeClass('hide');
+
+                //不来自栏目时清空栏目Id,导航名称,URL赋值
+                $('#categoryid').val("0");
+                $('#navigationText').val("");
+                $('#urlFromEditModel').val("");
+            }
+        });
+
+        //资讯栏目下拉列表改变事件
+        $('#contentdropdownlist').on('change', function () {
+            $('#categoryid').val($('#contentdropdownlist :selected').val());
+            $('#navigationText').val($('#contentdropdownlist :selected').data('categoryname'));
+            $('#urlFromEditModel').val($('#contentdropdownlist :selected').text() + "URL");
+        });
+
+        //取消
+        $("#cancel").click(function () {
+            layer.closeAll();
+        });
+    })
+</script>
+

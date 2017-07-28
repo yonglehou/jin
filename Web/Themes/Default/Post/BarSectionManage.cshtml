@@ -1,0 +1,95 @@
+﻿@model Section
+@{
+    ViewData["Title"] = new string[] { "贴吧管理" };
+}
+
+@Styles.Render("~/Bundle/Styles/Uploader")
+@Styles.Render("~/Bundle/Styles/zTree")
+
+<div class="tn-doc">
+    <div class="tn-content">
+        <div class="container">
+            <div class="jh-post-top tn-mb-20 jh-top-center">
+                <div class="row">
+                    <div class="col-xs-1">
+                        <a href="@CachedUrlHelper.Action("BarSectionDetail", "Post", null, new RouteValueDictionary { { "sectionId", Model.SectionId } })">
+                            <img src="@(new AttachmentService(TenantTypeIds.Instance().Section()).Get(Model.FeaturedImageAttachmentId).GetDirectlyUrl("Small"))" width="60" height="60" alt="...">
+                        </a>
+                    </div>
+                    <div class="jh-post-title col-xs-11">
+                        <div class="jh-title-left">
+                            <h4><a href="@CachedUrlHelper.Action("BarSectionDetail", "Post", null, new RouteValueDictionary { { "sectionId", Model.SectionId } })"><strong>@Model.Name</strong></a></h4>
+                        </div>
+                        <div class="jh-title-right">
+                            <ul class="list-inline">
+                                <li>主题数：@Model.ThreadCount</li>
+                                <li>回贴数：@(Model.ThreadAndPostCount - Model.ThreadCount)</li>
+                                <li>用户数：@Model.GetFavoritedUserCount()</li>
+                                @if (Model.Category != null)
+                                {
+                                <li>所属分类： <a href="@CachedUrlHelper.Action("BarSection", "Post", null, new RouteValueDictionary { { "categoryId", Model.Category.CategoryId } })">@Model.Category.CategoryName</a></li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row jh-post-management">
+                <div class="col-xs-2">
+                    <div class="jh-post-left">
+                        <div class="tn-title">
+                            <h5>贴吧管理</h5>
+                        </div>
+                        <ul class="list-unstyled">
+                            <li class="active listThreadManage"><a href="#">贴子管理</a></li>
+                            <li class="listPostComments"><a href="javaScript:;">回贴管理</a></li>
+                            <li><a href="javascript:;" class="EditSection">贴吧设置</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="manageSection" class="col-xs-10">
+                    @Html.Action("_ThreadManage", "Post", new { sectionId = Model.SectionId })
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    require(['jquery', 'tnlayer', 'page'], function ($, tnlayer) {
+   
+    //编辑贴吧
+    $('.EditSection').on("click", function () {
+        tnlayer.layermodal('贴吧设置', '@CachedUrlHelper.Action("_EditBarSection","Post",null, new RouteValueDictionary{ { "sectionId",Model.SectionId } })' + "&t" + (new Date()).valueOf(), '660px', '580px')
+    })
+
+    //加载回帖管理
+    $('.listPostComments').on('click', function () {
+        var $this = $(this);
+        $.get('@CachedUrlHelper.Action("_ManagePostComments","Post",null,new RouteValueDictionary { { "sectionId",Model.SectionId } })', { t: (new Date()).valueOf() }, function (data) {
+            $('#manageSection').html(data);
+            $this.siblings().removeClass('active');
+            $this.addClass('active');
+        });
+    });
+
+    //贴子管理
+    $('.listThreadManage').on('click', function () {
+        var $this = $(this);
+        $.get('@CachedUrlHelper.Action("_ThreadManage", "Post",null,new RouteValueDictionary { { "sectionId",Model.SectionId } })', function (data) {
+            $('#manageSection').html(data);
+            $this.siblings().removeClass('active');
+            $this.addClass('active');
+        });
+    });
+
+
+    //查询
+    $("#search").on("click", function () {
+
+        $.get("@CachedUrlHelper.Action("_ListThreadManage", "Post")", { sectionId: $('input[name="SectionId"]').val(), categoryId: $("#categoryId").val(), sortBy_BarDateThread: $("#sortBy_BarDateThread").val() }, function (data) {
+            $("#_ListThreadManage").html(data);
+        })
+    })
+    })
+</script>

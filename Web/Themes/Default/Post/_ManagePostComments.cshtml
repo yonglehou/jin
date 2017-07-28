@@ -1,0 +1,134 @@
+﻿@{
+    ViewData["Title"] = new string[] { "回贴管理" };
+    var auditStatus = ViewData.Get<List<SelectListItem>>("auditStatus", null);
+    var sectionId = ViewData.Get<long>("sectionId", 0);
+}
+<div class="jh-padding-white">
+    <div class="tn-title">
+        <h4>回贴管理</h4>
+    </div>
+    <div class="form-inline tn-tool-column">
+        <div class="form-group">
+            <a class="btn btn-default auditchange" data-isapproved="true" href="javascript:;"><i class="fa fa-check"></i> 通过审核</a>
+            <a class="btn btn-default auditchange" data-isapproved="false" href="javascript:;"><i class="fa fa-times-circle"></i> 不通过审核</a>
+            <a class="btn btn-default" id="delall" href="javascript:;"><i class="fa fa-trash"></i> 删除</a>
+        </div>
+        <div class="form-group" style="float:right">
+            审核状态 @Html.DropDownList("selectAuditStatus", auditStatus, new { @id = "selectAuditStatus", @class = "form-control filter" })
+            发布时间
+            <select class="form-control filter" id="sortByDate">
+                <option value="0">全部时间</option>
+                <option value="1">近三天</option>
+                <option value="2">近一周</option>
+                <option value="3">近一月</option>
+            </select>
+        </div>
+    </div>
+    <hr />
+    <div id="ListPostComments">
+        @Html.Action("_ListPostComments", "Post")
+    </div>
+</div>
+<script type="text/javascript">
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+        //是否是筛选操作,如果是会跳回第一页
+        function FilterPostComments(isFilter) {
+            var auditStatus = $('#selectAuditStatus').val();
+            var sortByDate = $('#sortByDate').val();
+            if (isFilter==true) {
+                var pageIndex = 1;
+            }else {
+                var pageIndex = $("#pageIndex").val();
+            }
+            $.get('@CachedUrlHelper.Action("_ListPostComments", "Post")', {sectionId:@sectionId, auditStatus: auditStatus, sortByDate: sortByDate, pageIndex: pageIndex, t: (new Date()).valueOf() }, function (data) {
+                $('#ListPostComments').html(data);
+            });
+        }
+
+        //筛选审核状态和发布时间
+        $('.filter').on('change', function () {
+            FilterPostComments(true);
+        });
+
+        //批量删除
+        $('#delall').on('click', function () {
+            if ($('input[name="commentId"]:checked').length) {
+                layer.confirm('确定要删除么?',
+                    { btn: ['确定', '取消'], icon: 3 }, function () {
+                        var commentIds = [];
+                        $('.tn-checkbox:checked').each(function () {
+                            commentIds.push($(this).data('commentid'));
+                        });
+
+                        $.post('@CachedUrlHelper.Action("DeletePostComments","Post")', { commentIds: commentIds.join(';') }, function (data) {
+                            if (data.MessageType == 1) {
+                                layer.msg(data.MessageContent, { icon: 1 });
+                                if ($('.tn-checkbox:checked').length==$('.tn-checkbox').length) {
+                                    if ($('#pageIndex').val()>1) {
+                                        $('#pageIndex').val($('#pageIndex').val()-1);
+                                    }else {
+                                        $('#pageIndex').val("1");
+                                    }
+                                }
+                                FilterPostComments(false);
+                            }
+                            else {
+                                layer.msg(data.MessageContent, { icon: 2 });
+                            }
+                        });
+                    });
+            }
+            else {
+                layer.msg('请选择一条回贴', { icon: 2 });
+            }
+        });
+
+        //批量更改审核状态
+        $('.auditchange').on("click", function () {
+            var $this = $(this );
+            if ($('input[name="commentId"]:checked').length) {
+                var commentIds = [];
+                $('.tn-checkbox:checked').each(function () {
+                    commentIds.push($(this).data('commentid'));
+                });
+
+                var isApproved = $this.data('isapproved');
+                $.post('@CachedUrlHelper.Action("UpdatePostComments", "Post")', { isApproved: isApproved, commentIds: commentIds.join(';') }, function (data) {
+                    if (data.MessageType ==1) {
+                        layer.msg(data.MessageContent, {icon: 1 });
+                        //是否选中了当前页的所有内容
+                        if ($('.tn-checkbox:checked').length==$('.tn-checkbox').length) {
+                            //判断是否正在筛选某种状态
+                            var isFilterOn=true;
+                            $('.filter').each(function(){
+                                if ($(this).val()!=0 && $(this).val()!="" ) {
+                                    isFilterOn=true;
+                                    return false;
+                                }else {
+                                    isFilterOn=false;
+                                    return true;
+                                }
+                            });
+                            //有任何一个筛选器在工作,则返回前一页
+                            if (isFilterOn)
+                            {
+                                if ($('#pageIndex').val()>1) {
+                                    $('#pageIndex').val($('#pageIndex').val()-1);
+                                }else {
+                                    $('#pageIndex').val("1");
+                                }
+                            }
+                        }
+                        FilterPostComments(false);
+                    }
+                    else {
+                        layer.msg(data.MessageContent, { icon: 2 });
+                    }
+                });
+            }
+            else {
+                layer.msg("请选择一条回贴", { icon: 2 });
+            }
+        });
+    })
+</script>

@@ -1,0 +1,59 @@
+﻿@model PointItemEditModel
+@{
+    var experience = ViewData.Get<string>("Experience", null);
+    var trade = ViewData.Get<string>("Trade", null);
+}
+<div class="panel">
+    <div class="panel-body">
+        @using (Html.BeginAjaxForm("_EditPointRule", "ControlPanel", null, FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "_EditPointRuleSucceed" }, new { @class = "form-horizontal tn-form-validation tn-survey-form" }))
+        {
+            @Html.HiddenFor(t => t.ItemKey)
+            @Html.ValidationMessageFor(t => t.ItemKey)
+            @Html.Hidden("ItemName", Model.ItemName)
+            <div class="form-group">
+                <div class="col-xs-12">
+                    @Html.LabelFor(n => n.ItemName)
+                    @Html.TextBoxFor(t => t.ItemName, new { @class = "form-control", @disabled = "" })
+                    @Html.ValidationMessageFor(t => t.ItemName)
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-12">
+                    @Html.Label(experience)
+                    @Html.TextBoxFor(t => t.ExperiencePoints, new { @class = "form-control", @placeholder = "请输入经验值" })
+                    @Html.ValidationMessageFor(t => t.ExperiencePoints)
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-12">
+                    @Html.Label(trade)
+                    @Html.TextBoxFor(t => t.TradePoints, new { @class = "form-control", @placeholder = "请输入金币数" })
+                    @Html.ValidationMessageFor(t => t.TradePoints)
+                </div>
+            </div>
+
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary tn-btn-wp">保存</button>
+                <button type="button" class="btn btn-default tn-btn-wp" onclick="layer.closeAll();">取消</button>
+            </div>
+        }
+    </div>
+</div>
+<script>
+    require(['jquery'],function(){
+         //提交回调
+        $.fn._EditPointRuleSucceed=function(data) {
+            if (data.MessageType) {
+                layer.msg(data.MessageContent, { icon: 1 });
+                setTimeout(function () {
+                    $.get("@CachedUrlHelper.Action("_ListPointRules", "ControlPanel")", { t: new Date().getTime() },function (data) {
+                        $("#listpointrule").html(data)
+                    })
+                    layer.closeAll();
+                }, 400)
+            }
+        }
+    })
+
+</script>

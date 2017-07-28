@@ -1,0 +1,123 @@
+﻿@{
+    ViewData["Title"] = new string[] { "贴吧列表" };
+
+    var rootcategoryId = ViewData.Get<long>("rootCategoryId", 0);
+    var childrencategoryId = ViewData.Get<long>("childrenCategoryId", 0);
+}
+
+
+<div class="tn-doc">
+    <div class="tn-content">
+        <div class="container">
+            <ol class="breadcrumb">
+                <li><a href="@CachedUrlHelper.Action("BarSectionHome","Post")" class="a">贴吧 </a></li>
+                <li class="active">贴吧名称</li>
+            </ol>
+            <div class="jh-padding-white">
+                <div class="row tn-mb-20" id="categoryCode_custom">
+                    <div class="col-xs-2">
+                        <select id="rootCategory" class="form-control jn-select-sm first" data-first-value="0" data-value="@rootcategoryId"></select>
+                    </div>
+                    <div class="col-xs-2">
+                        <select id="childrenCategory" class="form-control jn-select-sm second categoryCodes" data-value="@childrencategoryId"></select>
+                    </div>
+                </div>
+                <div id="_BarSectionList">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (rootcategoryId == childrencategoryId && rootcategoryId != 0 && childrencategoryId != 0)
+{
+    <script type="text/javascript">
+        require(['jquery', 'tnlayer','cxselect','page'], function ($, tnlayer) {
+            $('#categoryCode_custom').cxSelect({
+                selects: ['first', 'second'],
+                required: true,
+                url:@(Html.Raw(ViewData["Categories"])),
+            });
+
+
+            //分类改变时获取贴吧列表
+            $('#rootCategory').on("change",function(){
+                var id=$('#rootCategory').val();
+                $.get("@CachedUrlHelper.Action("_ListBarSection", "Post")",{categoryId:id},function(data){
+                    $('#_BarSectionList').html(data);
+                });
+
+            });
+            var index=0;
+            $('#childrenCategory').on("change",function(){
+                if($('#rootCategory').val()!='0'&&($('#rootCategory').val()!=$('#childrenCategory').val()||index>0)){
+                    var id=$('#childrenCategory').val();
+                    $.get("@CachedUrlHelper.Action("_ListBarSection", "Post")",{categoryId:id},function(data){
+                        $('#_BarSectionList').html(data);
+                        index++;
+                    });
+                }
+            });
+        })
+    </script>
+}
+else if (rootcategoryId != childrencategoryId && rootcategoryId != 0 && childrencategoryId != 0)
+{
+    <script type="text/javascript">
+        require(['jquery', 'tnlayer','cxselect','page'], function ($, tnlayer) {
+            $('#categoryCode_custom').cxSelect({
+                selects: ['first', 'second'],
+                required: true,
+                url:@(Html.Raw(ViewData["Categories"])),
+            });
+            //分类改变时获取贴吧列表
+            $('#rootCategory').on("change", function(){
+                if ($('#rootCategory').val() == '0'){
+                    var id =$('#rootCategory').val();
+                    $.get("@CachedUrlHelper.Action("_ListBarSection", "Post")",{ categoryId: id},function(data){
+                        $('#_BarSectionList').html(data);
+                    });
+                }
+            });
+            var index=0;
+            $('#childrenCategory').on("change", function(){
+                if ($('#rootCategory').val() != '0'&&($('#rootCategory').val()!=$('#childrenCategory').val()||index>0)){
+                    var id =$('#childrenCategory').val();
+                    $.get("@CachedUrlHelper.Action("_ListBarSection", "Post")",{ categoryId: id},function(data){
+                        $('#_BarSectionList').html(data);
+                        index++;
+                    });
+                }
+            });
+        });
+    </script>
+}
+else
+{
+    <script type="text/javascript">
+        require(['jquery', 'tnlayer','cxselect','page'], function ($, tnlayer) {
+            $('#categoryCode_custom').cxSelect({
+                selects: ['first', 'second'],
+                required: true,
+                url:@(Html.Raw(ViewData["Categories"])),
+            });
+            //分类改变时获取贴吧列表
+            $('#rootCategory').on("change", function(){
+                if ($('#rootCategory').val() == '0'){
+                    var id =$('#rootCategory').val();
+                    $.get("@CachedUrlHelper.Action("_ListBarSection", "Post")",{ categoryId: id},function(data){
+                        $('#_BarSectionList').html(data);
+                    });
+                }
+            });
+            $('#childrenCategory').on("change", function(){
+                if ($('#rootCategory').val() != '0'){
+                    var id =$('#childrenCategory').val();
+                    $.get("@CachedUrlHelper.Action("_ListBarSection", "Post")",{ categoryId: id},function(data){
+                        $('#_BarSectionList').html(data);
+                    });
+                }
+            });
+        });
+    </script>
+}

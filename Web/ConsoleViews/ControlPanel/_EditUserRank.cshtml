@@ -1,0 +1,68 @@
+﻿@model UserRankEditModel
+@{
+    var experience = ViewData.Get<PointCategory>("experience", null);
+}
+<div class="panel">
+    <div class="panel-body">
+        @using (Html.BeginAjaxForm("_EditUserRank", "ControlPanel", null, FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "_EditUserRankSucceed" }, new { @class = "form-horizontal tn-form-validation tn-survey-form" }))
+        {
+            @Html.HiddenFor(n => n.OldRank)
+            <div class="form-group">
+                <div class="col-xs-12">
+                    @Html.LabelFor(t => t.Rank)
+                    @if (Model.Rank > 0)
+                    {
+                        @Html.HiddenFor(n => n.Rank)
+                        @Html.TextBoxFor(n => n.Rank, new { @class = "form-control", @disabled = "" })
+                        @Html.ValidationMessageFor(t => t.Rank)
+                    }
+                    else
+                    {
+                        @Html.TextBoxFor(t => t.Rank, new { @class = "form-control", @placeholder = "请输入等级值" })
+                        @Html.ValidationMessageFor(t => t.Rank)
+                    }
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-12">
+                    @Html.LabelFor(t => t.RankName)
+                    @Html.TextBoxFor(t => t.RankName, new { @class = "form-control", @placeholder = "请输入等级名称" })
+                    @Html.ValidationMessageFor(t => t.RankName)
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-12">
+                    <label for="PointLower">@(experience.CategoryName)下限</label>
+                    @Html.TextBoxFor(t => t.PointLower, new { @class = "form-control", @placeholder = "请输入"+experience.CategoryName+"下限" })
+                    @Html.ValidationMessageFor(t => t.PointLower)
+                </div>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary tn-btn-wp">保存</button>
+                <button type="button" class="btn btn-default tn-btn-wp" onclick="layer.closeAll();">取消</button>
+            </div>
+        }
+    </div>
+</div>
+<script>
+   require(['jquery'],function(){
+        //提交回调
+        $.fn._EditUserRankSucceed=function(data) {
+            if (data.MessageType == -1) {
+                layer.msg(data.MessageContent, { icon: 2 });
+            }
+            else if (data.type==true) {
+                layer.msg("保存成功", { icon: 1 });
+                setTimeout(function () {
+                    $.get("@CachedUrlHelper.Action("_ListUserRanks", "ControlPanel")", { t: new Date().valueOf() },function (data) {
+                        $("#listuserrank").html(data)
+                    })
+                    layer.closeAll();
+                }, 400)
+            } else {
+                layer.msg("保存失败", { icon: 2 });
+            }
+        }
+
+   })
+</script>

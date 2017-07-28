@@ -1,0 +1,333 @@
+﻿@model SiteSettingEditModel
+@{
+    //邮箱手机优先下拉列表
+    var emailOrMobileDropdownList = ViewData.Get<IEnumerable<SelectListItem>>("emailOrMobileDropdownList", new List<SelectListItem>());
+    //水印类型下拉列表
+    var watermarkDropdownList = ViewData.Get<IEnumerable<SelectListItem>>("watermarkDropdownList", new List<SelectListItem>());
+
+}
+
+<style>
+    .tdonclick {
+        background-color: gray;
+    }
+
+    .tdoffclick {
+        background-color: white;
+    }
+
+    .tdchange:hover {
+        border: 2px solid gray;
+    }
+</style>
+
+@using (Html.BeginAjaxForm("_EditSiteSetting", "ControlPanel", null, FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "_editSuccess" }, new { @id = "_EditSiteSettingForm", @class = "tn-form-validation form-horizontal form-bordered" }))
+{
+    <div id="_EditBasicSiteSetting">
+        <fieldset id="_BasicInfo">
+            <legend><i class="fa fa-angle-right"></i>基本信息</legend>
+            <div class="form-group">
+                @Html.LabelFor(n => n.SiteName, new { @class = "col-xs-2 control-label" })
+                <div class="col-xs-8">
+                    @Html.TextBoxFor(n => n.SiteName, new { @class = "form-control", @placeholder = "近乎" })
+                    @Html.ValidationMessageFor(n => n.SiteName)
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(n => n.SiteDescription, new { @class = "col-xs-2 control-label" })
+                <div class="col-xs-8">
+                    @Html.TextBoxFor(n => n.SiteDescription, new { @class = "form-control", @placeholder = "基于asp.net mvc 最强大SNS社区软件" })
+                    <span class="help-block tn-mb-0">呈现在主页的title中</span>
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(n => n.Copyright, new { @class = "col-xs-2 control-label" })
+                <div class="col-xs-8">
+                    @Html.TextBoxFor(n => n.Copyright, new { @class = "form-control", @placeholder = "©2005-2017 Tunynet Inc." })
+                    <span class="help-block tn-mb-0">支持Html代码</span>
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(n => n.BeiAnScript, new { @class = "col-xs-2 control-label" })
+                <div class="col-xs-8">
+                    @Html.TextBoxFor(n => n.BeiAnScript, new { @class = "form-control" })
+                    <span class="help-block tn-mb-0">支持Html代码</span>
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(n => n.StatScript, new { @class = "col-xs-2 control-label" })
+                <div class="col-xs-8">
+                    @Html.TextAreaFor(n => n.StatScript, new { @class = "form-control", @placeholder = " 用于统计站点访问记录，支持Html代码", @rows = "3" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(n => n.Links, new { @class = "col-xs-2 control-label" })
+                <div class="col-xs-8">
+                    @Html.TextAreaFor(n => n.Links, new { @class = "form-control", @placeholder = "支持Html代码", @rows = "3" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(n => n.EnableAnonymousBrowse, new { @class = "col-xs-2 control-label" })
+                <div class="col-xs-8 form-control-static">
+                    @Html.RadioButtonFor(n => n.EnableAnonymousBrowse, true)  允许&nbsp;
+                    @Html.RadioButtonFor(n => n.EnableAnonymousBrowse, false)  不允许
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(n => n.SiteStyle, new { @class = "col-xs-2 control-label" })
+                @Html.HiddenFor(n => n.SiteStyle, new { @id = "sitestyle" })
+                <div class="col-xs-8 form-control-static">
+                    <div class="row jh-skin-switch">
+                        <div class="col-xs-1">
+                            <span style="margin-top:0px;" title="@SiteStyleType.Default.GetDisplayName()" class="stylechange @(Model.SiteStyle==SiteStyleType.Default?"active":"")" data-style="@SiteStyleType.Default"></span>
+                        </div>
+                        <div class="col-xs-1">
+                            <span style="margin-top:0px;" title="@SiteStyleType.Graybg.GetDisplayName()" class="stylechange jh-gray-skin @(Model.SiteStyle==SiteStyleType.Graybg?"active":"")" data-style="@SiteStyleType.Graybg"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset id="_SEOInfo">
+            <legend><i class="fa fa-angle-right"></i>SEO设置</legend>
+            <div class="form-group">
+                @Html.LabelFor(n => n.SearchMetaKeyWords, new { @class = "col-xs-2 control-label" })
+                <div class="col-xs-8">
+                    @Html.TextBoxFor(n => n.SearchMetaKeyWords, new { @class = "form-control", @rows = "3" })
+                    <span class="help-block tn-mb-0">呈现在主页的：@HtmlUtility.CloseHtmlTags("<meta content=\"页面头信息关键字\" name=\"keywords\" />")</span>
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(n => n.SearchMetaDescription, new { @class = "col-xs-2 control-label" })
+                <div class="col-xs-8">
+                    @Html.TextAreaFor(n => n.SearchMetaDescription, new { @class = "form-control", @rows = "3" })
+                    <span class="help-block tn-mb-0">呈现在主页的：@HtmlUtility.CloseHtmlTags("<meta content=\"页面头信息描述\" name=\"description\" />")</span>
+                </div>
+            </div>
+        </fieldset>
+
+    </div>
+
+    <fieldset id="_EditUserSetting">
+        <legend><i class="fa fa-angle-right"></i>用户设置</legend>
+        <div class="form-group">
+            @Html.LabelFor(n => n.RegisterType, new { @class = "col-xs-2 control-label" })
+            <div class="col-xs-2 form-control-static">
+                @Html.CheckBoxFor(n => n.isEmail, new { @class = "isemailcheckbox" }) 邮箱注册
+                @Html.CheckBoxFor(n => n.isMobile, new { @class = "isemailcheckbox" }) 手机注册
+            </div>
+            <div id="registertype" class="col-xs-8 form-control-static">
+                <label>优先使用 </label>
+                @Html.DropDownListFor(n => n.RegisterType, emailOrMobileDropdownList)
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(n => n.DisallowedUserNames, new { @class = "col-xs-2 control-label" })
+            <div class="col-xs-8">
+                @Html.TextBoxFor(n => n.DisallowedUserNames, new { @class = "form-control" })
+                <span class="help-block tn-mb-0">多个昵称用逗号分隔</span>
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(n => n.InvitationCodeTimeLiness, new { @class = "col-xs-2 control-label" })
+            <div class="col-xs-1">
+                @Html.TextBoxFor(n => n.InvitationCodeTimeLiness, new { @class = "form-control" })
+                @Html.ValidationMessageFor(n => n.InvitationCodeTimeLiness)
+            </div>
+            <div class="col-xs-8" style="padding-left:0px">
+                <p class="form-control-static">天</p>
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(n => n.AutomaticModerated, new { @class = "col-xs-2 control-label" })
+            <div class="col-xs-8 form-control-static">
+                @Html.RadioButtonFor(n => n.AutomaticModerated, true) 启用&nbsp;
+                @Html.RadioButtonFor(n => n.AutomaticModerated, false) 不启用
+                <span class="help-block tn-mb-0">新注册用户自动成为受管制用户，所发布内容需要通过审核后才能公开对外显示，达到一定经验值后自动解除管制状态</span>
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(n => n.NoModeratedUserPoint, new { @class = "col-xs-2 control-label" })
+            <div class="col-xs-1">
+                @Html.TextBoxFor(n => n.NoModeratedUserPoint, new { @class = "form-control" })
+                @Html.ValidationMessageFor(n => n.NoModeratedUserPoint)
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset id="_EditWatermarkSetting">
+        <legend><i class="fa fa-angle-right"></i>水印设置</legend>
+        <div class="form-group">
+            @Html.LabelFor(n => n.WatermarkType, new { @class = "col-xs-2 control-label" })
+            <div class="col-xs-1">
+                @Html.DropDownListFor(n => n.WatermarkType, watermarkDropdownList, new { @class = "form-control", @id = "watermarktype" })
+            </div>
+        </div>
+        <div id="setwatermark">
+            <div class="form-group">
+                @Html.LabelFor(n => n.WatermarkLocation, new { @class = "col-xs-2 control-label" })
+                @Html.HiddenFor(n => n.WatermarkLocation, new { @id = "watermarklocation" })
+                <div class="col-xs-3">
+                    <table class="table table-bordered col-xs-5" style="border-width:2px">
+                        @for (int i = 0; i < 3; i++)
+                        {
+                        <tr height="70">
+                            @for (int j = 0; j < 3; j++)
+                            {
+                                if ((int)Model.WatermarkLocation == (j + i * 3))
+                                {
+                                <td class="tdchange tdonclick" data-index="@(j + i * 3)"></td>
+                                }
+                                else
+                                {
+                                <td class="tdchange tdoffclick" data-index="@(j + i * 3)"></td>
+                                }
+                            }
+                        </tr>
+                        }
+                    </table>
+                </div>
+            </div>
+            <div id="textwatermark" class="form-group">
+                @Html.LabelFor(n => n.WatermarkText, new { @class = "col-xs-2 control-label" })
+                <div class="col-xs-3">
+                    @Html.TextBoxFor(n => n.WatermarkText, new { @class = "form-control" })
+                </div>
+            </div>
+            <div id="imagewatermark" class="form-group">
+                @Html.LabelFor(n => n.WatermarkImageName, new { @class = "col-xs-2 control-label" })
+                <div class="col-xs-3">
+                    @Html.TextBoxFor(n => n.WatermarkImageName, new { @class = "form-control" })
+                    <span class="help-block tn-mb-0">图片存储位置"~/img/"</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-xs-2 control-label">加水印最小尺寸</label>
+                <div class="col-xs-4">
+                    @Html.LabelFor(n => n.WatermarkMinWidth, new { @class = "control-label form-control-static", @style = "float:left" })
+                    <div class="col-xs-3">
+                        @Html.TextBoxFor(n => n.WatermarkMinWidth, new { @class = "form-control", @style = "width:50px;display:inline" })
+                        @Html.ValidationMessageFor(n => n.WatermarkMinWidth)
+                        <p class="form-control-static help-block tn-mb-0" style="margin-left:3px;width:20px;display:inline">px</p>
+                    </div>
+                    @Html.LabelFor(n => n.WatermarkMinHeight, new { @class = "control-label form-control-static", @style = "float:left" })
+                    <div class="col-xs-3">
+                        @Html.TextBoxFor(n => n.WatermarkMinHeight, new { @class = "form-control ", @style = "width:50px;display:inline" })
+                        @Html.ValidationMessageFor(n => n.WatermarkMinHeight)
+                        <p class="form-control-static help-block tn-mb-0" style="margin-left:3px; width:20px;display:inline">px</p>
+                    </div>
+                    <p class="form-control-static help-block tn-mb-0">小于这些尺寸的图片不加水印</p>
+                </div>
+
+            </div>
+        </div>
+    </fieldset>
+    <fieldset>
+        <div class="form-group ">
+            <label class="col-xs-2 control-label"></label>
+            <div class="col-xs-8">
+                <button type="button" class="btn btn-primary tn-btn-wp submitsetting">确定</button>
+            </div>
+        </div>
+    </fieldset>
+}
+<script>
+    require(['jquery'], function () {
+
+        //点击选择风格位置
+        $('.stylechange').on('click', function (e) {
+            e.stopPropagation();
+            var $this = $(this);
+            $('.stylechange').each(function () {
+                $(this).removeClass('active');
+            });
+            $this.addClass('active');
+            $('#sitestyle').val($this.data('style'));
+        });
+
+        //文档加载完成处理事件
+        $(document).ready(function () {
+            ChooseWaterMarkType();
+            IsEmailAndMobile();
+        });
+
+        //改变注册方式复选框事件
+        $('.isemailcheckbox').on('click', function () {
+            IsEmailAndMobile();
+        });
+
+        //点击选择水印位置
+        $('.tdchange').on('click', function () {
+            var $this = $(this);
+            $('.tdchange').each(function () {
+                $(this).removeClass('tdonclick');
+                $(this).addClass('tdoffclick');
+            });
+            $this.removeClass('tdoffclick');
+            $this.addClass('tdonclick');
+            $('#watermarklocation').val($this.data('index'));
+        });
+
+        //改变水印类型
+        $('#watermarktype').on('change', function () {
+            ChooseWaterMarkType();
+        });
+
+        //手动提交表单,验证是否选择了一种注册方式
+        $('.submitsetting').on('click', function () {
+            if ($('.isemailcheckbox:checked').length == 0) {
+                layer.msg("请至少选择一种注册方式", { icon: 2 });
+            }
+            else {
+                layer.confirm('确定要更改站点设置么?', { btn: ['确认', '取消'], icon: 3 }, function () {
+                    $('#_EditSiteSettingForm').submit();
+                });
+            }
+        });
+
+        //编辑成功回调
+        $.fn._editSuccess = function (data) {
+            if (data.MessageType) {
+                $.get('@CachedUrlHelper.Action("_EditSiteSetting","ControlPanel")', { t: (new Date()).valueOf() }, function (html) {
+                    $('#_EditSiteSetting').html(html);
+                });
+
+                layer.msg(data.MessageContent, { icon: 1 });
+            }
+            else {
+                layer.msg(data.MessageContent, { icon: 2 });
+            }
+        }
+
+        //同时开启邮箱注册和手机注册时显示选择优先使用方式
+        function IsEmailAndMobile() {
+            if ($('.isemailcheckbox:checked').length == 2) {
+                $('#registertype').removeClass('hide');
+            }
+            else {
+                $('#registertype').addClass('hide');
+            }
+        }
+
+        //点击选择水印类型
+        function ChooseWaterMarkType() {
+            var watermarktype = $('#watermarktype :selected').val();
+            if (watermarktype == '@WatermarkType.None') {
+                $('#setwatermark').addClass('hide');
+            }
+            if (watermarktype == '@WatermarkType.Text') {
+                $('#setwatermark').removeClass('hide');
+                $('#textwatermark').removeClass('hide');
+                $('#imagewatermark').addClass('hide');
+            }
+            if (watermarktype == '@WatermarkType.Image') {
+                $('#setwatermark').removeClass('hide');
+                $('#textwatermark').addClass('hide');
+                $('#imagewatermark').removeClass('hide');
+            }
+        }
+
+    })
+
+</script>

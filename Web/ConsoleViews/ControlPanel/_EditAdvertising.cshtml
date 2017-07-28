@@ -1,0 +1,327 @@
+﻿@model AdvertisingEditModel
+@{
+    var isEmptyBody = string.IsNullOrEmpty(Model.Body);
+    ViewData["Title"] = new string[] { "广告编辑" };
+    IEnumerable<SelectListItem> sizeSelectList = ViewData.Get<IEnumerable<SelectListItem>>("sizeSelectList", null);
+}
+
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-lg-12">
+        @if (Model.AdvertisingId != 0)
+        {
+        <h3>编辑广告</h3>
+        }
+        else
+        {
+        <h3>添加广告</h3>
+        }
+    </div>
+</div>
+<div class="tn-box tn-box-v1 tn-survey-form">
+    @using (Html.BeginAjaxForm("_EditAdvertising", "ControlPanel", "", FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "EditCallBack" }, new { @class = "tn-form-validation form-horizontal", @id = "advertisingForm" }))
+    {
+    <div class="form-group">
+        @Html.HiddenFor(m => m.DateCreated)
+        @Html.ValidationMessageFor(m => m.DateCreated)
+        @Html.HiddenFor(m => m.AdvertisingId)
+        @Html.ValidationMessageFor(m => m.AdvertisingId)
+        @Html.LabelFor(m => m.Name, new { @class = "control-label col-xs-1" })
+        <div class="col-xs-4">
+            @Html.TextBoxFor(m => m.Name, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.Name)
+        </div>
+    </div>
+
+        <div class="form-group">
+            @Html.LabelFor(n => n.Body, new { @class = "control-label col-xs-1" })
+            <div class="col-xs-8 form-control-static">
+                @Html.RadioButtonFor(model => model.AdvertisingType, AdvertisingType.Image)  @AdvertisingType.Image.GetDisplayName()&nbsp;
+                @Html.RadioButtonFor(model => model.AdvertisingType, AdvertisingType.Script)  @AdvertisingType.Script.GetDisplayName()
+            </div>
+        </div>
+        <div id="imageBlock" style="display:@(Model.AdvertisingType==AdvertisingType.Image?"block":"none")">
+            <div class="form-group">
+                <div id="UploadFileImgs" class="col-xs-offset-1 col-xs-2">
+                    @if (Model.ImageAttachmentId == 0)
+                    {
+                    @Html.FileUploader("UploadImage", TenantTypeIds.Instance().Advertising(), UserContext.CurrentUser.UserId, "+", extensions: "jpg,jpeg,png,gif", callbacks: new { uploadSuccess = "succeedImageCallback" })
+                    }
+                    else
+                    {
+                    <div class="tn-pic-attachment">
+                        <img class="img-thumbnail img-responsive" src="@Model.GetImageUrl()" alt="...">
+                        <button class="btn btn-default btn-xs btn-removeImage" type="button"><i class="fa fa-remove"></i></button>
+                    </div>
+                    }
+
+                </div>
+                <div class="col-xs-offset-1 col-xs-12">
+                    @Html.HiddenFor(m => m.ImageAttachmentId)
+                    @Html.ValidationMessageFor(m => m.ImageAttachmentId)
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                @Html.LabelFor(m => m.LinkUrl, new { @class = "control-label col-xs-1" })
+                <div class="col-xs-2">
+                    @Html.TextBoxFor(m => m.LinkUrl, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(m => m.LinkUrl)
+                </div>
+                <div class="checkbox-inline col-xs-2">
+                    @Html.CheckBoxFor(m => m.TargetBlank)
+                    @Html.LabelFor(m => m.TargetBlank)
+                </div>
+
+            </div>
+        </div>
+            <div class="form-group" id="scriptBlock" style="display:@(Model.AdvertisingType==AdvertisingType.Script?"block":"none")">
+                <div class="col-xs-offset-1 col-xs-4">
+                    @Html.TextAreaFor(m => m.Body, new { @class = "form-control", @rows = "5" })
+
+
+                </div>
+                <div class="help-block col-xs-offset-1 col-xs-10">可以录入Html和JavaScript代码</div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-1">广告位</label>
+                <div class="col-xs-6">
+                    <div class="panel panel-default">
+                        <div class="panel-body ">
+                            <table class="table tn-va-middle" style="height:auto">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" value="0" id="selectAll" /></th>
+                                        <th>广告位描述</th>
+                                        <th>@Html.DropDownList("sizeSelectList", sizeSelectList, new { @class = "form-control" })</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.positionList.Count() > 0)
+                                    {
+                                        for (int i = 0; i < Model.positionList.Count(); i++)
+                                        {
+                                        <tr class="tr-position" data-size="@Model.positionList[i].Width*@Model.positionList[i].Height">
+                                            <td>
+                                                @Html.HiddenFor(m => m.positionList[i].PositionId)
+                                                @Html.ValidationMessageFor(m => m.positionList[i].PositionId)
+                                              
+                                                @Html.CheckBoxFor(m => m.positionList[i].IsChecked, new { @class = "userCheckBox" })
+                                            </td>
+                                            <td title=" @Model.positionList[i].Description">
+                                               @StringUtility.Trim(Model.positionList[i].Description,20)
+                                            </td>
+                                            <td>
+                                                @(Model.positionList[i].Width == 0 ? "不限" : Model.positionList[i].Width.ToString()) * @(Model.positionList[i].Height == 0 ? "不限" : Model.positionList[i].Height.ToString())
+                                            </td>
+                                        </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                    <tr class="text-center clearfix text-warning">无广告位</tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("date", "投放日期", new { @class = "control-label col-xs-1" })
+                <div class="col-xs-5 has-feedback" style="margin-left:-15px">
+                    <div class="col-xs-5">
+                        @Html.DateTimePickerFor(m => m.StartDate)
+                        <span style="    right: 15px" class="form-control-feedback"><i class="fa fa-calendar"></i></span>
+                    </div>
+                   
+                    <label class="control-label col-xs-1 text-center">
+                        到
+                    </label>
+                    <div class="col-xs-5">
+                        @Html.DateTimePickerFor(m => m.EndDate)
+                        <span  style="    right: 15px" class="form-control-feedback"><i class="fa fa-calendar"></i></span>
+                    </div>
+                </div>
+                @Html.ValidationMessageFor(m => m.StartDate)
+                @Html.ValidationMessageFor(m => m.EndDate)
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.IsEnable, new { @class = "control-label col-xs-1" })
+                <div class="col-xs-2">
+                    <div class="radio-inline">
+                        @Html.RadioButtonFor(model => model.IsEnable, true)
+                        <label>是</label>
+                    </div>
+                    <div class="radio-inline">
+                        @Html.RadioButtonFor(model => model.IsEnable, false)
+                        <label>否</label>
+                    </div>
+                </div>
+                @Html.ValidationMessageFor(m => m.IsEnable)
+            </div>
+            <div class="form-group">
+                <div class="col-xs-offset-1">
+                    <button type="button" id="submit" class="btn btn-primary tn-mr-10 tn-btn-wp">确定</button>
+                    <button type="button" id="back" class="btn btn-default tn-btn-wp">返回</button>
+                </div>
+            </div>
+    }
+</div>
+@Styles.Render("~/Bundle/Styles/daterangepicker")
+@Styles.Render("~/Bundle/Styles/Uploader")
+
+<script>
+    require(['jquery', 'uploader', 'datepicker', 'jqueryform'], function () {
+        //默认字符串 防止提交时隐藏域验证不通过
+        var defaultstring = "http://www.jinhusns.com/";
+        $(function () {
+            showBody("@Model.AdvertisingType");
+        })
+        $("#submit").click(function () {
+            if ($("[name='AdvertisingType']:checked").val() == "Script" && $("#Body").val() == "") {
+                layer.msg("广告内容不能为空", { icon: 2 });
+                return false;
+            }
+
+
+            $("#advertisingForm").submit();
+        })
+
+        $("#back").click(function () {
+            location.href = "@SiteUrls.Instance().ManageAdvertising(null)";
+        })
+        //显示内容块儿
+        function showBody(advertisingType) {
+            if (advertisingType == "@AdvertisingType.Image") {
+                if ("@Model.LinkUrl" == "") {
+                    $("#LinkUrl").val("");
+                }
+                if ("@Model.ImageAttachmentId" == 0) {
+                    $("#ImageAttachmentId").val("");
+                }
+                if ("@isEmptyBody" == "Ture") {
+                    $("#Body").val(defaultstring);
+                }
+                $("#imageBlock").show();
+                $("#scriptBlock").hide();
+            }
+            else {
+                if ("@isEmptyBody" == "Ture") {
+                    $("#Body").val("");
+                }
+                if ("@Model.LinkUrl" == "") {
+                    $("#LinkUrl").val(defaultstring);
+                }
+                if ("@Model.ImageAttachmentId" == 0) {
+                    $("#ImageAttachmentId").val(0);
+                }
+                $("#imageBlock").hide();
+                $("#scriptBlock").show();
+            }
+        }
+
+        //上传成功回调
+        $.fn.succeedImageCallback = function (file, data) {
+            var $this = $("#UploadFileImgs");
+            var itemTmpl = '<div class="tn-pic-attachment">\
+                                <img class="img-thumbnail img-responsive" src="' + data.path + '" alt="...">\
+                                <button class="btn btn-default btn-xs btn-removeImage" type="button"><i class="fa fa-remove"></i></button>\
+                                </div>';
+            $('input[name="ImageAttachmentId"]').val(data.id);
+            $this.append(itemTmpl);
+            $this.find("div[id^='uploader-UploadImage']").remove();
+        }
+
+        //移除图片
+        $('#advertisingForm').on('click', '.btn-removeImage', function () {
+            var $this = $(this);
+            var temp = '@Html.FileUploader("UploadImages", TenantTypeIds.Instance().Advertising(), UserContext.CurrentUser.UserId, "+", extensions: "jpg,jpeg,png,gif", callbacks: new { uploadSuccess = "succeedImageCallback" })';
+            $this.parent().parent().html(temp);
+            $('input[name="ImageAttachmentId"]').val("");
+        });
+
+        //广告类型变更
+        $("input[name='AdvertisingType']").click(function () {
+            showBody($(this).val());
+        })
+
+        //编辑成功回调
+        $.fn.EditCallBack = function (data) {
+            if (data.state == 1) {
+                layer.msg(data.successmsg, { icon: 1 });
+                setTimeout(function () {
+                    window.location.href = "@SiteUrls.Instance().ManageAdvertising(null)"
+                }, 2000)
+            }
+            else {
+                layer.msg(data.errormsg, { icon: 2 });
+            }
+        }
+
+        //全选方法
+        $("input[id=selectAll]").click(function () {
+            var flag = this.checked;
+            $("input[class=userCheckBox]").prop('checked', flag);
+        })
+
+        //取消全选
+        $("input[class=userCheckBox]").click(function () {
+            var flag = this.checked;
+            if (!flag) {
+                var f = $("#selectAll").prop('checked')
+                if (f) {
+                    $("#selectAll").prop('checked', false)
+                }
+            }
+        })
+        //下拉列表改变事件
+        $("#sizeSelectList").change(function () {
+            var position = $("#sizeSelectList option:selected").val();
+            if (position != "") {
+                var center = position.indexOf("*");
+                var width = position.substring(0, center);
+                var height = position.substring(center + 1, position.length);
+                var trs = $(".tr-position");
+                for (var i = 0; i < trs.length; i++) {
+                    var tr = $(trs[i]);
+                    if (tr.data("size") == position) {
+                        tr.show();
+                    }
+                    else {
+                        tr.hide();
+                    }
+                }
+            }
+            else {
+                $(".tr-position").show();
+            }
+        })
+        //限制结束日期大于开始日期
+        $(document).on('change', 'input[name="EndDate"]', function () {
+            var startDate = $('input[name="StartDate"]').val();
+            var endDate = $(this).val();
+            var days = DateDiff(startDate, endDate)
+            if (days < 0) {
+                $(this).val("");
+                layer.alert('结束日期应大于等于开始日期');
+            }
+        })
+        $(document).on('change', 'input[name="StartDate"]', function () {
+            var endDate = $('input[name="EndDate"]').val();
+            var startDate = $(this).val();
+            var days = DateDiff(startDate, endDate)
+            if (days < 0) {
+                $(this).val("");
+                layer.alert('开始日期应小于等于结束日期');
+            }
+        })
+        ///计算日期差
+        function DateDiff(startData, endData) {
+            var sDate, eDate;
+            sDate = Date.parse(startData.replace(/-/g, '/'));
+            eDate = Date.parse(endData.replace(/-/g, '/'));
+            return eDate - sDate
+        }
+    })
+</script>

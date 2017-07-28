@@ -1,0 +1,15 @@
+﻿@{
+    ViewData["Title"] = new string[] { "积分规则" };
+    TempData["subMenu-check"] = new string[] { "User", "Managepointrules" };
+}
+
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-xs-12">
+        <h3>积分规则</h3>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body" id="listpointrule">
+        @Html.Action("_ListPointRules", "ControlPanel")
+    </div>
+</div>

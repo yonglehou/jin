@@ -1,0 +1,23 @@
+﻿@{ 
+    var imageUrl = ViewData.Get<string>("imageUrl", null);
+    var linkUrl = ViewData.Get<string>("linkUrl", null);
+    var body = ViewData.Get<string>("body", null);
+}
+@if (imageUrl!=null||body!=null)
+{
+    if (!string.IsNullOrEmpty(body))
+    {
+        @Html.Raw(body)
+    }
+    else
+    {
+        <a href="@linkUrl" target="_blank"><img id="advertising" src="@imageUrl"  /></a>
+    }
+}
+<script>
+    require(['jquery'],function(){
+        $(function () {
+        $("#advertising").width($("#advertisingDiv").width());
+      })
+    })
+</script>

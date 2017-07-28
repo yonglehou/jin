@@ -1,0 +1,58 @@
+﻿@{
+    List<SelectListItem> specialContentTypesList = ViewData.Get<List<SelectListItem>>("specialContentTypeList", new List<SelectListItem>());
+    List<SelectListItem> contentTenantList = ViewData.Get<List<SelectListItem>>("contentTenantList", new List<SelectListItem>());
+    int typeId = ViewData.Get<int>("typeId", 0);
+    string belong = ViewData.Get<string>("belong", null);
+    ViewData["Title"] = new string[] { "内容推荐管理" };
+    TempData["subMenu-check"] = new string[] { "Public", "ManageContentItems" };
+}
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-lg-12">
+        <h3>内容推荐</h3>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="form-inline tn-tool-column row">
+
+            <div class="col-xs-12 text-right">
+               
+                <div class="form-group form-inline">
+                    <a href="@CachedUrlHelper.Action("ManageSpecialContentTypes","ControlPanel")">推荐类别管理</a>
+                </div>
+          
+                    <div class="form-group form-inline" style="width:200px">
+                        <label class="control-label" for="contentTenant">所属</label>&nbsp;
+                          @Html.DropDownList("contentTenant", contentTenantList, new { @class = "form-control" })
+                    </div>
+                <div class="form-group form-inline"  style="width:500px">
+                    <label class="control-label" for="specialContentType">推荐类别</label>&nbsp;
+                    @Html.DropDownList("specialContentType", specialContentTypesList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div id="_listSpecialContentItems" class="panel-body">
+        @Html.Action("_ListSpecialContentItems", "ControlPanel", new { typeId = typeId, belong = belong })
+    </div>
+</div>
+
+<script>
+    require(['jquery'], function () {
+        $(function () {
+            //下拉菜单事件
+            $("select").change(function () {
+                var type = $("#specialContentType option:selected").val();
+                var belong = $("#contentTenant option:selected").val();
+                $.get("@CachedUrlHelper.Action("_ListSpecialContentItems", "ControlPanel")", { belong: belong, typeId: type, requestTime: new Date().getTime() }, function (data) {
+                    if (data) {
+                        $("#_listSpecialContentItems").html(data);
+                    }
+                })
+            })
+        })
+
+    })
+</script>

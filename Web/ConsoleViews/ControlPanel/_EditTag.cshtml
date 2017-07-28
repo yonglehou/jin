@@ -1,0 +1,110 @@
+﻿@model TagEditModel
+@{
+    AttachmentService attachmentService = new AttachmentService(TenantTypeIds.Instance().Tag());
+}
+<div class="panel">
+    <div class="panel-body">
+        @using (Html.BeginAjaxForm("_EditTag", "ControlPanel", null, FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "_EditTagSucceed" }, new { @class = "tn-form-validation tn-survey-form" }))
+        {
+            @Html.HiddenFor(t => t.TagId)
+            @Html.ValidationMessageFor(t => t.TagId)
+            <input name="TenantTypeId" type="hidden" value="@Model.TenantTypeId">
+            @Html.ValidationMessageFor(t => t.TenantTypeId)
+            @Html.HiddenFor(t => t.ItemCount)
+            @Html.ValidationMessageFor(t => t.ItemCount)
+            @Html.HiddenFor(t => t.DateCreated)
+            @Html.ValidationMessageFor(t => t.DateCreated)
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-xs-3">
+                        @Html.LabelFor(t => t.TagName)
+                    </div>
+                    <div class="col-xs-9 text-right">
+                        @Html.CheckBoxFor(t => t.IsFeatured)
+                        @Html.LabelFor(t => t.IsFeatured)
+                    </div>
+                </div>
+                @Html.TextBoxFor(t => t.TagName, new { @class = "form-control", @placeholder = "请输入标签名称" })
+                @Html.ValidationMessageFor(t => t.TagName)
+            </div>
+            <div id="featured" style="display:none;">
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            @Html.LabelFor(t => t.ImageAttachmentId)
+                        </div>
+                        <div class="col-xs-2" id="UploadFileImgs" style="width:180px;">
+                            <input type="hidden" name="ImageAttachmentId" value="@Model.ImageAttachmentId" />
+                            @if (Model.ImageAttachmentId > 0 && attachmentService.Get(Model.ImageAttachmentId) != null)
+                            {
+                                <div class="tn-pic-attachment">
+                                    <img class="img-thumbnail img-responsive" src="@attachmentService.Get(Model.ImageAttachmentId).GetDirectlyUrl("Small")">
+                                    <button class="btn btn-default btn-xs btn-removeImage" type="button">
+                                        <i class="fa fa-remove"></i>
+                                    </button>
+                                </div>
+                            }
+                            else
+                            {
+                                <div id="uploadImage"></div>
+                            }
+                        </div>
+                    </div>
+
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(t => t.Description)
+                    @Html.TextAreaFor(t => t.Description, new { @class = "form-control", @placeholder = "请输入标签描述", @rows = "2" })
+                    @Html.ValidationMessageFor(t => t.Description)
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary tn-btn-wp">保存</button>
+            <button type="button" class="btn btn-default tn-btn-wp" onclick="layer.closeAll();">取消</button>
+        }
+    </div>
+</div>
+
+<script>
+    require(['jquery', 'uploader'], function () {
+        showform();
+        $("#IsFeatured").click(function () {
+            showform();
+        })
+        function showform() {
+            var temp = '@Html.FileUploader("UploadFile", TenantTypeIds.Instance().Tag(), UserContext.CurrentUser.UserId, "+", extensions: "jpg,jpeg,png,bmp", callbacks: new { uploadSuccess = "succeedImageSyntony" })';
+            var uploadFileInput = $("#uploadImage");
+            uploadFileInput.append(temp);
+            var isFeatured = $("#IsFeatured");
+            if (isFeatured.is(":checked")) {
+                $("#featured").show();
+            } else {
+                $("#featured").hide();
+                $("#uploadImage").text("");
+            }
+        }
+
+
+        //标题图上传成功回调
+        $.fn.succeedImageSyntony = function (file, data) {
+            var $this = $("#UploadFileImgs");
+            var itemTmpl = '<div class="tn-pic-attachment">\
+                                <img class="img-thumbnail img-responsive" src="' + data.path + '" alt="...">\
+                                <button class="btn btn-default btn-xs btn-removeImage" type="button"><i class="fa fa-remove"></i></button>\
+                                </div>';
+            $this.append(itemTmpl);
+            var uploadFileInput = $("[name='ImageAttachmentId']");
+            uploadFileInput.val(data.id);
+            $this.find("div[id^='uploader-UploadFile']").remove();
+        }
+
+        //移除标题图
+        $(document).on('click', '.btn-removeImage', function () {
+            var temp = '@Html.FileUploader("UploadFile", TenantTypeIds.Instance().Tag(), UserContext.CurrentUser.UserId, "+", extensions: "jpg,jpeg,png,gif", callbacks: new { uploadSuccess = "succeedImageSyntony" })';
+            var $this = $(this);
+            var uploadFileInput = $("[name='ImageAttachmentId']");
+            uploadFileInput.val("0")
+            $this.parent().parent().append(temp);
+            $this.parent().remove();
+        });
+    })
+</script>

@@ -1,0 +1,160 @@
+/*jn-install
+     ---------------------------------------------------*/
+body {
+    background-color: #f2f2f2;
+}
+
+a {
+    color: #0080C0;
+}
+
+.btn-primary {
+    background-color: #bf0a10;
+    border: #bf0a10 1px solid;
+}
+
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus, .btn-primary:active:hover, .btn-primary.active:hover, .open > .dropdown-toggle.btn-primary:hover, .btn-primary:active:focus, .btn-primary.active:focus, .open > .dropdown-toggle.btn-primary:focus, .btn-primary:active.focus, .btn-primary.active.focus, .open > .dropdown-toggle.btn-primary.focus, .btn-default.active:hover {
+    background-color: #bf0a10;
+    border-color: #ac2925;
+}
+
+table caption {
+    font-weight: bold;
+}
+
+.tn-weight-bold {
+    font-weight: bold;
+}
+
+.jh-help-block {
+    margin-top: 0;
+    line-height: 1.2;
+}
+
+.jh-install-logo {
+    text-align: center;
+    margin-top: 50px;
+    margin-bottom: -50px;
+
+    .jh-install-wizard {
+        font-size: 20px;
+        vertical-align: bottom;
+    }
+}
+
+.jh-install-block {
+    width: 800px;
+    margin: auto;
+    background-color: #fff;
+    margin-top: 100px;
+    min-height: 600px;
+    padding: 20px;
+
+    .jh-install-start {
+        font-size: 16px;
+        margin-left: 265px;
+
+        h3 {
+            padding: 50px 0;
+            margin: 0;
+
+            i {
+                vertical-align: middle;
+            }
+        }
+    }
+
+    .jh-wizard-content {
+        height: 490px;
+        overflow: auto;
+        padding: 10px;
+        border: 1px solid #e5e5e5;
+    }
+
+    .jh-install-nav {
+        margin: 0 -20px;
+        padding: 0px 0 10px;
+        border-bottom: 10px solid #f2f2f2;
+        text-align: center;
+        font-size: 16px;
+        color: #333;
+
+        .jh-nav-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #f2f2f2;
+            display: inline-block;
+            border: 1px solid #ccc;
+            font-weight: bold;
+            text-align: center;
+            line-height: 28px;
+        }
+
+        li.active{
+            color: #bf0a10;
+
+            .jh-nav-number {
+                background-color: #bf0a10;
+                border: 1px solid #bf0a10;
+                color: #fff;
+            }
+        }
+    }
+
+    .jh-install-content {
+        padding-top: 20px;
+
+        fieldset legend {
+            font-size: 14px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        fieldset:first-child legend {
+            padding-top: 0;
+        }
+    }
+
+    .jh-install-complete {
+        margin: 0 140px;
+
+        h3 {
+            padding: 20px 0;
+            margin: 0;
+
+            i {
+                vertical-align: middle;
+            }
+        }
+
+        p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 10px;
+        }
+
+        .row {
+            margin-bottom: 30px;
+            line-height: 2;
+        }
+    }
+}
+//µ¯³ö¿ò
+.layui-layer-btn .layui-layer-btn0{
+    background-color: #bf0a10!important ;
+    border-color:#bf0a10!important ;
+}
+.layui-layer-btn0:hover, .layui-layer-btn0:active, .layui-layer-btn0:focus, .layui-layer-btn0:active:hover{
+    background-color: #bf0a10!important ;
+    border-color: #ac2925!important ;
+}
+
+.layui-layer-btn1:hover, .layui-layer-btn1:active, .layui-layer-btn1:focus, .layui-layer-btn1:active:hover{
+    background-color: #bf0a10!important ;
+    color: #fff!important ;
+    border-color: #ac2925!important ;
+}

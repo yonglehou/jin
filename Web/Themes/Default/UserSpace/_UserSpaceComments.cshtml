@@ -1,0 +1,30 @@
+﻿@{
+    TempData["myhome-check"] = "mycomment";
+
+    User spaceUser = ViewData.Get<User>("spaceUser", null);
+    var currentUser = UserContext.CurrentUser;
+}
+
+<div class="row jh-my-comment">
+    <div class="tn-plr-15 ">
+        <div class="col-xs-12">
+            <div role="tabpanel" class="tab-pane active" id="_ListComments">
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    require(['jquery'], function ($) {
+        $(function () {
+            if ($('#nav-comment-send').hasClass('active')) {
+                $.get('@CachedUrlHelper.Action("_ListComments", "UserSpace",null, new RouteValueDictionary { { "spaceKey", Tunynet.Utilities.WebUtility.UrlEncode(spaceUser.UserName) }})', { isReceived: false, t: new Date().getTime() }, function (data) {
+                    $('#_ListComments').html(data);
+                });
+            } else {
+                $.get('@CachedUrlHelper.Action("_ListComments", "UserSpace",null, new RouteValueDictionary { { "spaceKey", Tunynet.Utilities.WebUtility.UrlEncode(spaceUser.UserName) } })', { t: new Date().getTime() }, function (data) {
+                    $('#_ListComments').html(data);
+                });
+            }
+        });
+    })
+</script>

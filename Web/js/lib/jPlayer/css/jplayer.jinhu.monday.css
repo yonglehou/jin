@@ -1,0 +1,24 @@
+.jp-video .jp-interface {
+    border-top: 1px solid #000;
+}
+.jp-audio, .jp-audio-stream, .jp-video {
+    background-color: #0c455f;
+    border-color: #042d3f;
+    border-radius: 3px;
+    color: #999;
+}
+.jp-interface {
+    background-color: #000;
+}
+.jp-play:hover, .jp-stop:hover, .jp-volume-controls button:hover, .jp-toggles button:hover {
+    color: #ccc;
+}
+.jp-seek-bar, .jp-volume-bar {
+    background: #333;
+}
+.jp-progress {
+    background: #111;
+}
+.jp-volume-bar {
+    width:56px;
+}

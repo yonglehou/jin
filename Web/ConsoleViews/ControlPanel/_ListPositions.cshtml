@@ -1,0 +1,108 @@
+﻿@model IEnumerable<AdvertisingPosition>
+@{
+    var height = ViewData.Get<int>("height", 0);
+    var width = ViewData.Get<int>("width", 0);
+}
+@if (Model.Count() > 0)
+{
+    <table class="table tn-va-middle">
+        <thead>
+            <tr>
+                <th>广告位编码</th>
+                <th>是否启用</th>
+                <th>描述</th>
+                <th>建议尺寸</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var position in Model)
+                {
+                <tr>
+                    <td>
+                        @position.PositionId
+                    </td>
+                    <td>
+                        @if (position.IsEnable)
+                        {
+                        <i class="fa fa-check"></i>
+                        }
+                        else
+                        {
+                        <i class="fa fa-times"></i>
+                        }
+                    </td>
+                    <td title="@position.Description">
+                        @StringUtility.Trim(position.Description,20) 
+                        @if (position.ImageAttachmentId != 0)
+                    {
+                    <a class="fancybox tn-ml-5" href="@position.GetImageUrl()" data-fancybox-group="@position.PositionId" title="@position.Description">查看图例</a>
+                        }
+                    </td>
+                    <td>@(position.Width == 0 ? "不限" : position.Width.ToString())*@(position.Height == 0 ? "不限" : position.Height.ToString())</td>
+                    <td class="text-nowrap">
+                        <a href="javascript:;" data-id="@position.PositionId" class="edit-position tn-mr-10 layerpositionedit"><i class="fa fa-pencil"></i></a>
+                        @if (!position.IsLocked)
+                    {
+                    <a href="javascript:;" data-id="@position.PositionId" class="delete-position tn-mr-10"><i class="fa fa-trash"></i></a>
+                        }
+
+                        <a href="@SiteUrls.Instance().ManageAdvertising(position.PositionId)" target="_blank">查看广告</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="text-center clearfix text-warning">无广告位</div>
+}
+<script>
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+
+        $('.layerpositionedit').click(function () {
+            var positionId = $(this).data("id");
+            tnlayer.layermodal('编辑广告位', '@CachedUrlHelper.Action("_EditPosition", "ControlPanel")?positionId=' + positionId, '450px', 'auto')
+        })
+        //图例放大图
+        $(document).ready(function () {
+            $(".fancybox").fancybox();
+            arrows: true
+        });
+        //编辑成功回调
+        $.fn.EditCallBack = function (data) {
+            if (data.state == 1) {
+                layer.closeAll();
+                layer.msg(data.msg, { icon: 1 });
+                $.get('@SiteUrls.Instance()._ListPositions(height,width)', function (data) {
+                    $("#_listPositions").html(data);
+                })
+            }
+            else {
+                layer.msg(data.msg, { icon: 2 });
+            }
+        }
+        //删除广告位
+        $(function () {
+            $(".delete-position").click(function () {
+                var positionId = $(this).data("id");
+                layer.confirm("是否确认删除广告位", { btn: ['确认', '取消'] }, function () {
+                    $.post('@CachedUrlHelper.Action("_DeletePosition", "ControlPanel")', { positionId: positionId }, function (data) {
+                        if (data.state == 1) {
+                            $.get('@SiteUrls.Instance()._ListPositions(height,width)', function (data) {
+                                if (data) {
+                                    $("#_listPositions").html(data);
+                                }
+                            })
+                            layer.msg(data.successmsg, { icon: 1 });
+                        }
+                        else {
+                            layer.msg(data.errormsg, { icon: 2 });
+                        }
+                    })
+                })
+            })
+        })
+    })
+</script>

@@ -1,0 +1,102 @@
+﻿@model SearchResultModel
+@{
+    var pageIndex = ViewData.Get<int>("pageIndex", 0);
+    var pageSize = ViewData.Get<int>("pageSize", 0);
+    var totalRecords = ViewData.Get<long>("totalRecords", 0);
+    var keyword = ViewData.Get<string>("keyword", string.Empty);
+    var searchType = ViewData.Get<string>("searchType", string.Empty);
+    var time = ViewData.Get<string>("time", string.Empty);
+    var isDefaultOrder = ViewData.Get<bool>("isDefaultOrder", true);
+}
+
+@if (Model.Data != null)
+{
+    <div class="col-xs-12 tn-mb-20">
+        <div class="tn-gray-bg">
+            <ul class="list-inline">
+                <li>@Model.Description</li>
+                <li class="pull-right">
+                    <select id="filterOrder">
+                        <option value="correlation" @(isDefaultOrder ? "selected" : "")>按相关度</option>
+                        <option value="publishTime" @(isDefaultOrder ? "" : "selected")>按发布时间</option>
+                    </select>
+                </li>
+                <li class="pull-right">
+                    <select id="filterTime">
+                        <option value="year" @(time == "year" ? "selected" : "")>1年内</option>
+                        <option value="month" @(time == "month" ? "selected" : "")>1月内</option>
+                        <option value="week" @(time == "week" ? "selected" : "")>1周内</option>
+                        <option value="all" @(time == "all" ? "selected" : "")>全部时间</option>
+                    </select>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-xs-12">
+        <div class="jh-padding-white">
+            <ul class="list-unstyled">
+                @foreach (var item in Model.Data)
+                {
+                    <li>
+                        @if (searchType.ToLower() == "cms")
+                        {
+                            <h5><a href="@SiteUrls.Instance().CMSDetail(item.Id)" target="_blank" class="a">@Html.Raw(item.Subject)</a></h5>
+                        }
+                        else if (searchType.ToLower() == "thread")
+                        {
+                            <h5><a href="@SiteUrls.Instance().ThreadDetail(item.Id)" target="_blank" class="a">@Html.Raw(item.Subject)</a></h5>
+                        }
+                        <p>@Html.Raw(item.Body)</p>
+                        <ul class="list-inline text-muted">
+                            <li><a target="_blank" href="@SiteUrls.Instance().SpaceHome(item.UserId)">@item.Author</a></li>
+                            <li>@item.DateString</li>
+                        </ul>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+else
+{
+    <div class="col-xs-12">
+        <div class="jh-padding-white">
+            <p>暂无搜索结果</p>
+        </div>
+    </div>
+}
+<div class="col-xs-12 tn-mb-20">
+    <div class="text-center">
+        @Html.AjaxPagingButtonSearch(pageIndex, pageSize, totalRecords, "searchResultList", CachedUrlHelper.Action("_SearchResult", "Portal", null, new RouteValueDictionary { { "keyword", Tunynet.Utilities.WebUtility.UrlEncode(keyword) }, { "searchType", searchType } }))
+    </div>
+</div>
+
+<script>
+    require(['jquery', 'page'], function ($) {
+        //时间改变事件
+        $("#filterTime").on('change', function () {
+            var $this = $(this);
+            var time = $this.val();
+            var searchType = $("#searchType").val();
+            var keyword = $('input[Name="keyword"]').val();
+            var isDefaultOrder = $("#filterOrder").val() == "correlation";
+
+            $.get("@CachedUrlHelper.Action("_SearchResult", "Portal")", { keyword: keyword, searchType: searchType, isDefaultOrder: isDefaultOrder, time: time }, function (data) {
+                $("#searchResultList").html(data);
+            })
+        })
+
+        //排序改变事件
+        $("#filterOrder").on('change', function () {
+            var $this = $(this);
+            var isDefaultOrder = $this.val() == "correlation";
+            var searchType = $("#searchType").val();
+            var keyword = $('input[Name="keyword"]').val();
+            var time = $("#filterTime").val();
+
+            $.get("@CachedUrlHelper.Action("_SearchResult", "Portal")", { keyword: keyword, searchType: searchType, isDefaultOrder: isDefaultOrder, time: time }, function (data) {
+                $("#searchResultList").html(data);
+            })
+        })
+    });
+</script>

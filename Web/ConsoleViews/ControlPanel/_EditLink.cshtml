@@ -1,0 +1,124 @@
+﻿@model LinkEditModel
+@{
+    AttachmentService attachmentService = new AttachmentService(TenantTypeIds.Instance().Link());
+    var linkTypeSels = ViewData.Get<SelectList>("linkTypeSels", null);
+}
+<div class="panel">
+    <div class="panel-body">
+        @using (Html.BeginAjaxForm("_EditLink", "ControlPanel", null, FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "_EditLinkSucceed" }, new { @class = "form-horizontal tn-form-validation tn-survey-form" }))
+        {
+            @Html.HiddenFor(t => t.LinkId)
+            @Html.ValidationMessageFor(t => t.LinkId)
+            @Html.HiddenFor(t => t.DisplayOrder)
+            @Html.ValidationMessageFor(t => t.DisplayOrder)
+            @Html.HiddenFor(t => t.ImageAttachmentId)
+            @Html.ValidationMessageFor(t => t.ImageAttachmentId)
+            @Html.HiddenFor(t => t.DateCreated)
+            @Html.ValidationMessageFor(t => t.DateCreated)
+            <div class="form-group">
+                <div class="col-xs-12">
+                    @Html.LabelFor(t => t.LinkName)
+                    @Html.TextBoxFor(t => t.LinkName, new { @class = "form-control", @placeholder = "请输入链接名称" })
+                    @Html.ValidationMessageFor(t => t.LinkName)
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-12">
+                    @Html.LabelFor(t => t.ImageAttachmentId)
+                </div>
+                <div class="col-xs-4" id="UploadFileImgs">
+                    <input type="hidden" name="ImageAttachmentId" value="@Model.ImageAttachmentId" />
+                    @if (Model.ImageAttachmentId > 0 && attachmentService.Get(Model.ImageAttachmentId) != null)
+                    {
+                        <div class="tn-pic-attachment">
+                            <img style="" src="@attachmentService.Get(Model.ImageAttachmentId).GetDirectlyUrl("Small")">
+                            <button class="btn btn-default btn-xs btn-removeImage" type="button"><i class="fa fa-remove"></i></button>
+                        </div>
+                    }
+                    else
+                    {
+                        @Html.FileUploader("UploadFile", TenantTypeIds.Instance().Link(), UserContext.CurrentUser.UserId, "+", extensions: "jpg,jpeg,png,bmp", callbacks: new { uploadSuccess = "succeedImageSyntony" })
+                    }
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-12">
+                    @Html.LabelFor(t => t.LinkUrl)
+                    @Html.TextBoxFor(t => t.LinkUrl, new { @class = "form-control", @placeholder = "请输入链接地址" })
+                    @Html.ValidationMessageFor(t => t.LinkUrl)
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-12">
+                    @Html.LabelFor(t => t.Description)
+                    @Html.TextBoxFor(t => t.Description, new { @class = "form-control", @placeholder = "请输入链接说明" })
+                    @Html.ValidationMessageFor(t => t.Description)
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-12">
+                    @Html.LabelFor(t => t.CategoryId)
+                    @Html.DropDownListFor(t => t.CategoryId, linkTypeSels, new { @class = "form-control jn-select-sm" })
+                    @Html.ValidationMessageFor(t => t.CategoryId)
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-12">
+                    @Html.CheckBoxFor(t => t.IsEnabled, new { @checked = "checked" })
+                    @Html.ValidationMessageFor(t => t.IsEnabled)
+                    是否启用
+                </div>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary tn-btn-wp">保存</button>
+                <button type="button" class="btn btn-default tn-btn-wp" onclick="layer.closeAll();">取消</button>
+            </div>
+        }
+    </div>
+</div>
+@Styles.Render("~/Bundle/Styles/Uploader")
+<script>
+    require(['jquery', 'uploader'], function () {
+        //提交回调
+        $.fn._EditLinkSucceed = function (data) {
+            if (data.type == true) {
+                layer.msg("保存成功！", { icon: 1 });
+                setTimeout(function () {
+                    var param = jQuery.param({ categoryId: $("#linkTypeSel").val(), t: new Date().getTime() });
+                    $.get("@CachedUrlHelper.Action("_ListLinks", "ControlPanel")", param, function (data) {
+                        $("#listlink").html(data)
+                    })
+                    layer.closeAll();
+                }, 400)
+            } else {
+                layer.msg("保存失败", { icon: 2 });
+            }
+        }
+
+
+        //标题图上传成功回调
+        $.fn.succeedImageSyntony = function (file, data) {
+            var $this = $("#UploadFileImgs");
+            var itemTmpl = '<div class="tn-pic-attachment">\
+                                <img  src="' + data.path + '" alt="...">\
+                                <button class="btn btn-default btn-xs btn-removeImage" type="button"><i class="fa fa-remove"></i></button>\
+                                </div>';
+            $this.append(itemTmpl);
+            var uploadFileInput = $("[name='ImageAttachmentId']");
+            uploadFileInput.val(data.id);
+            $this.find("div[id^='uploader-UploadFile']").remove();
+        }
+
+
+        //移除标题图
+        $(document).on('click', '.btn-removeImage', function () {
+            var temp = '@Html.FileUploader("UploadFile", TenantTypeIds.Instance().Link(), UserContext.CurrentUser.UserId, "+", extensions: "jpg,jpeg,png", callbacks: new { uploadSuccess = "succeedImageSyntony" })';
+            var $this = $(this);
+            var uploadFileInput = $("[name='ImageAttachmentId']");
+            uploadFileInput.val("0")
+            $this.parent().parent().append(temp);
+            $this.parent().remove();
+        });
+
+    })
+</script>

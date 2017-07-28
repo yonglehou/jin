@@ -1,0 +1,71 @@
+﻿@model SystemMessageViewModel
+@{
+    ViewData["Title"] = new string[] { Model.Title };
+}
+<div class="jh-login-home text-center">
+    <h1 class="tn-mb-30">@Model.Title</h1>
+    <div class="alert @(Model.StatusMessageType== StatusMessageType.Success?"alert-success":"alert-danger") text-left" role="alert">
+        @Html.Raw(Model.Body)
+        @if (Model.ButtonLink.Count > 0)
+        {
+            int i = 0;
+            foreach (var item in Model.ButtonLink)
+            {
+                if (i > 0)
+                {
+                    <text>或者</text>
+                }
+                i++;
+                <a id="clicksj" href="@item.Value" class="alert-link">@item.Key</a>
+            }
+        }
+
+    </div>
+</div>
+<script>
+    require(['jquery'],function(){
+        window.setInterval(function() {
+        var  waitTime = $("#seconds").html();
+        var href = $("#clicksj").attr("href");
+        if ("undefined" != typeof (waitTime)) {
+            var time = parseInt(waitTime);
+            if (time > 0) {
+                time = time - 1;
+                $("#seconds").html(time);
+            } else {
+                $.post(href, function(data) {
+                    //type=1是提示 2是跳转
+                    if (data.type == 1) {
+                        layer.msg(data.msg, {
+                            icon: 1
+                        });
+                    } else {
+                        window.location.href = data.msg;
+                    }
+
+                })
+            }
+        }
+      }, 1000);
+
+      $("#clicksj").click(function(e) {
+        e.preventDefault();
+        var href = $(this).attr("href");
+        $.post(href, function(data) {
+            //type=1是提示 2是跳转
+            if (data.type == 1) {
+                layer.msg(data.msg, {
+                    icon: 1
+                });
+            } else if (data.type == 0) {
+                layer.msg(data.msg, {
+                    icon: 2
+                });
+            } else {
+                window.location.href = data.msg;
+            }
+
+          })
+      });
+    })
+</script>

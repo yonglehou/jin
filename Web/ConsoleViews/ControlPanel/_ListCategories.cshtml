@@ -1,0 +1,71 @@
+﻿@model IEnumerable<Category>
+<div>
+    @if (Model == null || Model.Count() == 0)
+    {
+    <div class="row text-warning text-center wrapper">
+        没有查询到类别数据
+    </div>
+    }
+    else
+    {
+    <table class="table table-hover tn-va-middle">
+        <thead>
+            <tr>
+                <th>类别名称</th>
+                <th>类别Id</th>
+                <th>类别描述</th>
+                <th>内容数</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+
+            <tr class="parent-@item.ParentId" data-itemcategoryid="@item.CategoryId" data-itemparentcategoryid="@item.ParentId">
+                <td style="text-indent:@(item.Depth)em">
+                    @if (item.Depth > 0)
+                    {
+                        if (item.ChildCount == 0)
+                        {
+                        <span title="@item.CategoryName">└─@HtmlUtility.TrimHtml(item.CategoryName,30)</span>
+                        }
+                        else
+                        {
+                        <span title="@item.CategoryName">├─@HtmlUtility.TrimHtml(item.CategoryName, 30)</span>
+                        }
+                    }
+                    else
+                    {
+                    <span title="@item.CategoryName">@HtmlUtility.TrimHtml(item.CategoryName, 30)</span>
+                    }
+                </td>
+                <td>@item.CategoryId</td>
+                <td title="@HtmlUtility.StripHtml(item.Description,false,false)">@HtmlUtility.TrimHtml(item.Description,20)</td>
+                <td>@item.ItemCount</td>
+                <td>
+                    <a class="newcategory tn-mr-10" data-itemcategoryid="@item.CategoryId" role="button" title="添加子类别"><i class="fa fa-plus fa-lg"></i></a>
+                    <a class="editcategory tn-mr-10" data-itemcategoryid="@item.CategoryId" data-itemparentcategoryid="@item.ParentId" role="button" title="编辑类别"><i class="fa fa-pencil fa-lg"></i></a>
+                    <a class="deletecategory tn-mr-10" data-itemcategoryid="@item.CategoryId" role="button" title="删除栏目"><i class="fa fa-trash fa-lg"></i></a>
+
+                    @*找出在同一个父类别下的，深度相同的兄弟节点，计算出比自己展示顺序（DisplayOrder）小的个数，如果为0个说明自己位于兄弟节点中的第一个无法上移*@
+                    @if (Model.Where(n => n.ParentId == item.ParentId && n.Depth == item.Depth && n.DisplayOrder < item.DisplayOrder).Count() > 0)
+                    {
+                    <a href="javascript:;" class="upanddown tn-mr-10" data-upordown="up" role="button" title="上移"><i class="fa fa-arrow-up fa-lg"></i></a>
+                    }
+                    @*找出在同一个父类别下的，深度相同的兄弟节点，计算出比自己展示顺序（DisplayOrder）大的个数，如果为0个说明自己位于兄弟节点中的最后一个无法下移*@
+                    @if (Model.Where(n => n.ParentId == item.ParentId && n.Depth == item.Depth && n.DisplayOrder > item.DisplayOrder).Count() > 0)
+                    {
+                    <a href="javascript:;" class="upanddown tn-mr-10" data-upordown="down" role="button" title="下移"><i class="fa fa-arrow-down fa-lg"></i></a>
+                    }
+
+                </td>
+            </tr>
+
+
+            }
+
+        </tbody>
+    </table>
+    }
+</div>

@@ -1,0 +1,52 @@
+﻿@{
+    var parentId = ViewData.Get<long>("parentId", 0);
+    var commentedObjectId = ViewData.Get<long>("commentedObjectId", 0);
+}
+@Styles.Render("~/Bundle/Styles/qqFace")
+<style>
+    #facebox {
+        background-color: #fff;
+    }
+</style>
+
+@using (Html.BeginAjaxForm("EditComment", "Post", "", FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "childrenCommentCallBack" }, new { @id = "createComment-" + parentId, @class = "tn-form-validation form-horizontal CommentControl" }))
+{
+    <div class="tn-reply-form">
+        @Html.Hidden("parentId", parentId)
+        @Html.Hidden("commentedObjectId", commentedObjectId)
+        @Html.Hidden("tenantTypeId", TenantTypeIds.Instance().Thread())
+        <textarea name="Body" id="textareaBody" data-id="@parentId" class="form-control commentBody" rows="3" placeholder="添加评论"></textarea>
+        <div class="btn-toolbar" role="toolbar">
+            <div class="btn-group btn-group-sm pull-left" role="group">
+                <a class="btn btn-default emotion" href="javascript:;" role="button"><i class="fa fa-smile-o "></i></a>
+            </div>
+            <button class="btn btn-primary btn-sm tn-btn-wp pull-right commentsubmit" data-id="@parentId" type="button">评论</button>
+        </div>
+    </div>
+}
+<script type="text/javascript">
+    require(['jquery', 'tnlayer','qqFace'], function ($, tnlayer) {
+
+        //表情
+        $(function () {
+            $('.emotion').qqFace({
+                id: 'facebox',
+                assign: 'textareaBody',
+                ohref: '/common/GetEmotions',
+                directoryname: 'default',
+            });
+        });
+
+        //评论回调
+        $.fn.childrenCommentCallBack=function(data) {
+            if (data.state==1) {
+                layer.msg("评论成功",{ icon: 1 });
+                $('.commentBody').val("");
+                $.get("@CachedUrlHelper.Action("_ListComment", "Post")",{threadId:@commentedObjectId},function(html){
+                    $('#_ListComment').html(html);
+                })
+            }
+        }
+    })
+</script>
+

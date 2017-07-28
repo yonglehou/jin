@@ -1,0 +1,423 @@
+﻿@{
+    ViewData["Title"] = new string[] { "我的首页" };
+    User userHolder = ViewData.Get<User>("userHolder", null);
+    //评论计数
+    var conmmentCount = ViewData.Get("conmmentCount", 0L);
+    //收藏计数
+    var favoriteCount = ViewData.Get("favoriteCount", 0L);
+
+    var threadCount = ViewData.Get("threadCount", 0L);
+    var userProfile = ViewData.Get<UserProfile>("userProfile", new UserProfile());
+    var cmsCount = ViewData.Get<long>("cmsCount", 0L);
+}
+
+<style>
+    .jh-user-img .progress {
+        margin: 0 !important;
+        position: absolute;
+        top: 57px;
+        right: 20px;
+        width: 108px !important;
+    }
+    .layui-layer-hui .layui-layer-content {
+        color:#333;
+    }
+</style>
+<div class="jh-home-user">
+    <div class="jh-user-img">
+        <img id="UploadFileCover" src="@SiteUrls.Instance().UserCoverUrl(userHolder,false)" />
+        <div class="uploadfilebtn" style="position:absolute;top:20px;right:20px;">
+            @Html.FileUploader("UploadFile", TenantTypeIds.Instance().User(), UserContext.CurrentUser.UserId, "<i class=\"fa fa-cloud-upload\"></i>上传封面图", extensions: "jpg,jpeg,png", showProgress: true, uploadUrl: CachedUrlHelper.Action("_EditCover", "Common"), callbacks: new { uploadSuccess = "succeedImageCover" })
+        </div>
+    </div>
+    <div class="jh-user-head">
+        @Html.ShowUserAvatar(userId: userHolder.UserId, avatarSizeType: AvatarSizeType.Big, enableNavigate: false, isShowUserCard: false)
+        <button class="btn btn-default layerAvatar"><i class="fa fa-pencil" aria-hidden="true"></i></button>
+    </div>
+    <div class="jh-user-message">
+        <div class="row">
+            <div class="col-xs-10">
+                <div class="jh-user-name">
+                    <h4>
+                        @userHolder.DisplayName
+                        @if (userProfile.Gender == GenderType.FeMale)
+                        {
+                        <i class="fa fa-female" aria-hidden="true"></i>
+                        }
+                        else
+                        {
+                        <i class="fa fa-male" aria-hidden="true"></i>
+                        }
+                    </h4>
+                    <a href="@SiteUrls.Instance().MyRank()" target="_blank">
+                        @Html.UserRankIcon(userHolder.Rank)
+                    </a>
+                </div>
+                <p class="text-muted">
+                    @if (userProfile.HasIntroduction)
+                    {
+                    @userProfile.Introduction;
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="jh-home-content">
+    <div class="jh-nav-home">
+        <!-- Nav tabs -->
+        <!-- 一级导航 -->
+        <ul id="nav_tabs" class="nav nav-tabs jh-nav-tabs" role="tablist">
+            <li role="presentation">
+                <a href="#" aria-controls="我的主页" role="tab" data-toggle="tab" aria-expanded="false" data-href="@CachedUrlHelper.Action("_MyHomepage", "UserSpace", null, new RouteValueDictionary { { "spaceKey", Tunynet.Utilities.WebUtility.UrlEncode(userHolder.UserName) } })" name="maintabnav" data-type="home" class="">
+                    我的主页
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="#" aria-controls="我的文章" role="tab" data-toggle="tab" aria-expanded="false" data-href="@CachedUrlHelper.Action("_MyCMS", "UserSpace", null, new RouteValueDictionary { { "spaceKey", Tunynet.Utilities.WebUtility.UrlEncode(userHolder.UserName) } })" name="maintabnav" data-type="cms" class="">
+                    我的文章<small class="cmscount">@(cmsCount > 0 ? cmsCount : 0)</small>
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="#" aria-controls="我的贴子" role="tab" data-toggle="tab" aria-expanded="false" data-href="@CachedUrlHelper.Action("_MyPost", "UserSpace", null, new RouteValueDictionary { { "spaceKey", Tunynet.Utilities.WebUtility.UrlEncode(userHolder.UserName) } })" name="maintabnav" data-type="post" class="">
+                    我的贴子<small>@threadCount</small>
+                </a>
+            </li>
+            <li id="nav-comment-first" role="presentation">
+                <a href="#" aria-controls="我的评论" role="tab" data-toggle="tab" aria-expanded="false" data-href="@CachedUrlHelper.Action("_UserSpaceComments", "UserSpace", null, new RouteValueDictionary { { "spaceKey", Tunynet.Utilities.WebUtility.UrlEncode(userHolder.UserName) } })" name="maintabnav" data-type="comment" class="">
+                    我的评论<small>@conmmentCount</small>
+                </a>
+            </li>
+            <li id="nav-favorites-first" role="presentation">
+                <a href="#" aria-controls="我的收藏" role="tab" data-tab-code="sjzs" data-toggle="tab" aria-expanded="true" data-href="@CachedUrlHelper.Action("_MyFavorites", "UserSpace")" name="maintabnav" data-type="favorites">
+                    我的收藏<small>@favoriteCount</small>
+                </a>
+            </li>
+
+        </ul>
+
+        <!-- 二级导航 -->
+        <!-- 我的评论 -->
+        <ul id="nav-comment-second" class="nav nav-pills hide" role="tablist">
+            <li id="nav-comment-received" role="presentation" class="active">
+                <a class="isReceived" href="" role="tab" data-toggle="tab" data-isreceived="true" data-type="comment-received">收到的评论</a>
+            </li>
+            <li id="nav-comment-send" role="presentation">
+                <a class="isReceived" href="" role="tab" data-toggle="tab" data-isreceived="false" data-type="comment-send">发出的评论</a>
+            </li>
+        </ul>
+
+        <!-- 我的收藏 -->
+        <ul id="nav-favorites-second" class="nav nav-pills hide" role="tablist">
+            <li id="nav-favorites-content" role="presentation" class="active">
+                <a href="" class="isContentItem" role="tab" data-toggle="tab" data-iscontentitem="true" data-type="favorites-content">收藏的文章</a>
+            </li>
+            <li id="nav-favorites-post" role="presentation">
+                <a href="" class="isContentItem" role="tab" data-toggle="tab" data-iscontentitem="false" data-type="favorites-post">收藏的贴子</a>
+            </li>
+        </ul>
+    </div>
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <!--我的主页-->
+        <div role="tabpanel" class="tab-pane active" id="my-content">
+            <div class="text-center text-warning">
+                <img src="/img/loading.gif" class="tn-mr-10" />Loading...
+            </div>
+        </div>
+    </div>
+</div>
+
+@Styles.Render("~/Bundle/Styles/Uploader")
+
+<script type="text/javascript">
+    require(['jquery', 'tnlayer', 'histroy', 'uploader','page'], function ($, tnlayer) {
+        $(".layerAvatar").click(function () {
+            tnlayer.layermodal('头像设置', '@CachedUrlHelper.Action("_Avatar", "UserSpace")', '550px', '510px');
+        });
+
+        locationhash()
+        function locationhash() {
+            var _seperator = "#";
+            var _hashStr = window.location.hash;
+            var splitval = _hashStr.split(_seperator);
+            var tmp = new Array();
+            for (var i in splitval) {
+                var o = splitval[i];
+                if (typeof o !== 'undefined' && o != '') {
+                    tmp.push(splitval[i]);
+                }
+            }
+            if (tmp.length > 1) {
+                if (tmp[0] == "follow") {
+                    $.get("@CachedUrlHelper.Action("_ManageMyFollow", "UserSpace")", { userId: '@userHolder.UserId', follow: tmp[1], requestTime: new Date().getTime() }, function (data) {
+                        $("#my-content").html(data);
+                    })
+                }
+                else {
+                    var maintabnavas = $("[name=maintabnav]");
+                    var datatpe = "";
+                    for (var i in tmp) {
+                        datatpe += tmp[i];
+                        if (tmp.length - 1 > i) {
+                            datatpe += "-";
+                        }
+                    }
+                    for (var i = 0 ; i < maintabnavas.length; i++) {
+                        var _that = maintabnavas[i];
+                        if ($(_that).data("type") == tmp[0]) {
+                            _that.click()
+                            maintabnavget(_that, datatpe)
+                        }
+                    }
+                    return false;
+                }
+            }
+            else if (tmp.length > 0) {
+                if (tmp[0] == "invitefriend") {
+                    $.get("@CachedUrlHelper.Action("_InviteFriend", "UserSpace")", { t: new Date().getTime() }, function (data) {
+                        $("#my-content").html(data);
+                    })
+                }
+                else {
+                    var maintabnavas = $("[name=maintabnav]");
+                    var tmps = tmp[0];
+                    for (var i = 0 ; i < maintabnavas.length; i++) {
+                        var _that = maintabnavas[i];
+                        if ($(_that).data("type") == tmps) {
+                            _that.click()
+                            maintabnavget(_that)
+                            return false;
+                        }
+                    }
+                }
+            }
+            else {
+                var maintabnavas = $("[name=maintabnav]");
+                maintabnavas[0].click();
+                maintabnavget(maintabnavas[0])
+            }
+        }
+
+        function maintabnavget(_that, datatpe) {
+            //回调内容
+            var url = $(_that).data("href");
+            $("#my-content").empty();
+            Nav_SecondLevel();
+            $.get(url, { t: new Date().getTime() }, function (data) {
+                $("#my-content").html(data);
+            });
+            if (datatpe != "") {
+                $("[data-type='" + datatpe + "']").click()
+            }
+        }
+        //页面导航
+        $(document).on('click', '[name=maintabnav]', function () {
+            var getTimestamp = new Date().getTime();
+            var url = $(this).data("href");
+            var type = $(this).data("type");
+
+            replaceUrl($(this).data("type"));
+            $("#my-content").empty();
+            Nav_SecondLevel();
+            $.get(url, { t: getTimestamp }, function (data) {
+                $("#my-content").html(data);
+            })
+        });
+
+        //封面图上传成功回调
+        $.fn.succeedImageCover = function (file, data) {
+            var $this = $("#UploadFileCover");
+            $this.attr("src", data.path)
+            if (data.type != null && data.type == 1) {
+                layer.msg("上传成功", {
+                    icon: 1
+                })
+                return false;
+            }
+            if (data.type != null && data.type == 0) {
+                layer.msg(data.error, {
+                    time: 0 //不自动关闭
+                    , btn: ['确定']
+                }, function () {
+                    //封面图 重新初始化
+                    var temp = '@Html.FileUploader("UploadFile", TenantTypeIds.Instance().User(), UserContext.CurrentUser.UserId, "<i class=\"fa fa-cloud-upload\"></i>上传封面图", extensions: "jpg,jpeg,png", showProgress: true, uploadUrl: CachedUrlHelper.Action("_EditCover", "Common"), callbacks: new { uploadSuccess = "succeedImageCover" })';
+                    var $this = $(".uploadfilebtn");
+                    $this.html(temp);
+                });
+            }
+        }
+
+        //标题图上传成功回调
+        $.fn.succeedImageSyntony = function (file, data) {
+            var $this = $("#UploadFileImgs");
+            var itemTmpl = '<div class="tn-pic-attachment" onmouseover="$.fn.showbtn();" onmouseout="$.fn.hidebtn();">\
+                           <img class="img-thumbnail img-responsive" src="' + data.path + '" alt="...">\
+                           <button class="btn btn-default btn-xs btn-removeImage" type="button" style="display:none;"><i class="fa fa-remove"></i></button>\
+                        </div>';
+            $this.append(itemTmpl);
+            $('[name="FeaturedImageAttachmentId"]').val(data.id);
+            $this.find("div[id^='uploader-UploadFiles']").remove();
+        }
+
+        //移除标题图
+        $(document).on('click', '.btn-removeImage', function () {
+            var temp = '@Html.FileUploader("UploadFiles", TenantTypeIds.Instance().CMS_Article(), userHolder.UserId, "+", extensions: "jpg,jpeg,png,bmp", callbacks: new { uploadSuccess = "succeedImageSyntony" })';
+            var $this = $(this);
+            var uploadFileInput = $("[name='FeaturedImageAttachmentId']");
+            uploadFileInput.val("0")
+            $this.parent().parent().append(temp);
+            $this.parent().remove();
+        });
+
+        //删除草稿
+        $(document).on('click', 'a[id^=deletedraft-]', function () {
+            var param = jQuery.param({ contentItemId: $(this).attr("id").replace(/[^0-9]/ig, ""), t: new Date().getTime() });
+            layer.confirm("确定删除么？", {
+                btn: ['确认', '取消'],//按钮
+                scrollbar: false
+            }, function () {
+                $.post("@CachedUrlHelper.Action("_DeleteCMS", "UserSpace")", param, function (data) {
+                    if (data.MessageType) {
+                        layer.msg(data.MessageContent, {
+                            icon: 1
+                        })
+                        $.post('@CachedUrlHelper.Action("_ListDraft", "UserSpace",null,new RouteValueDictionary { { "userId", userHolder.UserId } })', { t: new Date().getTime() }, function (data) {
+                            $(".tn-title").html(data);
+                        })
+                    }
+                    else {
+                        layer.msg(data.MessageContent, {
+                            icon: 2
+                        });
+                    }
+                });
+            });
+        });
+
+        //编辑草稿
+        $(document).on('click', 'a[id^=editdraftlist-]', function () {
+            $.get($(this).data("href"), { t: new Date().getTime() }, function (data) {
+                $("#my-content").html(data);
+            })
+        });
+
+        //删除文章
+        $(document).on('click', 'a[id^=deletes-]', function () {
+            var param = jQuery.param({ contentItemId: $(this).attr("id").replace(/[^0-9]/ig, ""), t: new Date().getTime() });
+            layer.confirm("确定删除么？", {
+                btn: ['确认', '取消'],//按钮
+                scrollbar: false
+            }, function () {
+                $.post("@CachedUrlHelper.Action("_DeleteCMS", "UserSpace")", param, function (data) {
+                    if (data.MessageType) {
+                        layer.msg(data.MessageContent, {
+                            icon: 1
+                        });
+                        parseInt($(".cmscount").text()) - 1 < 0 ? $(".cmscount").text("0") : $(".cmscount").text(parseInt($(".cmscount").text()) - 1);
+                        $.get("@CachedUrlHelper.Action("_ListMyCMS", "UserSpace",null, new RouteValueDictionary { { "userId", userHolder.UserId } })", function (data) {
+                            $("#mycmslist").html(data);
+                        })
+                    }
+                    else {
+                        layer.msg(data.MessageContent, {
+                            icon: 2
+                        });
+                    }
+                });
+            });
+        });
+        //编辑文章
+        $(document).on('click', 'a[id^=editmycms-]', function () {
+            $.get($(this).data("href"), { t: new Date().getTime() }, function (data) {
+                $("#my-content").html(data);
+            })
+        });
+
+        //选择显示收到的还是发出的评论
+        $('.isReceived').on('click', function () {
+            var $this = $(this);
+            var isReceived = $this.data('isreceived');
+            replaceUrl($(this).data("type"));
+            $.get('@CachedUrlHelper.Action("_ListComments", "UserSpace",null,new RouteValueDictionary { { "spaceKey", Tunynet.Utilities.WebUtility.UrlEncode(userHolder.UserName) } })', { isReceived: isReceived, t: new Date().getTime() }, function (data) {
+                $('#_ListComments').html(data);
+            });
+        });
+
+        //选择显示收藏的文章还是收藏的贴子
+        $('.isContentItem').on('click', function () {
+            var $this = $(this);
+            var isContentItem = $this.data('iscontentitem');
+            replaceUrl($(this).data("type"));
+            $.get('@CachedUrlHelper.Action("_ListMyFavorites", "UserSpace")', { isContentItem: isContentItem, t: new Date().getTime() }, function (data) {
+                $('#_ListMyFavorites').html(data);
+            });
+        });
+        //显示收藏的问答
+        $('.isfavorite').on('click', function () {
+            var $this = $(this);
+            replaceUrl($(this).data("type"));
+            $.get('@CachedUrlHelper.Action("_ListMyFavoriteQuestions", "Ask")', { t: new Date().getTime() }, function (data) {
+                $('#_ListMyFavorites').html(data);
+            });
+        });
+
+        //选择显示提问列表还是回答列表
+        $('.isAsk').on('click', function () {
+            var $this = $(this);
+            replaceUrl($(this).data("type"));
+            var url = $this.data('href');
+            $.get(url, { t: new Date().getTime() }, function (data) {
+                $('#_ListMyAsk').html(data);
+            });
+        });
+
+        //二级导航显示和隐藏
+        function Nav_SecondLevel() {
+            if ($('#nav-comment-first').hasClass('active')) {
+                $('#nav-comment-second').removeClass('hide');
+            }
+            else {
+                $('#nav-comment-second').addClass('hide');
+                $('#nav-comment-send').removeClass('active');
+                $('#nav-comment-received').addClass('active');
+            }
+
+            if ($('#nav-favorites-first').hasClass('active')) {
+                $('#nav-favorites-second').removeClass('hide');
+            }
+            else {
+                $('#nav-favorites-second').addClass('hide');
+                $('#nav-favorites-post').removeClass('active');
+                $('#nav-favorites-content').addClass('active');
+            }
+
+            if ($('#nav-ask-first').hasClass('active')) {
+                $('#nav-ask-second').removeClass('hide');
+            }
+            else {
+                $('#nav-ask-second').addClass('hide');
+                $('#nav-ask-question').removeClass('active');
+                $('#nav-ask-answer').addClass('active');
+            }
+        }
+
+        //我收到的评论列表 回复评论
+        $(document).on('click', '.commentsubmit', function () {
+            var $this = $(this);
+            var id = $this.data("id");
+            $.post("@CachedUrlHelper.Action("CreateComment", "Portal")", $("#createComment-" + id).serialize(), function (data) {
+                if (data.MessageType) {
+                    layer.msg(data.MessageContent, { icon: 1 });
+                    $(".CommentControl").remove()
+                }
+                else {
+                    layer.msg(data.MessageContent, { icon: 2 });
+                }
+            });
+        });
+
+
+
+    })
+</script>

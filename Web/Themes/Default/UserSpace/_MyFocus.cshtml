@@ -1,0 +1,194 @@
+﻿@model PagingDataSet<long>
+@{
+    var fullUserList = ViewData.Get<List<User>>("fullUserList", new List<User>());
+    var currentUser = UserContext.CurrentUser;
+    var followedUserProfile = ViewData.Get<List<UserProfile>>("followedUserProfile", null);
+    var myUserId = ViewData.Get<long>("myUserId", 0);
+    //用户等级
+    Func<int, string> rankimage = (n) =>
+    {
+        string rankimages = string.Empty;
+        var one = n / 9;
+        var two = (n - 9 * one) / 3;
+        var thr = n - 9 * one - 3 * two;
+        for (int i = 0; i < one; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star1.png'></li>";
+        }
+        for (int i = 0; i < two; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star2.png'></li>";
+        }
+        for (int i = 0; i < thr; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star3.png'></li>";
+        }
+        return rankimages;
+    };
+}
+<div class="row">
+    @if (Model.Count() > 0)
+    {
+        for (int i = 0; i < Model.Count(); i++)
+        {
+        <div class="col-xs-6">
+            <div class="media">
+                <div class="media-left">
+                    @Html.ShowUserAvatar(Model[i], AvatarSizeType.Medium)
+                    @*<a href="@SiteUrls.Instance().SpaceHome(Model[i])">
+                            <img class="media-object img-circle" src="@SiteUrls.Instance().UserIDOfAvatarUrl(Model[i], AvatarSizeType.Small)" width="90" height="90">
+                        </a>*@
+                </div>
+                <div class="media-body">
+                    <div class="jh-user-name">
+                        <h4>
+                            @if (fullUserList[i].DisplayName.Length > 10)
+                            {
+                            <a href="@SiteUrls.Instance().SpaceHome(Model[i])" target="_blank" title="@fullUserList[i].DisplayName">
+                                @fullUserList[i].DisplayName.Substring(0, 10)...
+                            </a>
+                            }
+                            else
+                            {
+                            <a href="@SiteUrls.Instance().SpaceHome(Model[i])" target="_blank">
+                                @fullUserList[i].DisplayName
+                            </a>
+                            }
+                            @if (myUserId == currentUser?.UserId)
+                            {
+                                var noteName = currentUser.GetNoteName(Model[i]);
+                                var isnull = false;
+                                if (noteName == string.Empty)
+                                {
+                                    isnull = true;
+                                    noteName = "设置备注名";
+                                }
+                                if (noteName.Length > 5)
+                                {
+                                <text>(<a href="javascript:;" class="setNoteName a" data-isnull="@isnull" title="@noteName" data-name="@fullUserList[i].DisplayName" data-id="@Model[i]">@noteName.Substring(0, 5)...</a>)</text>
+                                }
+                                else
+                                {
+                                <text>(<a href="javascript:;" class="setNoteName a" data-isnull="@isnull" data-name="@fullUserList[i].DisplayName" data-id="@Model[i]">@noteName</a>)</text>
+                                }
+                            }
+                            @if (followedUserProfile.Where(u => u.UserId == Model[i]).FirstOrDefault()?.Gender == GenderType.FeMale)
+                            {
+                            <i class="fa fa-female" aria-hidden="true"></i>
+                            }
+                            else
+                            {
+                            <i class="fa fa-male" aria-hidden="true"></i>
+                            }
+                        </h4>
+                        <ul class="list-inline" title="@fullUserList[i].Rank 级">
+                            @Html.Raw(rankimage(fullUserList[i].Rank))
+                        </ul>
+                        @if (myUserId == currentUser?.UserId)
+                        {
+                        <a href="javascript:;" onclick="layer.confirm('是否确认取消关注', { btn: ['确定', '取消'] }, function () {$.post('@SiteUrls.Instance().Follow(Model[i])', $.fn.cancelFollowCallBack)})" class="pull-right a follow-state mutual-followed">
+                            @*<i class="fa fa-exchange"></i>*@
+                            取消关注
+                        </a>
+                        }
+                        else
+                        {
+                            if (Model[i] != currentUser?.UserId)
+                            {
+                                if (currentUser.IsFollowed(Model[i]))
+                                {
+                                <div href="javascript:;" class="pull-right a follow-state mutual-followed">
+                                    <i class="fa fa-check"></i>
+                                    已关注
+                                </div>
+                                }
+                                else
+                                {
+                                <a href="javascript:;" onclick="$.post('@SiteUrls.Instance().Follow(Model[i])', $.fn.followCallBack)" class="pull-right a follow-state add-followed">
+                                    <i class="fa fa-plus"></i> 关注
+                                </a>
+                                }
+                            }
+                        }
+                    </div>
+                    <ul class="list-inline text-muted">
+                        <li>粉丝：<span class="tn-theme-color">@fullUserList[i].FollowerCount</span></li>
+                        <li>关注：<span class="tn-theme-color">@fullUserList[i].FollowedCount</span></li>
+                    </ul>
+                    <p class="text-muted">@(followedUserProfile.Where(u => u.UserId == Model[i]).FirstOrDefault()?.Introduction)</p>
+                </div>
+            </div>
+        </div>
+        }
+    }
+    else
+    {
+    <div class="text-center clearfix text-warning">
+        暂无关注用户
+    </div>
+    }
+    <div style="clear:both; text-align:center">
+        @Html.AjaxPagingButton(Model, "followList", CachedUrlHelper.Action("_MyFocus", "UserSpace", "", new RouteValueDictionary(new { userId = myUserId })))
+    </div>
+</div>
+<script type="text/javascript">
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+
+        //取消关注回调函数
+        $.fn.cancelFollowCallBack = function (data) {
+            if (data.state == 1) {
+                layer.msg(data.successmsg, { icon: 1 })
+                $.get("@CachedUrlHelper.Action("_MyFocus","UserSpace")", { userId: '@myUserId', requestTime: new Date().getTime() }, function (data) {
+                    $("#followList").html(data);
+                })
+            }
+            else {
+                layer.msg(data.errormsg, { icon: 2 })
+            }
+        }
+        //关注回调函数
+        $.fn.followCallBack = function (data) {
+            if ('@currentUser' == "") {
+                window.location.href = "@SiteUrls.Instance().Login()";
+            }
+            else {
+                if (data.state == 1) {
+                    layer.msg(data.successmsg, { icon: 1 })
+                    $.get("@CachedUrlHelper.Action("_MyFocus", "UserSpace")", { userId: '@myUserId', requestTime: new Date().getTime() }, function (data) {
+                        $("#followList").html(data);
+                    })
+                }
+                else {
+                    layer.msg(data.errormsg, { icon: 2 })
+                }
+            }
+        }
+        //设置备注
+        $(".setNoteName").click(function () {
+            var userid = $(this).data("id");
+            var username = $(this).data("name");
+            var isnull = $(this).data("isnull");
+            var initVal = "";
+            if (isnull == "False") {
+                if ($(this).attr("title"))
+                    initVal = $(this).attr("title");
+                else
+                    initVal = $(this).text();
+            }
+            layer.prompt({ value: initVal, title: "为" + username + "设置备注" + "&nbsp&nbsp&nbsp&nbsp" }, function (val, index) {
+                $.post("@CachedUrlHelper.Action("_SetNoteName","UserSpace")", { targetUserId: userid, noteName: val }, function (data) {
+                    if (data.state == 1) {
+                        $.get("@CachedUrlHelper.Action("_MyFocus","UserSpace")", { userId: '@myUserId', requestTime: new Date().getTime() }, function (data) {
+                            $("#followList").html(data);
+                            layer.msg("设置备注成功", { icon: 1 });
+                        })
+                    }
+                    else {
+                        layer.msg("设置备注失败", { icon: 0 });
+                    }
+                })
+
+            });
+        })
+    })
+</script>

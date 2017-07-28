@@ -1,0 +1,126 @@
+﻿@{
+    ViewData["Title"] = new string[] { "类别管理" };
+    TempData["subMenu-check"] = new string[] { "Public", "ManageCategories" };
+    var tenantTypeIds = ViewData.Get<List<SelectListItem>>("tenantTypeIds", null);
+}
+
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-lg-12">
+        <h3>类别管理</h3>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="form-inline tn-tool-column">
+            <div class="form-group">
+                <button type="button" class="btn btn-default btn-newcategory"><i class="fa fa-plus"></i> 新建类别</button>
+            </div>
+            <div style="float:right;width:150px;" class="form-group">
+                <label for="selectTenantType">所属</label>
+                @Html.DropDownList("tenantTypes", tenantTypeIds, new { @id = "selectTenantType", @class = "form-control filter" })
+            </div>
+        </div>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div id="_ListCategories">
+        </div>
+    </div>
+</div>
+<script>
+
+    require(['jquery','tnlayer'], function ($,tnlayer) {
+        //页面加载后过滤器筛选List
+        $(document).ready(function () {
+            var tenantTypeId = $('#selectTenantType').val();
+            $.get('@CachedUrlHelper.Action("_ListCategories","ControlPanel")', { tenantTypeId: tenantTypeId, t: (new Date()).valueOf() }, function (data) {
+                $('#_ListCategories').html(data);
+            });
+        })
+
+        //过滤器筛选List
+        $('#selectTenantType').on('change', function () {
+            var tenantTypeId = $('#selectTenantType').val();
+            $.get('@CachedUrlHelper.Action("_ListCategories","ControlPanel")', { tenantTypeId: tenantTypeId, t: (new Date()).valueOf() }, function (data) {
+                $('#_ListCategories').html(data);
+            });
+        });
+
+
+
+        //新建类别按钮,点击弹出模态窗
+        $('.btn-newcategory').on('click', function () {
+            var tenantTypeId = $('#selectTenantType').val();
+            var itemCategoryId = $(this).data('itemcategoryid');
+            tnlayer.layermodal('添加类别', '@CachedUrlHelper.Action("_EditCategory","ControlPanel")?tenantTypeId=' + tenantTypeId + '&t=' + (new Date()).valueOf(), '450px', '450px')
+        });
+        //新建子类别链接,点击弹出模态窗
+        $(document).on('click', '.newcategory', function () {
+            var tenantTypeId = $('#selectTenantType').val();
+            var itemCategoryId = $(this).data('itemcategoryid');
+            tnlayer.layermodal('添加子类别', '@CachedUrlHelper.Action("_EditCategory", "ControlPanel")?parentId=' + itemCategoryId + '&tenantTypeId=' + tenantTypeId + '&t=' + (new Date()).valueOf(), '450px', '500px')
+        });
+        //编辑类别,点击弹出模态窗
+        $(document).on('click', '.editcategory', function () {
+            var tenantTypeId = $('#selectTenantType').val();
+            var itemCategoryId = $(this).data('itemcategoryid');
+            var itemParentCategoryId = $(this).data('itemparentcategoryid');
+            tnlayer.layermodal('编辑类别', '@CachedUrlHelper.Action("_EditCategory", "ControlPanel")?categoryId=' + itemCategoryId + '&parentId=' + itemParentCategoryId + '&tenantTypeId=' + tenantTypeId + '&t=' + (new Date()).valueOf(), '450px', '480px')
+        });
+
+
+
+        //删除类别
+        $(document).on('click', '.deletecategory', function () {
+            var $this = $(this);
+            layer.confirm("确定要删除么？",
+            { btn: ["确定", "取消"], icon: 3 }, function () {
+                var tenantTypeId = $('#selectTenantType').val();
+                var itemCategoryId = $this.data('itemcategoryid');
+                $.post('@CachedUrlHelper.Action("DeleteCategory","ControlPanel")', { categoryid: itemCategoryId, t: (new Date()).valueOf() }, function (data) {
+                    if (data.MessageType) {
+                        layer.msg(data.MessageContent, { icon: 1 });
+                        //异步刷新列表
+                        $.get('@CachedUrlHelper.Action("_ListCategories","ControlPanel")', { tenantTypeId: tenantTypeId, t: (new Date()).valueOf() }, function (html) {
+                            $('#_ListCategories').html(html);
+                        });
+                    }
+                    else {
+                        layer.msg(data.MessageContent, { icon: 2 });
+                    }
+                });
+            });
+
+        });
+
+        //上移/下移
+        $(document).on('click', '.upanddown', function () {
+            var $this = $(this);
+            var fromCategoryId = $this.closest('tr').data('itemcategoryid');
+            var parentCategoryId = $this.closest('tr').data('itemparentcategoryid');
+            var toCategoryId;
+
+            if ($this.data('upordown') == 'up') {
+                toCategoryId = $this.closest('tr').prevAll('.parent-' + parentCategoryId).data('itemcategoryid');
+            }
+            else {
+                toCategoryId = $this.closest('tr').nextAll('.parent-' + parentCategoryId).data('itemcategoryid');
+            }
+
+            $.post('@CachedUrlHelper.Action("ChangeCategoryOrder","ControlPanel")', { fromCategoryId: fromCategoryId, toCategoryId: toCategoryId, t: (new Date()).valueOf() }, function (data) {
+                if (data.MessageType) {
+                    layer.msg(data.MessageContent, { icon: 1 });
+                    //异步刷新列表
+                    var tenantTypeId = $('#selectTenantType').val();
+                    $.get('@CachedUrlHelper.Action("_ListCategories","ControlPanel")', { tenantTypeId: tenantTypeId, t: (new Date()).valueOf() }, function (html) {
+                        $('#_ListCategories').html(html);
+                    });
+                }
+            });
+
+        });
+    })
+
+
+</script>

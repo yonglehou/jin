@@ -1,0 +1,127 @@
+﻿@model IEnumerable<AccountBinding>
+@{
+    ViewData["Title"] = new string[] { "帐号绑定" };
+    TempData["SidebarType"] = "AccountBinding";
+    var weChats = Model.Where(n => n.AccountTypeKey == AccountTypeKeys.Instance().WeChat());
+    var qq = Model.Where(n => n.AccountTypeKey == AccountTypeKeys.Instance().QQ());
+    var statusMessageData = TempData.Get<StatusMessageData>("StatusMessageData", null);
+    var accountTypes = ViewData.Get<IEnumerable<AccountType>>("accountTypes", null);
+}
+<script src="http://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js"></script>
+
+<div class="row jh-space-setup">
+    @Html.Partial("_Sidebar")
+    <div class="col-xs-10">
+        <div class="jh-space-right jh-padding-white">
+            <div class="tn-title">
+                <h4>帐号绑定</h4>
+            </div>
+            @if (accountTypes != null && accountTypes.Where(n => n.AccountTypeKey == AccountTypeKeys.Instance().WeChat()).Count() > 0)
+            {
+            <div class="row jh-space-bd">
+                <div class="col-xs-1">
+                    <i class="fa fa-weixin" aria-hidden="true"></i>
+                </div>
+                <div class="col-xs-11">
+                    <h5>
+                        <span style="margin-right:28px;">微信</span>@if (weChats != null && weChats.Any())
+                        {<span class="tn-gray-color">已绑定</span>}
+                    </h5>
+
+                    @if (weChats != null && weChats.Any())
+                    {
+                    <a role="button" href="javascript:;" class="cancelbinding" data-type="@AccountTypeKeys.Instance().WeChat()">取消绑定</a>
+                    }
+                    else
+                    {
+
+                    <button class="btn btn-default btn-sm layerWeChat">立即绑定</button>
+                    }
+                    <span class="tn-gray-color">绑定成功后可用微信帐号登录</span>
+                </div>
+            </div>
+            <hr />
+            }
+            @if (accountTypes != null && accountTypes.Where(n => n.AccountTypeKey == AccountTypeKeys.Instance().QQ()).Count() > 0)
+            {
+            <div class="row jh-space-bd">
+                <div class="col-xs-1">
+                    <i class="fa fa-qq" aria-hidden="true"></i>
+                </div>
+                <div class="col-xs-11">
+                    <h5>
+                        <span style="margin-right:35px;">QQ</span>@if (qq != null && qq.Any())
+                        {<span class="tn-gray-color tn-ml-20">已绑定</span>}
+                    </h5>
+                    @if (qq != null && qq.Any())
+                    {
+                    <a role="button" href="javascript:;" data-type="@AccountTypeKeys.Instance().QQ()" class="cancelbinding">取消绑定</a>
+                    }
+                    else
+                    {
+                    <button class="btn btn-default btn-sm" onclick="window.location='@SiteUrls.Instance().ThirdBinding(AccountTypeKeys.Instance().QQ())'">立即绑定</button>
+                    }
+                    <span class="tn-gray-color">绑定成功后可用QQ帐号登录</span>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (statusMessageData != null)
+{
+    <script type="text/javascript">
+        require(['jquery', 'tnlayer'], function ($) {
+            //提示消息
+            $(document).ready(function () {
+                switch ('@statusMessageData.MessageType') {
+                    case 'Success':
+                        layer.msg('@statusMessageData.MessageContent', {
+                            icon: 1
+                        });
+                        break;
+                    case 'Hint':
+                        layer.msg('@statusMessageData.MessageContent', {
+                            icon: 1
+                        });
+                        break;
+                    case 'Error':
+                        layer.msg('@statusMessageData.MessageContent', {
+                            icon: 1
+                        });
+                        break;
+                    default:
+                        break;
+                }
+            });
+        });
+    </script>
+}
+
+
+<script type="text/javascript">
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+
+        $(".layerWeChat").click(function () {
+            tnlayer.layermodal('微信绑定', '@SiteUrls.Instance().ThirdBinding(AccountTypeKeys.Instance().WeChat())', '550px', '550px');
+        });
+
+        $('.cancelbinding').on('click', function () {
+            var $this = $(this);
+            //询问框
+            layer.confirm("是否取消绑定", {
+                btn: ['确认', '取消'] //按钮
+            }, function () {
+                $.post('@CachedUrlHelper.Action("CancelBinding", "UserSpace")', { accountTypeKey: $this.data('type') }, function myfunction(data) {
+                    if (data.state == 1) {
+                        layer.msg(data.msg, {
+                            icon: 1
+                        });
+                        setTimeout(function () { window.location.reload(); }, 600);
+                    }
+                })
+            });
+        })
+    })
+</script>

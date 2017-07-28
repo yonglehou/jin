@@ -1,0 +1,73 @@
+﻿@{
+    //是否启用人工审核
+    var enableAudit = ViewData.Get<bool>("enableAudit", true);
+    //哪些审核状态对外显示
+    var publiclyAuditStatus = ViewData.Get<PubliclyAuditStatus>("publiclyAuditStatus", PubliclyAuditStatus.Success);
+
+}
+<form class="form-horizontal">
+    <div class="form-group">
+        <label for="enableAudit" class="col-xs-2 control-label">启用人工审核</label>
+        <div class="col-xs-10">
+            <label class="radio-inline">
+                <input class="enableaudit" name="enableAudit" type="radio" value="true" checked="@(enableAudit? true :false)" />
+                是
+            </label>
+            <label class="radio-inline">
+                <input class="enableaudit" name="enableAudit" type="radio" value="false" checked="@(enableAudit? false:true)" />
+                否
+            </label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="publiclyAuditStatus" class="col-xs-2 control-label">哪些审核状态对外显示</label>
+        <div class="col-xs-10">
+            <label class="radio-inline">
+                <input class="publiclyauditstatus" name="publiclyAuditStatus" type="radio" value="@PubliclyAuditStatus.Success" checked="@(publiclyAuditStatus==PubliclyAuditStatus.Success? true :false)" />
+                通过审核
+                
+            </label>
+            <label class="radio-inline">
+                <input class="publiclyauditstatus" name="publiclyAuditStatus" type="radio" value="@PubliclyAuditStatus.Again_GreaterThanOrEqual" checked="@(publiclyAuditStatus==PubliclyAuditStatus.Again_GreaterThanOrEqual? true :false)" />
+                需再审核/通过审核
+
+            </label>
+            <label class="radio-inline">
+                <input class="publiclyauditstatus" name="publiclyAuditStatus" type="radio" value="@PubliclyAuditStatus.Pending_GreaterThanOrEqual" checked="@(publiclyAuditStatus==PubliclyAuditStatus.Pending_GreaterThanOrEqual? true :false)" />
+                待审核/需再审核/通过审核
+            </label>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-xs-offset-2 col-xs-10">
+            <button type="button" class="btn btn-primary tn-btn-wp submitauditrules">确定</button>
+        </div>
+    </div>
+</form>
+
+<script>
+      require(['jquery'],function(){
+          //异步修改审核规则
+            $('.submitauditrules').on('click', function () {
+                var enableAudit = $('.enableaudit:checked').val();
+                var publiclyAuditStatus = $('.publiclyauditstatus:checked').val();
+
+                layer.confirm('确定要修改审核规则么?', { btn: ["确定", "取消"], icon: 3 }, function () {
+                    $.post('@CachedUrlHelper.Action("_EditAuditRules","ControlPanel")', { enableAudit: enableAudit, publiclyAuditStatus: publiclyAuditStatus }, function (data) {
+                        if (data.MessageType) {
+                            layer.msg(data.MessageContent, { icon: 1 });
+                        }
+                        else {
+                            layer.msg(data.MessageContent, { icon: 2 });
+                        }
+                        //异步刷新审核规则
+                        $.get('@CachedUrlHelper.Action("_EditAuditRules","ControlPanel")',{t:(new Date()).valueOf()}, function (html) {
+                            $('#_EditAuditRules').html(html);
+                        });
+                    });
+                });
+
+
+            });
+      })
+</script>

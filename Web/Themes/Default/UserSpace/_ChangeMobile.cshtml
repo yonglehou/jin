@@ -1,0 +1,92 @@
+﻿@model RegisterEditModel
+@{
+    var codeError = TempData.Get<string>("codeError", string.Empty);
+}
+<style type="text/css">
+    .btn-default[disabled]:hover {
+        color: #333;
+    }
+</style>
+<div class="panel-body ">
+    <div class="col-xs-11">
+        @using (Html.BeginForm("_ChangeMobile", "UserSpace", FormMethod.Post, new { @id = "ChangeMobileForm", @class = " form-horizontal tn-form-validation " }))
+            {
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                @Html.LabelFor(n => n.AccountMobile)
+                @Html.TextBoxFor(n => n.AccountMobile, new { @class = "form-control" })
+                @Html.ValidationMessageFor(n => n.AccountMobile)
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(n => n.VerfyCode)
+                <div class="row">
+                    <div class="col-xs-6">
+                        <input id="getCode" type="button" class="btn btn-default" value="免费获取短信激活码" />
+                    </div>
+                    <div class="col-xs-6">
+                        @Html.TextBoxFor(n => n.VerfyCode, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(n => n.VerfyCode)
+                        <span id="errormsg" style="color:red">@codeError</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <button type="button" id="changeSubmit" class="btn btn-primary tn-btn-wp">确定</button>
+            </div>
+        }
+    </div>
+</div>
+<script type="text/javascript">
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+  
+    $("#changeSubmit").click(function myfunction() {
+        var time = new Date().getTime();
+        $("#ChangeMobileForm").validate();
+        if ($("#ChangeMobileForm").valid()) {
+            $.post("@CachedUrlHelper.Action("_ChangeMobile", "UserSpace")", $("#ChangeMobileForm").serialize(), function myfunction(data) {
+                if (data.state) {
+                    layer.msg(data.msg, {
+                        icon: 1
+                    });
+                    $.get("@SiteUrls.Instance()._UserProfile()", { t: time }, function myfunction(data) {
+                        $("#gengxin").html(data);
+                    });
+                    window.setTimeout(function myfunction() {
+                        layer.closeAll();
+                    }, 1000)
+
+                } else {
+                    layer.msg(data.msg, {
+                        icon: 2
+                    });
+                    window.setTimeout(function myfunction() {
+                        layer.closeAll();
+                    }, 1000)
+                }
+            })
+        }
+    });
+
+    $("#getCode").click(function myfunction() {
+        var time = new Date().getTime();
+        var phone = $("#AccountMobile").val();
+        var captchaInputText = $("#CaptchaInputText").val();
+        var captchaDeText = $("#CaptchaDeText").val();
+
+        $.post("@CachedUrlHelper.Action("SMSSend", "Account")", { phone: phone }, function myfunction(data) {
+            if (data.state) {
+
+                layer.msg(data.msg, {
+                    icon: 1
+                });
+                GetNumber();
+            } else {
+                layer.msg(data.msg, {
+                    icon: 2
+                });
+            }
+        })
+    });
+    })
+</script>

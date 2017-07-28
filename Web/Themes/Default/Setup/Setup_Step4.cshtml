@@ -1,0 +1,87 @@
+﻿@{
+    Layout = null;
+}
+<!doctype html>
+<html class="no-js" lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge, chrome=1">
+    <title>安装完成</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../css/bootstrap.css">
+    <link rel="stylesheet" href="../css/font-awesome.css">
+    <!--框架样式-->
+    <link rel="stylesheet" href="../css/tnui.css">
+    <link rel="stylesheet" href="../css/jh-install.css">
+    <script type="text/javascript" src="../js/modernizr-2.8.3.min.js"></script>
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="../js/html5shiv.min.js"></script>
+    <script type="text/javascript" src="../js/respond.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <div class="tn-doc">
+        <div class="tn-content">
+            <div class="container">
+                <div class="jh-install-logo">
+                    <img alt="..." src="../img/logo-big.png" width="124">
+                    <span class="jh-install-wizard"> v5.0 安装向导</span>
+                </div>
+                <div class="jh-install-block">
+                    <div class="jh-install-nav">
+                        <ul class="list-inline">
+                            <li>
+                                    <span class="jh-nav-number">1</span>
+                                    环境检测
+                            </li>
+                            <li>
+                                    <span class="jh-nav-number">2</span>
+                                    连接数据库
+                            </li>
+                            <li>
+                                    <span class="jh-nav-number">3</span>
+                                    初始化数据
+                            </li>
+                            <li class="active">
+                                    <span class="jh-nav-number">4</span>
+                                    安装完成
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="jh-install-content">
+                        <div class="jh-install-complete">
+                            <h3><i class="fa  fa-check-circle fa-2x tn-green-color tn-mr-15"></i>近乎安装完成！</h3>
+                            <p>接下来，您可以使用以下帐号登录近乎进行站点设置。</p>
+                            <div class="row">
+                                <div class="col-xs-2">用户名</div>
+                                <div class="col-xs-10">@Session["administrator"].ToString()</div>
+                                <div class="col-xs-2">密码</div>
+                                <div class="col-xs-10">@Session["userPassword"].ToString()</div>
+                            </div>
+                           
+                            <div role="alert" class="alert alert-warning">
+                                请务必删除[@ViewData["path"]]文件夹，以免影响站点安全！
+                            </div>
+                            <div class="text-center tn-mt-50">
+                                <button type="button" class="btn btn-primary admin">站点设置</button>
+                                <button type="button" class="btn btn-default home">访问前台</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="../js/jquery-1.12.0.min.js"></script>
+    <script type="text/javascript" src="../js/main.js"></script>
+    <script>
+        $(document).on("click", ".home", function () {
+            window.location.href = "@SiteUrls.Instance().Home()";
+        });
+        $(document).on("click", ".admin", function () {
+            window.location.href = "@SiteUrls.Instance().ManageSiteSettings()";
+        });
+    </script>
+</body>
+</html>

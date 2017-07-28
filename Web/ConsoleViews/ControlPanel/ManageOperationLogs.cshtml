@@ -1,0 +1,133 @@
+﻿@{
+    ViewData["Title"] = new string[] { "操作日志" };
+    TempData["subMenu-check"] = new string[] { "User", "ManageOperationLogs" };
+
+    var tenantTypes = ViewData.Get<List<SelectListItem>>("tenantTypes", new List<SelectListItem>());
+}
+@Styles.Render("~/Bundle/Styles/daterangepicker")
+@Styles.Render("~/Bundle/Styles/zTree")
+<!--
+@Scripts.Render("~/Bundle/Scripts/zTree")
+@Scripts.Render("~/Bundle/Scripts/daterangepicker")
+@Scripts.Render("~/Bundle/Scripts/page")
+-->
+
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-lg-12">
+        <h3>操作日志</h3>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="form-inline tn-tool-column">
+            <div class="form-group">
+                操作人
+            </div>
+            <div class="form-group">
+                @Html.UserSelector("OperationUserIds", null, null, 1, mode: UserOrOrgSelectorMode.User, innerText: "选择人员", validation: false, sourceUrl: SiteUrls.Instance().GetAllOguUser())
+            </div>
+            <div class="form-group">
+                所属 @Html.DropDownList("tenantTypes", tenantTypes, new { @id = "selectTenantType", @class = "form-control filter" })
+            </div>
+            <div class="form-group has-feedback">
+                日期 @Html.DateTimePicker("Daterangepicker", null, true)
+                <span class="form-control-feedback"><i class="fa fa-calendar"></i></span>
+            </div>
+
+            <div class="form-group">
+                <button class="btn btn-primary" id="searchLogs" type="button">搜索</button>
+            </div>
+            <div class="form-group ">
+                <button class="btn btn-block" id="cleanLog" type="button">清除历史数据</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div id="_ListOperationLogs">
+            @Html.Action("_ListOperationLogs", "ControlPanel")
+        </div>
+    </div>
+</div>
+
+<div id="cleanlogdatechoose" style="display:none">
+    @Html.DateTimePicker("cleanlogdatepicker", null, true)
+</div>
+
+
+<script>
+
+    require(['jquery', 'store', 'ztree', 'userSelector', 'moment', 'daterangepicker', 'datepicker', 'page'], function () {
+        //下拉列表改变时筛选操作日志
+        $(".filter").on("change", function () {
+            FilterLog();
+        })
+
+        //搜索操作日志
+        $('#searchLogs').on('click', function () {
+            FilterLog();
+        });
+
+        //清除一段时间内的操作日志
+        $('#cleanLog').on('click', function () {
+            layer.open({
+                type: 1,
+                title: '请选择日期区间',
+                content: $('#cleanlogdatechoose'),
+                btn: ['确定', '取消'],
+                yes: function () {
+                    var $this = $('#cleanlogdatepicker');
+                    var minDate = $this.siblings('[name="minDate"]').val();
+                    var maxDate = $this.siblings('[name="maxDate"]').val();
+                    if (minDate == "" || maxDate == "") {
+                        layer.msg("请选择时间段", { icon: 2 });
+                    }
+                    else {
+                        layer.confirm("确定要清除么？",
+                        { btn: ["确定", "取消"], icon: 3 }, function () {
+                            $.post('@CachedUrlHelper.Action("DeleteOperationLog","ControlPanel")', { minDate: minDate, maxDate: maxDate, t: (new Date()).valueOf() }, function (data) {
+                                if (data.MessageType) {
+                                    layer.closeAll();
+                                    layer.msg(data.MessageContent, { icon: 1 });
+                                    //筛选操作日志
+                                    FilterLog();
+                                }
+                                else {
+                                    layer.msg(data.MessageContent, { icon: 2 });
+                                }
+                            });
+                        });
+                    }
+                }
+            });
+        });
+
+        //筛选操作日志
+        function FilterLog() {
+            var datePicker = $('#Daterangepicker');
+            var minDate = datePicker.siblings('[name="minDate"]').val();
+            var maxDate = datePicker.siblings('[name="maxDate"]').val();
+            var tenantTypeId = $("#selectTenantType").val();
+
+
+            if ($('.tn-choice-item').length > 1) {
+                layer.msg('只能选择一个用户', { icon: 2 });
+            }
+            else {
+                //将用户选择器中的用户Id组成字符串数组
+                var userIds = [];
+                $('.tn-choice-item').each(function () {
+                    userIds.push($(this).data('value'));
+                });
+
+                $.get('@CachedUrlHelper.Action("_ListOperationLogs", "ControlPanel")', { tenantTypeId: tenantTypeId, operationUserIds: userIds.join(';'), minDate: minDate, maxDate: maxDate, t: (new Date()).valueOf() }, function (data) {
+                    $("#_ListOperationLogs").html(data);
+                });
+            }
+
+        }
+
+    })
+</script>

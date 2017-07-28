@@ -1,0 +1,20 @@
+@charset "utf-8";
+.tipsy {
+    font-size:10px;
+    position:absolute;
+    z-index:100000;
+}
+
+.tipsy-inner {
+    border:1px solid #beb7b7;
+    background-color: #fff;
+    /*color: white;*/
+    max-width:350px;
+    text-align:center;
+}
+
+.tipsy-inner {
+    border-radius:3px;
+    -moz-border-radius:3px;
+    -webkit-border-radius:3px;
+}

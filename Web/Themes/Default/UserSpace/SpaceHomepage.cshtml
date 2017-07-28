@@ -1,0 +1,355 @@
+﻿@{
+    IUser currentUser = UserContext.CurrentUser;
+    User userHolder = ViewData.Get<User>("userHolder", null);
+    ViewData["Title"] = new string[] { userHolder.DisplayName + "的首页" };
+    var commentCount = ViewData.Get<int>("conmmentCount", 0);
+    var cmsCount = ViewData.Get<long>("cmsCount", 0L);
+    var threadCount = ViewData.Get("threadCount", 0);
+    var userProfile = ViewData.Get<UserProfile>("userProfile", new UserProfile());
+    
+    var gender = "他";
+    if (userProfile.Gender == GenderType.FeMale)
+    {
+        gender = "她";
+    }
+    string myhome_check = TempData.Get<string>("myhome-check", string.Empty);
+    //用户等级
+    Func<int, string> rankimage = (n) =>
+    {
+        string rankimages = string.Empty;
+        var one = n / 9;
+        var two = (n - 9 * one) / 3;
+        var thr = n - 9 * one - 3 * two;
+        for (int i = 0; i < one; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star1.png'></li>";
+        }
+        for (int i = 0; i < two; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star2.png'></li>";
+        }
+        for (int i = 0; i < thr; i++)
+        {
+            rankimages = rankimages + @"<li><img alt='...' src='/img/star3.png'></li>";
+        }
+        return rankimages;
+    };
+   
+    //是否关注用户
+    var isMutualFollowed = ViewData.Get<bool>("isMutualFollowed", false);
+    var isFollowed = ViewData.Get<bool>("isFollowed", false);
+    if (isMutualFollowed)
+    {
+        isFollowed = true;
+    }
+}
+<div class="tn-content">
+    <div class="container">
+        <div class="jh-home-user">
+            <div class="jh-user-img">
+                <img id="UploadFileCover" src="@SiteUrls.Instance().UserCoverUrl(userHolder)" />
+            </div>
+            <div class="jh-user-head">
+                @Html.ShowUserAvatar(userId: userHolder.UserId, avatarSizeType: AvatarSizeType.Big, enableNavigate: false, isShowUserCard: false)
+            </div>
+
+            <div class="jh-user-message">
+                <div class="row">
+                    <div class="col-xs-10">
+                        <div class="jh-user-name">
+                            <h4>
+                                @userHolder.DisplayName
+                                @{
+                                    var noteName = currentUser.GetNoteName(userHolder.UserId);
+                                }
+                                @if (!string.IsNullOrEmpty(noteName))
+                                {
+                                    if (noteName.Length > 5)
+                                    {
+
+                                        <text><a title="@noteName"> (@noteName.Substring(0, 5)...)</a></text>
+                                    }
+                                    else
+                                    {
+                                        <text><a title="@noteName"> (@noteName)</a></text>
+                                    }
+                                }
+                                @if (userProfile.Gender == GenderType.FeMale)
+                                {
+                                    <i class="fa fa-female" aria-hidden="true"></i>
+                                }
+                                else
+                                {
+                                    <i class="fa fa-male" aria-hidden="true"></i>
+                                }
+                            </h4>
+                            <ul class="list-inline star" title="@userHolder.Rank 级">
+                                @Html.Raw(rankimage(userHolder.Rank))
+                            </ul>
+                        </div>
+                        <p class="text-muted">
+                            @if (userProfile.HasIntroduction)
+                            {
+                                @userProfile.Introduction;
+                            }
+                        </p>
+                    </div>
+                    <div class="col-xs-2 text-right">
+                        <button class="btn btn-default btn-follow" onclick="$.fn.follow()" type="button"><i class="fa fa-plus"></i> 加关注</button>
+                        @*<button class="btn btn-default" data-toggle="dropdown" aria-haspopup="true" type="button"><i class="fa fa-bars" aria-hidden="true"></i></button>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">私信</a></li>
+                                <li><a href="#">举报</a></li>
+                            </ul>*@
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="jh-home-content">
+            <!-- Nav tabs -->
+            <ul id="nav_tabs" class="nav nav-tabs jh-nav-tabs" role="tablist">
+                <li role="presentation">
+                    <a href="#my-content" aria-controls="@(gender)的主页" role="tab" data-toggle="tab" aria-expanded="false" data-href="@CachedUrlHelper.Action("_MyHomepage","UserSpace",null,new RouteValueDictionary { { "spaceKey",Tunynet.Utilities.WebUtility.UrlEncode(userHolder.UserName)} })" data-type="" name="maintabnav">
+                        @(gender)的主页
+                    </a>
+                </li>
+                <li role="presentation">
+                    <a href="#my-content" aria-controls="@(gender)的文章" role="tab" data-toggle="tab" aria-expanded="false" data-href="@CachedUrlHelper.Action("_MyCMS","UserSpace",null,new RouteValueDictionary { { "spaceKey",Tunynet.Utilities.WebUtility.UrlEncode(userHolder.UserName)} })" data-type="cms" name="maintabnav">
+                        @(gender)的文章<small>@(cmsCount > 0 ? cmsCount : 0)</small>
+                    </a>
+                </li>
+                <li role="presentation">
+                    <a href="#my-content" aria-controls="@(gender)的贴子" role="tab" data-toggle="tab" aria-expanded="false" data-href="@CachedUrlHelper.Action("_MyPost","UserSpace",null,new RouteValueDictionary { { "spaceKey",Tunynet.Utilities.WebUtility.UrlEncode(userHolder.UserName)} })" data-type="post" name="maintabnav">
+                        @(gender)的贴子<small>@threadCount</small>
+                    </a>
+                </li>
+                <li role="presentation">
+                    <a href="#my-content" aria-controls="@(gender)的评论" role="tab" data-toggle="tab" aria-expanded="false" data-href="@CachedUrlHelper.Action("_UserSpaceComments","UserSpace",null,new RouteValueDictionary { { "spaceKey",Tunynet.Utilities.WebUtility.UrlEncode(userHolder.UserName)} })" data-type="comment" name="maintabnav">
+                        @(gender)的评论<small>@commentCount</small>
+                    </a>
+                </li>
+            </ul>
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <!--我的主页-->
+                <div role="tabpanel" class="tab-pane active" id="my-content">
+                    <div class="text-center text-warning">
+                        <img src="/img/loading.gif" class="tn-mr-10" />Loading...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    require(['jquery', 'page', 'histroy'], function ($) {
+        //关注用户显示
+        $(function followText() {
+            if ('@isMutualFollowed' == 'True') {
+                mutualFollowed();
+            }
+            else if ('@isFollowed' == 'True') {
+                followed();
+            }
+            else {
+                addFollow();
+            }
+        })
+        //互相关注按钮显示
+        function mutualFollowed() {
+            var innerhtml = "相互关注";
+            $(".btn-follow").html(innerhtml);
+            $(".btn-follow").attr("class", "btn btn-default btn-follow btn-mutualFollow");
+            $(".btn-follow").mouseover(function () {
+                $(this).html("取消关注")
+            })
+            $(".btn-follow").mouseout(function () {
+                $(this).html(innerhtml)
+            })
+        }
+        //已关注按钮显示
+        function followed() {
+            var innerhtml = "<i class='fa fa-check'></i> 已关注";
+            $(".btn-follow").html(innerhtml);
+            $(".btn-follow").attr("class", "btn btn-default btn-follow btn-followed");
+            $(".btn-follow").mouseover(function () {
+                $(this).html("取消关注")
+            })
+            $(".btn-follow").mouseout(function () {
+                $(this).html(innerhtml)
+            })
+        }
+        //加关注按钮显示
+        function addFollow() {
+            var innerhtml = "<i class='fa fa-plus'></i> 加关注";
+            $(".btn-follow").html(innerhtml);
+            $(".btn-follow").attr("class", "btn btn-default btn-follow btn-addfollow");
+            $(".btn-follow").mouseout(function () {
+                $(this).html(innerhtml)
+            })
+            $(".btn-follow").unbind("mouseover");
+        }
+        //添加、取消关注
+        $.fn.follow = function () {
+            if ('@UserContext.CurrentUser' != "") {
+                var userid = '@userHolder.UserId';
+                $.post("@SiteUrls.Instance().Follow(userHolder.UserId)", function (data) {
+                    if (data.state == 1) {
+
+                        layer.msg(data.successmsg, { icon: 1 })
+                        $.get("@CachedUrlHelper.Action("_MyHomepage", "UserSpace")", { spaceKey: '@userHolder.UserName', requestTime: new Date().getTime() }, function (data) {
+                            $("#my-content").html(data);
+                        })
+                        if (data.isMutualFollowed) {
+                            mutualFollowed();
+                        }
+                        if (data.cancelfollow) {
+                            addFollow();
+                        }
+                        if (!data.isMutualFollowed && !data.cancelfollow) {
+                            followed();
+                        }
+                    }
+                    else {
+                        layer.msg(data.errormsg, { icon: 2 })
+                    }
+                })
+            }
+            else {
+                window.location.href = "@SiteUrls.Instance().Login()";
+            }
+        }
+        //页面导航
+        $(document).on('click', '[name=maintabnav]', function () {
+            var $this = $(this);
+            var getTimestamp = new Date().getTime();
+            var url = $(this).data("href");
+            replaceUrl($(this).data("type"));
+            Nav_SecondLevel();
+            $.get(url, { t: getTimestamp }, function (data) {
+                $("#my-content").html(data);
+            })
+        });
+
+        //选择显示提问列表还是回答列表
+        $('.isAsk').on('click', function () {
+            var $this = $(this);
+            replaceUrl($(this).data("type"));
+            var url = $this.data('href');
+            $.get(url, { t: new Date().getTime() }, function (data) {
+                $('#_ListMyAsk').html(data);
+            });
+        });
+
+
+        locationhash()
+        function locationhash() {
+            var _seperator = "#";
+            var _hashStr = window.location.hash;
+            var splitval = _hashStr.split(_seperator);
+            var tmp = new Array();
+            for (var i in splitval) {
+                var o = splitval[i];
+                if (typeof o !== 'undefined' && o != '') {
+                    tmp.push(splitval[i]);
+                }
+                else { }
+            }
+            if (tmp.length > 1) {
+                if (tmp[0] == "follow") {
+                    $.get("@CachedUrlHelper.Action("_ManageMyFollow", "UserSpace")", { userId: '@userHolder.UserId', follow: tmp[1], requestTime: new Date().getTime() }, function (data) {
+                        $("#my-content").html(data);
+                    })
+                }
+                else {
+                    var maintabnavas = $("[name=maintabnav]");
+                    var datatpe = "";
+                    for (var i in tmp) {
+                        datatpe += tmp[i];
+                        if (tmp.length - 1 > i) {
+                            datatpe += "-";
+                        }
+                    }
+                    for (var i = 0 ; i < maintabnavas.length; i++) {
+                        var _that = maintabnavas[i];
+                        if ($(_that).data("type") == tmp[0]) {
+                            _that.click()
+                            maintabnavget(_that, datatpe)
+                        }
+                    }
+                    return false;
+                }
+            }
+            else if (tmp.length > 0) {
+                var maintabnavas = $("[name=maintabnav]");
+                for (var i in maintabnavas) {
+                    var _that = maintabnavas[i];
+                    if ($(_that).data("type") == tmp[0]) {
+                        _that.click()
+                        maintabnavget(_that)
+                        return false;
+                    }
+                }
+            }
+            else {
+                var maintabnavas = $("[name=maintabnav]");
+                maintabnavas[0].click();
+                maintabnavget(maintabnavas[0])
+            }
+        }
+        function maintabnavget(_that, datatpe) {
+            //回调内容
+            var url = $(_that).data("href");
+            $("#my-content").empty();
+            $.get(url, { t: new Date().getTime() }, function (data) {
+                $("#my-content").html(data);
+            });
+            if (datatpe != "") {
+                $("[data-type='" + datatpe + "']").click()
+            }
+        }
+        //关注回调函数
+        $.fn.followCallBack = function (data) {
+            if ('@userHolder' == "") {
+                window.location.href = "@SiteUrls.Instance().Login()";
+            }
+            else {
+                if (data.state == 1) {
+                    layer.msg(data.successmsg, { icon: 1 })
+                    $.get("@CachedUrlHelper.Action("_MyHomepage", "UserSpace")", { spaceKey: '@userHolder.UserName', requestTime: new Date().getTime() }, function (data) {
+                        $("#my-content").html(data);
+                        $(".tipsy").remove();
+                    })
+                }
+                else {
+                    layer.msg(data.errormsg, { icon: 2 })
+                }
+            }
+        }
+        //取消关注回调函数
+        $.fn.cancelFollowCallBack = function (data) {
+            if (data.state == 1) {
+                layer.msg(data.successmsg, { icon: 1 })
+                $.get("@CachedUrlHelper.Action("_MyHomepage", "UserSpace")", { spaceKey: '@userHolder.UserName', requestTime: new Date().getTime() }, function (data) {
+                    $("#my-content").html(data);
+                })
+            }
+            else {
+                layer.msg(data.errormsg, { icon: 2 })
+            }
+        }
+
+        //二级导航显示和隐藏
+        function Nav_SecondLevel() {
+            if ($('#nav-ask-first').hasClass('active')) {
+                $('#nav-ask-second').removeClass('hide');
+            }
+            else {
+                $('#nav-ask-second').addClass('hide');
+                $('#nav-ask-question').removeClass('active');
+                $('#nav-ask-answer').addClass('active');
+            }
+        }
+    });
+
+</script>

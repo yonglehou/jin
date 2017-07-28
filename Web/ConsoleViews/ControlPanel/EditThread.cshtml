@@ -1,0 +1,73 @@
+﻿@model ThreadEditModel
+@{
+    TempData["subMenu-check"] = new string[] { "Sections", "ManageThreads" };
+    var selectListItems = ViewData.Get<List<SelectListItem>>("selectListItems", null);
+    ViewData["Title"] = new string[] { "编辑" + Model.Subject };
+}
+<!--@Scripts.Render("~/Bundle/Scripts/ueditor")-->
+<script>
+    require(['jquery', 'ZeroClipboard', 'ueditor'], function ($, ZeroClipboard) {
+       window['ZeroClipboard'] = ZeroClipboard;
+    })
+</script>
+
+
+<div class="row tn-page-heading tn-mb-20">
+    <div class="col-xs-12">
+        <ol class="breadcrumb">
+            <li class="tn-active">编辑贴子</li>
+        </ol>
+    </div>
+</div>
+<div class="panel panel-default tn-survey-form">
+    <div class="panel-body">
+        @using (Html.BeginForm("EditThread", "ControlPanel", FormMethod.Post, new { @class = "form-horizontal tn-form-validation", @id = "EditThread" }))
+            {
+            @Html.HiddenFor(n => n.ThreadId)
+            @Html.HiddenFor(n => n.SectionId)
+            <div class="form-group">
+                <div class="col-xs-12">
+                    @Html.TextBoxFor(n => n.Subject, new { @class = "form-control", @placeholder = "标题" })
+                    @Html.ValidationMessageFor(n => n.Subject)
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-12">
+                    @Html.HtmlEditor("Body",
+                       TenantTypeIds.Instance().Thread(),
+                        Model.ThreadId,
+                        Model.Body,
+                        new Dictionary<string, object> { { "style", "height:400px;" }, { "maximumWords", 20000 } })
+                    @Html.ValidationMessageFor(n => n.Body)
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-12" id="TemporaryAttachments">
+                    @Html.Action("_TemporaryAttachments", "ControlPanel")
+                </div>
+                <div class="col-xs-12">
+                    @Html.Action("_Attachments", "ControlPanel", new { contentItemId = Model.ThreadId })
+                </div>
+            </div>
+            if (selectListItems != null)
+            {
+                <div class="form-group">
+                    <label class="col-xs-2 control-label tn-width-90">贴子分类</label>
+                    <div class="col-xs-4">
+                        <div class="has-feedback">
+                            @Html.DropDownList("CategoryId", selectListItems, new { @class = "form-control" })
+
+                        </div>
+                    </div>
+                </div>
+            }
+            <div class="form-group">
+                <div class="col-xs-4 col-xs-offset-2">
+                    <button id="answer" type="submit" class="btn btn-primary btn-submit">确定</button>
+                    <a type="button" class="btn btn-default" href="@SiteUrls.Instance().ManageThreads()">返回</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+

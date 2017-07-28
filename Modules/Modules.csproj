@@ -1,0 +1,356 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.3\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.3\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="..\packages\Microsoft.Net.Compilers.1.3.2\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.1.3.2\build\Microsoft.Net.Compilers.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{02A241D2-7C6D-4FB3-A439-57D1E3B0E014}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Tunynet.Common</RootNamespace>
+    <AssemblyName>Tunynet.Modules</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+    <WebGreaseLibPath>..\packages\WebGrease.1.5.2\lib</WebGreaseLibPath>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Antlr3.Runtime, Version=3.4.1.9004, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
+      <HintPath>..\packages\Antlr.3.4.1.9004\lib\Antlr3.Runtime.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Autofac, Version=3.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.3.5.0\lib\net40\Autofac.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AutoMapper, Version=5.0.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.5.0.0-beta-1\lib\net45\AutoMapper.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="C5, Version=1.1.0.0, Culture=neutral, PublicKeyToken=06a1b38866503b69, processorArchitecture=MSIL">
+      <HintPath>..\packages\Quartz.2.0.1\lib\net40\C5.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Common.Logging, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Common.Logging.3.3.1\lib\net40\Common.Logging.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Common.Logging.Core, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Common.Logging.Core.3.3.1\lib\net40\Common.Logging.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="HtmlAgilityPack, Version=1.4.9.5, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.1.4.9.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ionic.Zip, Version=1.9.7.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetZip.1.9.7\lib\net20\Ionic.Zip.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.2.1\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.SignalR.SystemWeb, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.SignalR.SystemWeb.2.2.0\lib\net45\Microsoft.AspNet.SignalR.SystemWeb.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.3\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.3.0.1\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.3.0.1\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MiniProfiler, Version=3.2.0.157, Culture=neutral, PublicKeyToken=b44f9351044011a3, processorArchitecture=MSIL">
+      <HintPath>..\packages\MiniProfiler.3.2.0.157\lib\net40\MiniProfiler.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
+      <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Quartz, Version=2.0.1.100, Culture=neutral, PublicKeyToken=f6b8c98a402cc8a4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Quartz.2.0.1\lib\net40\Quartz.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="RazorEngine, Version=3.8.2.0, Culture=neutral, PublicKeyToken=9ee697374c7e744a, processorArchitecture=MSIL">
+      <HintPath>..\packages\RazorEngine.3.8.2\lib\net45\RazorEngine.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.3\lib\net45\System.Web.Razor.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Tunynet.Infrastructure">
+      <HintPath>..\libs\Tunynet.Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="WebGrease, Version=1.5.2.14234, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebGrease.1.5.2\lib\WebGrease.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="Advertisings\Advertising.cs" />
+    <Compile Include="Advertisings\AdvertisingEnum.cs" />
+    <Compile Include="Advertisings\AdvertisingPosition.cs" />
+    <Compile Include="Advertisings\AdvertisingService.cs" />
+    <Compile Include="Advertisings\Repositories\AdvertisingPositionRepository.cs" />
+    <Compile Include="Advertisings\Repositories\AdvertisingRepository.cs" />
+    <Compile Include="Advertisings\Repositories\IAdvertisingPositionRepository.cs" />
+    <Compile Include="Advertisings\Repositories\IAdvertisingRepository.cs" />
+    <Compile Include="Advertisings\Tasks\DeleteOverdueAdvertisingTask.cs" />
+    <Compile Include="Area\Area.cs" />
+    <Compile Include="Area\AreaService.cs" />
+    <Compile Include="Area\Configuration\AreaSettings.cs" />
+    <Compile Include="Area\Repositories\AreaRepository.cs" />
+    <Compile Include="Area\Repositories\IAreaRepository.cs" />
+    <Compile Include="Attitude\Attitude.cs" />
+    <Compile Include="Attitude\AttitudeEnum.cs" />
+    <Compile Include="Attitude\AttitudeOnlySupportSettings.cs" />
+    <Compile Include="Attitude\AttitudeRecord.cs" />
+    <Compile Include="Attitude\AttitudeService.cs" />
+    <Compile Include="Attitude\Configuration\AttitudeSettings.cs" />
+    <Compile Include="Attitude\EventOperationType.cs" />
+    <Compile Include="Attitude\Repositories\AttitudeRecordRepository.cs" />
+    <Compile Include="Attitude\Repositories\AttitudeRepository.cs" />
+    <Compile Include="Attitude\Repositories\IAttitudeRecordRepository.cs" />
+    <Compile Include="Attitude\Repositories\IAttitudeRepository.cs" />
+    <Compile Include="Attitude\SupportOpposeEventArgs.cs" />
+    <Compile Include="AtUser\AtUser.cs" />
+    <Compile Include="AtUser\AtUserAssociatedUrlGetterFactory.cs" />
+    <Compile Include="AtUser\AtUserEventArgs.cs" />
+    <Compile Include="AtUser\AtUserService.cs" />
+    <Compile Include="AtUser\IAtUserAssociatedUrlGetter.cs" />
+    <Compile Include="AtUser\Repositories\AtUserRepository.cs" />
+    <Compile Include="AtUser\Repositories\IAtUserRepository.cs" />
+    <Compile Include="Favorite\Favorite.cs" />
+    <Compile Include="Favorite\FavoriteEventArgs.cs" />
+    <Compile Include="Favorite\FavoriteService.cs" />
+    <Compile Include="Favorite\Repositories\FavoriteRepository.cs" />
+    <Compile Include="Favorite\Repositories\IFavoriteRepository.cs" />
+    <Compile Include="InviteFriend\Configuration\InviteFriendSettings.cs" />
+    <Compile Include="InviteFriend\InvitationCode.cs" />
+    <Compile Include="InviteFriend\InviteFriendRecord.cs" />
+    <Compile Include="InviteFriend\InviteFriendService.cs" />
+    <Compile Include="InviteFriend\Repositories\IInvitationCodesRepository.cs" />
+    <Compile Include="InviteFriend\Repositories\IInviteFriendRecordsRepository.cs" />
+    <Compile Include="InviteFriend\Repositories\InvitationCodesRepository.cs" />
+    <Compile Include="InviteFriend\Repositories\InviteFriendRecordsRepository.cs" />
+    <Compile Include="InviteFriend\Tasks\DeleteTrashInvitationCodesTask.cs" />
+    <Compile Include="Links\LinkEntity.cs" />
+    <Compile Include="Links\LinkService.cs" />
+    <Compile Include="Links\OwnerTypes.cs" />
+    <Compile Include="Links\Repositories\ILinkRepository.cs" />
+    <Compile Include="Links\Repositories\LinkRepository.cs" />
+    <Compile Include="Message\Message.cs" />
+    <Compile Include="Message\MessageEnum.cs" />
+    <Compile Include="Message\MessageInSession.cs" />
+    <Compile Include="Message\MessageService.cs" />
+    <Compile Include="Message\MessageSession.cs" />
+    <Compile Include="Message\MessageSettings.cs" />
+    <Compile Include="Message\Repositories\IMessageInSessionRepository.cs" />
+    <Compile Include="Message\Repositories\IMessageRepository.cs" />
+    <Compile Include="Message\Repositories\IMessageSessionRepository.cs" />
+    <Compile Include="Message\Repositories\MessageInSessionRepository.cs" />
+    <Compile Include="Message\Repositories\MessageRepository.cs" />
+    <Compile Include="Message\Repositories\MessageSessionRepository.cs" />
+    <Compile Include="Notice\SignalRNoticeSender.cs" />
+    <Compile Include="OperationLog\IOperationLogSpecificPart.cs" />
+    <Compile Include="OperationLog\IOperationLogSpecificPartProcesser.cs" />
+    <Compile Include="OperationLog\OperationLog.cs" />
+    <Compile Include="OperationLog\OperationLogQuery.cs" />
+    <Compile Include="OperationLog\OperationLogService.cs" />
+    <Compile Include="OperationLog\OperationLogType.cs" />
+    <Compile Include="OperationLog\Repositories\IOperationLogRepository.cs" />
+    <Compile Include="OperationLog\Repositories\OperationLogRepository.cs" />
+    <Compile Include="Reviews\Repositories\IReviewSummaryRepository.cs" />
+    <Compile Include="Reviews\Repositories\ReviewSummaryRepository.cs" />
+    <Compile Include="Reviews\ReviewEnum.cs" />
+    <Compile Include="Reviews\Repositories\IReviewRepository.cs" />
+    <Compile Include="Reviews\Repositories\ReviewRepository.cs" />
+    <Compile Include="Reviews\ReviewService.cs" />
+    <Compile Include="Reviews\ReviewSummary.cs" />
+    <Compile Include="Reviews\Review.cs" />
+    <Compile Include="Reviews\ReviewEventModule.cs" />
+    <Compile Include="SpecialContent\SpecialContentItemUrlGetterFactory.cs" />
+    <Compile Include="SpecialContent\ISpecialContentItemUrlGetter.cs" />
+    <Compile Include="SpecialContent\Repositories\SpecialContentItemRepository.cs" />
+    <Compile Include="SpecialContent\Repositories\SpecialContentTypeRepository.cs" />
+    <Compile Include="SpecialContent\Repositories\ISpecialContentItemRepository.cs" />
+    <Compile Include="SpecialContent\Repositories\ISpecialContentTypeRepository.cs" />
+    <Compile Include="SpecialContent\Tasks\DeleteOverdueSpecialTask.cs" />
+    <Compile Include="SpecialContent\SpecialContentItem.cs" />
+    <Compile Include="SpecialContent\SpecialContentItemService.cs" />
+    <Compile Include="SpecialContent\SpecialContentType.cs" />
+    <Compile Include="SpecialContent\SpecialContentTypeService.cs" />
+    <Compile Include="SpecialContent\SpecialContentTypeIds.cs" />
+    <Compile Include="Tags\Configuration\ITagUrlGetter.cs" />
+    <Compile Include="Tags\Configuration\TagUrlGetterManager.cs" />
+    <Compile Include="Tags\CountTypesExtension.cs" />
+    <Compile Include="Tags\ItemInTag.cs" />
+    <Compile Include="Tags\RelatedTag.cs" />
+    <Compile Include="Tags\Repositories\IItemInTagRepository.cs" />
+    <Compile Include="Tags\Repositories\IRelatedTagRepository.cs" />
+    <Compile Include="Tags\Repositories\ITagRepository.cs" />
+    <Compile Include="Tags\Repositories\ItemInTagRepository.cs" />
+    <Compile Include="Tags\Repositories\RelatedTagRepository.cs" />
+    <Compile Include="Tags\Repositories\TagRepository.cs" />
+    <Compile Include="Tags\Tag.cs" />
+    <Compile Include="Tags\TagEnum.cs" />
+    <Compile Include="Tags\TagEventArgs.cs" />
+    <Compile Include="Tags\TagQuery.cs" />
+    <Compile Include="Tags\TagService.cs" />
+    <Compile Include="Tags\TagService`1.cs" />
+    <Compile Include="Tags\TagSettings.cs" />
+    <Compile Include="Follow\BatchFollowEventArgs.cs" />
+    <Compile Include="Follow\Follow.cs" />
+    <Compile Include="Follow\FollowEnum.cs" />
+    <Compile Include="Follow\FollowService.cs" />
+    <Compile Include="Follow\Repositories\FollowRepository.cs" />
+    <Compile Include="Follow\Repositories\IFollowRepository.cs" />
+    <Compile Include="Follow\UserExtensionByFollow.cs" />
+    <Compile Include="Hubs\NoticeHub.cs" />
+    <Compile Include="List\ListItem.cs" />
+    <Compile Include="List\ListItemService.cs" />
+    <Compile Include="List\ListEntity.cs" />
+    <Compile Include="List\ListService.cs" />
+    <Compile Include="List\Repositories\IListItemRepository.cs" />
+    <Compile Include="List\Repositories\ListItemRepository.cs" />
+    <Compile Include="Notice\INoticeSender.cs" />
+    <Compile Include="Notice\Notice.cs" />
+    <Compile Include="Notice\NoticeBuilder.cs" />
+    <Compile Include="Notice\Tasks\NoticeDispatcherTask.cs" />
+    <Compile Include="Notice\NoticeService.cs" />
+    <Compile Include="Notice\NoticeStatus.cs" />
+    <Compile Include="Notice\NoticeType.cs" />
+    <Compile Include="Notice\NoticeTypeKeys.cs" />
+    <Compile Include="Notice\Repositories\INoticeRepository.cs" />
+    <Compile Include="Notice\Repositories\NoticeRepository.cs" />
+    <Compile Include="Notice\NoticeTypeSettings.cs" />
+    <Compile Include="ParsedMedia\ParsedMedia.cs" />
+    <Compile Include="ParsedMedia\ParsedMediaService.cs" />
+    <Compile Include="ParsedMedia\Repositories\IParsedMediaRepository.cs" />
+    <Compile Include="ParsedMedia\Repositories\ParsedMediaRepository.cs" />
+    <Compile Include="Permission\AuthorizationService.cs" />
+    <Compile Include="Permission\IAuthorizationService.cs" />
+    <Compile Include="Permission\ITenantAuthorizationHandler.cs" />
+    <Compile Include="Permission\PermissionEnum.cs" />
+    <Compile Include="Permission\PermissionItem.cs" />
+    <Compile Include="Permission\Permission.cs" />
+    <Compile Include="Permission\PermissionItemKeys.cs" />
+    <Compile Include="Permission\PermissionService.cs" />
+    <Compile Include="Permission\Repositories\IPermissionItemInUserRoleRepository.cs" />
+    <Compile Include="Permission\Repositories\PermissionItemInUserRoleRepository.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ShortUrl\IUrlShortner.cs" />
+    <Compile Include="ShortUrl\Repositories\IShortUrlRepository.cs" />
+    <Compile Include="ShortUrl\Repositories\ShortUrlRepository.cs" />
+    <Compile Include="ShortUrl\ShortUrlEntity.cs" />
+    <Compile Include="ShortUrl\ShortUrlService.cs" />
+    <Compile Include="ShortUrl\ShortUrlSettings.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj">
+      <Project>{77deaa6e-b73d-4311-a377-1d36d4934596}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>此项目引用这台计算机上缺少的 NuGet 程序包。使用 NuGet 程序包还原可下载这些程序包。有关详细信息，请参阅 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的文件是 {0}。</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.1.3.2\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.1.3.2\build\Microsoft.Net.Compilers.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.3\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.3\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

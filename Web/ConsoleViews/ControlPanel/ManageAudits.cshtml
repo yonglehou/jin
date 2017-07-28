@@ -1,0 +1,41 @@
+﻿@{
+    ViewData["Title"] = new string[] { "审核规则" };
+    TempData["subMenu-check"] = new string[] { "User", "ManageAudits" };
+}
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-lg-12">
+        <h3>审核规则</h3>
+    </div>
+</div>
+<div class="alert alert-warning" role="alert">
+    <p>审核严格程度为：需再审核>创建时审核>不审核</p>
+    <p>需再审核：是指通过审核的内容编辑后需重新审核</p>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div id="_EditAuditRules">
+        </div>
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div id="_EditRolesAuditRules">
+        </div>
+    </div>
+</div>
+<script>
+    require(['jquery'],function(){
+        
+        //异步刷新审核规则
+        $.get('@CachedUrlHelper.Action("_EditAuditRules", "ControlPanel")', { t: (new Date()).valueOf() }, function (html) {
+            $('#_EditAuditRules').html(html);
+        });
+
+        //异步刷新角色审核规则
+        $.get('@CachedUrlHelper.Action("_EditRolesAuditRules", "ControlPanel")', { t: (new Date()).valueOf() }, function (html) {
+            $('#_EditRolesAuditRules').html(html);
+        });
+    })
+</script>

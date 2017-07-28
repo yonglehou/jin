@@ -1,0 +1,110 @@
+﻿@{
+    var user = ViewData.Get<IUser>("user", UserContext.CurrentUser);
+    var registerType = ViewData.Get<RegisterType>("RegisterType", RegisterType.MobileOrEmail);
+
+    var placeholder = string.Empty;
+    switch (registerType)
+    {
+        case RegisterType.Mobile:
+            placeholder = "手机号码、昵称";
+            break;
+        case RegisterType.Email:
+            placeholder = "邮箱、昵称";
+            break;
+        case RegisterType.MobileOrEmail:
+            placeholder = "手机号码、邮箱、昵称";
+            break;
+        case RegisterType.EmailOrMobile:
+            placeholder = "邮箱、手机号码、昵称";
+            break;
+
+    }
+}
+
+<ul class="list-unstyled">
+    <li>
+        <ul class="list-inline jh-space-ul">
+            <li></li>
+            <li>可以使用(@placeholder)进行登录</li>
+            <li><a href="javascript:;" class="a layerChangePassword">修改密码</a></li>
+        </ul>
+    </li>
+
+
+    <li>
+        <ul class="list-inline jh-space-ul">
+            <li>昵称</li>
+            <li id="yuannc">@user.UserName</li>
+            <li><a href="javascript:;" class="a layerChangeUserName">修改昵称</a></li>
+        </ul>
+    </li>
+
+    @if (user.IsMobileVerified)
+    {
+    <li>
+        <ul class="list-inline jh-space-ul">
+            <li><i class="fa fa-check-circle" style="color :green;" aria-hidden="true"></i> 绑定手机</li>
+            <li>@user.AccountMobile</li>
+            <li><a href="javascript:;" data-title="更改号码" class="a layerChangeMobile">更改号码</a></li>
+        </ul>
+    </li>
+    }
+    else
+    {
+    <li>
+        <ul class="list-inline jh-space-ul">
+            <li>
+                绑定手机
+            </li>
+            <li></li>
+            <li><a href="javascript:;" data-title="绑定手机" class="a layerChangeMobile">绑定手机</a></li>
+        </ul>
+    </li>
+    }
+    @if (user.IsEmailVerified)
+    {
+    <li>
+        <ul class="list-inline jh-space-ul">
+            <li><i class="fa fa-check-circle" style="color :green;" aria-hidden="true"></i> 绑定邮箱</li>
+            <li>@user.AccountEmail</li>
+            <li><a href="javascript:;" data-title="更换邮箱" class="a layerChangeEmail">更换邮箱</a></li>
+        </ul>
+    </li>
+    }
+    else
+    {
+    <li>
+        <ul class="list-inline jh-space-ul">
+            <li>
+                绑定邮箱
+            </li>
+            <li></li>
+            <li><a href="javascript:;" data-title="绑定邮箱" class="a layerChangeEmail">绑定邮箱</a></li>
+        </ul>
+    </li>
+    }
+</ul>
+
+<script type="text/javascript">
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+        $(".layerChangePassword").click(function () {
+            tnlayer.layermodal('修改密码', '@CachedUrlHelper.Action("_ChangePassword","Userspace")', '480px', '420px');
+        });
+
+        $(".layerChangeUserName").click(function () {
+            tnlayer.layermodal('修改昵称', '@CachedUrlHelper.Action("_ChangeUserName","Userspace")', '400px', '360');
+        });
+
+
+        $(".layerChangeMobile").click(function () {
+            var title = $(this).data("title");
+            tnlayer.layermodal(title, '@CachedUrlHelper.Action("_ChangeMobile","Userspace")', '400px', '340px');
+        });
+
+        $(".layerChangeEmail").click(function () {
+            var title = $(this).data("title");
+            tnlayer.layermodal(title, '@CachedUrlHelper.Action("_ChangeEmail","Userspace")', '400px', '250px');
+        });
+
+    })
+</script>

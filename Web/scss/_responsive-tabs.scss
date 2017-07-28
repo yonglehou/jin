@@ -1,0 +1,119 @@
+.tn-tabs {
+	position: relative;
+	.r-tabs-nav {
+		margin: 0;
+		padding: 0;
+		.r-tabs-tab {
+			position: relative;
+			display: inline-block;
+			margin: 0;
+			list-style: none;
+		}
+		.r-tabs-anchor {
+			display: inline-block;
+			padding: 5px 15px;
+			text-decoration: none;
+		}
+		.r-tabs-state-disabled {
+			opacity: 0.5;
+			.r-tabs-anchor:hover {
+				background-color: transparent;
+				color: $text-color;
+				cursor: default;
+			}
+		}
+	}
+	.r-tabs-panel {
+		padding: 15px;
+		display: none;
+		&.r-tabs-state-active {
+			display: block;
+		}
+	}
+	.r-tabs-accordion-title {
+		display: none;
+		.r-tabs-anchor {
+			display: block;
+			padding: 5px 15px;
+			text-decoration: none;
+			color: $text-color;
+			border: solid $gray-border 1px;
+			margin-bottom: 5px;
+			&:hover {
+				color: $theme-color;
+			}
+		}
+		&.r-tabs-state-active {
+			.r-tabs-anchor {
+				background-color: $gray;
+			}
+		}
+		&.r-tabs-state-disabled {
+			opacity: 0.5;
+			.r-tabs-anchor {
+				color: $text-color;
+				cursor: default;
+			}
+		}
+	}
+}
+.tn-tabs-v1 {
+	.r-tabs-nav {
+		border-bottom: solid $theme-color 1px;
+		.r-tabs-anchor {
+			color: $text-color;
+			&:hover {
+				background-color: $theme-color;
+				color: $inverse-color;
+			}
+		}
+		.r-tabs-state-active .r-tabs-anchor {
+			background-color: $theme-color;
+			color: $inverse-color;
+		}
+	}
+}
+.tn-tabs-v2 {
+	.r-tabs-nav {
+		.r-tabs-anchor {
+			color: $text-color;
+			&:hover {
+				color: $theme-color;
+			}
+		}
+		.r-tabs-state-active {
+			margin-bottom: -1px;
+			.r-tabs-anchor {
+				background-color: $box-bg;
+				padding: 3px 15px 6px;
+				border: {
+					style: solid;
+					width: 2px 1px 0;
+					color: $theme-color $gray-border transparent;
+				}
+			}
+		}
+	}
+	.r-tabs-panel {
+		background-color: $box-bg;
+		border: {
+			style: solid;
+			color: $gray-border;
+			width: 1px;
+		}
+	}
+}
+@media only screen and (max-width: 768px) {
+    .tn-tabs {
+    	.r-tabs-nav {
+    		display: none;
+    	}
+    	.r-tabs-accordion-title {
+    		display: block;
+			+ .r-tabs-panel {
+				border: solid $gray-border 1px;
+				margin: -6px 0 5px;
+			}
+    	}
+    }
+}

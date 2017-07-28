@@ -1,0 +1,53 @@
+﻿@model AccountTypeEditModel
+
+<div class="panel">
+    <div class="panel-body">
+        @using (Html.BeginAjaxForm("_EditThirdAccount", "ControlPanel", null, FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "_EditSucceed" }, new { @class = "tn-form-validation" }))
+        {
+        @Html.HiddenFor(n => n.AccountTypeKey)
+
+            @Html.ValidationMessageFor(n => n.AccountTypeKey)
+            @Html.ValidationMessageFor(n => n.IsEnabled)
+            <div class="form-group">
+                <label>@Html.LabelFor(n => n.AppKey)</label>
+                @Html.TextBoxFor(n => n.AppKey, new { @class = "form-control" })
+                @Html.ValidationMessageFor(n => n.AppKey)
+            </div>
+            <div class="form-group">
+                <label>@Html.LabelFor(n => n.AppSecret)</label>
+                @Html.TextBoxFor(n => n.AppSecret, new { @class = "form-control" })
+                @Html.ValidationMessageFor(n => n.AppSecret)
+            </div>
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-xs-3">
+                        @Html.CheckBoxFor(n => n.IsEnabled) 是否启用
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary tn-btn-wp">确定</button>
+            <button type="button" class="btn btn-default tn-btn-wp" id="cancel">取消</button>
+        }
+    </div>
+</div>
+
+<script>
+    require(['jquery'], function () {
+        $.fn._EditSucceed = function (data) {
+            if (data.state == 1) {
+                layer.msg(data.msg, {
+                    icon: 1
+                });
+                setTimeout(function () { window.location.reload(true); }, 600);
+            } else {
+                layer.msg("编辑失败", {
+                    icon: 2
+                });
+            }
+        }
+        //取消
+        $("#cancel").click(function () {
+            layer.closeAll();
+        });
+    })
+</script>

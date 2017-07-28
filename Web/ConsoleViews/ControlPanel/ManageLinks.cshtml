@@ -1,0 +1,93 @@
+﻿@model List<SelectListItem>
+@{
+    ViewData["Title"] = new string[] { "链接管理" };
+    TempData["subMenu-check"] = new string[] { "Public", "ManageLinks" };
+}
+
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-xs-12">
+        <h3>链接管理</h3>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="form-inline tn-tool-column">
+            <div class="form-group">
+                <a class="btn btn-default layerlink">
+                    <i class="fa fa-plus"></i>
+                    添加链接
+                </a>
+            </div>
+            <div class="form-group pull-right">
+                <label style="padding-right:10px;">
+                    <a href="@CachedUrlHelper.Action("managecategories","ControlPanel",null,new RouteValueDictionary { { "tenantTypeId", TenantTypeIds.Instance().Link() } })">链接分类管理</a>
+                </label>
+                @Html.DropDownList("linkTypeSel", Model, "所有类别", new { @class = "form-control jn-select-sm" })
+            </div>
+        </div>
+    </div>
+</div>
+<div id="listlink">
+    @Html.Action("_ListLinks", "ControlPanel")
+</div>
+
+
+<script>
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+
+        $('.layerlink').click(function () {
+            tnlayer.layermodal('添加链接', '@CachedUrlHelper.Action("_EditLink", "ControlPanel")?t=' + new Date().getTime(), '450px', '630px')
+        })
+        //删除链接
+        $(document).on('click', 'a[id^=delete-]', function () {
+            var id = $(this).attr("id").replace(/[^0-9]/ig, "");
+            var param = jQuery.param({ linkId: id, t: new Date().getTime() })
+            layer.confirm('确定要删除该链接？', {
+                btn: ['确认', '取消'], //按钮
+                shade: false //不显示遮罩
+            }, function () {
+                $.post("@CachedUrlHelper.Action("DeleteLink", "ControlPanel")", param, function (data) {
+                    if (data.MessageType) {
+                        layer.msg(data.MessageContent, {
+                            icon: 1
+                        })
+                        $("#removelink-" + id).remove();
+                    }
+                    else {
+                        layer.msg(data.MessageContent, {
+                            icon: 2
+                        })
+                    }
+                });
+            });
+        })
+
+        //上移 下移
+        $("a[name=moveup],a[name=movedown]").livequery(function () {
+            $(this).click(function () {
+                $.post($(this).data("href"), { t: new Date().getTime() }, function (data) {
+                    if (data.MessageType == 0) {
+                        layer.msg(data.MessageContent, {
+                            icon: 2
+                        })
+                    }
+                    else {
+                        var param = jQuery.param({ categoryId: $("#linkTypeSel").val(), t: new Date().getTime() });
+                        $.get("@CachedUrlHelper.Action("_ListLinks", "ControlPanel")", param, function (data) {
+                            $("#listlink").html(data)
+                        });
+                    }
+                })
+            })
+        });
+
+        //根据类别筛选
+        $(document).on("change", "#linkTypeSel", function () {
+            var param = jQuery.param({ categoryId: this.value, t: new Date().getTime() });
+            $.get("@CachedUrlHelper.Action("_ListLinks", "ControlPanel")", param, function (data) {
+                $("#listlink").html(data);
+            })
+
+        });
+    })
+</script>

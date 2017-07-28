@@ -1,0 +1,58 @@
+﻿@model AllResultModel
+@{
+    var keyword = ViewData.Get<string>("keyword", string.Empty);
+}
+
+@if (Model.Data != null)
+{
+    if (Model.Data.CmsResults != null && Model.Data.CmsResults.Count > 0)
+    {
+        <div class="jh-dropdown-block">
+            <a href="@CachedUrlHelper.Action("Search","Portal",null,new RouteValueDictionary { { "keyword",keyword}, { "searchType","Cms"} })">
+                <h6>搜“<span class="tn-theme-color">@keyword</span>”相关资讯(@Model.Page[TenantTypeIds.Instance().ContentItem()])</h6>
+            </a>
+            <ul class="list-unstyled">
+                @foreach (var item in Model.Data.CmsResults)
+                    {
+                    <li class="tn-text tn-mb-5"><a href="@SiteUrls.Instance().CMSDetail(item.Id)" target="_blank" class="a">@Html.Raw(item.Subject)</a></li>
+                }
+            </ul>
+        </div>
+    }
+
+    if (Model.Data.ThreadResults != null && Model.Data.ThreadResults.Count > 0)
+    {
+        <div class="jh-dropdown-block">
+            <a href="@CachedUrlHelper.Action("Search","Portal",null,new RouteValueDictionary { { "keyword",keyword}, { "searchType","Thread"} })">
+                <h6>搜“<span class="tn-theme-color">@keyword</span>”相关贴子(@Model.Page[TenantTypeIds.Instance().Thread()])</h6>
+            </a>
+
+            <ul class="list-unstyled">
+                @foreach (var item in Model.Data.ThreadResults)
+                {
+                    <li class="tn-text tn-mb-5"><a href="@SiteUrls.Instance().ThreadDetail(item.Id)" target="_blank" class="a">@Html.Raw(item.Subject)</a></li>
+                }
+
+            </ul>
+        </div>
+    }
+
+   
+
+    if (Model.Data.CmsResults.Count == 0 && Model.Data.ThreadResults.Count == 0 && Model.Data.AskResults.Count == 0)
+    {
+        <div class="jh-dropdown-block">
+            <h6>暂无搜索结果</h6>
+        </div>
+    }
+
+    <div>
+        <a href="@CachedUrlHelper.Action("Search", "Portal",null,new RouteValueDictionary { { "keyword",keyword} })"><h6>所有搜索结果“<span class="tn-theme-color">@keyword</span>”</h6></a>
+    </div>
+}
+else
+{
+    <div class="jh-dropdown-block">
+        <h6>暂无搜索结果</h6>
+    </div>
+}

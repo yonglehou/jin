@@ -1,0 +1,99 @@
+﻿@model SpecialContentTypeEditModel
+@{
+    Layout = null;
+    var IsDescriptionShow = !Model.RequireFeaturedImage;
+    var selectList = ViewData.Get<List<SelectListItem>>("selectList", new List<SelectListItem>());
+}
+<div class="panel">
+    <div class="panel-body">
+        @using (Html.BeginAjaxForm("_EditSpecialContentType", "ControlPanel", "", FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "EditSpecialContentTypeCallBack" }, new { @class = "tn-form-validation " }))
+        {
+        @Html.HiddenFor(m => m.isNew)
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-xs-12" style="width:100px">
+                        @Html.LabelFor(m => m.TypeId, htmlAttributes: new { @class = "control-label ", @style = "text-align:left" })
+                    </div>
+                </div>
+                @if (Model.TypeId == null)
+                {
+                @Html.TextBoxFor(m => m.TypeId, new { @class = "form-control", @Value = "" })
+                }
+                else
+                {
+                <input name="TypeId" readonly="readonly" class="form-control" value="@Model.TypeId" />
+                }
+                <span class="help-block">不能重复，建议在1000以上</span>
+                @Html.ValidationMessageFor(m => m.TypeId)
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.Name)
+                @Html.TextBoxFor(m => m.Name, htmlAttributes: new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.Name)
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.Description)
+                @Html.TextBoxFor(m => m.Description, htmlAttributes: new { @class = "form-control" })
+            </div>
+            <div class="form-group">
+                <div class="form-inline">
+                    <div class="row">
+                        <div class="col-xs-12" style="width:100px">
+                            @Html.LabelFor(m => m.TenantTypeId, new { @class = "tn-mr-10" })
+                        </div>
+                    </div>
+                    @Html.DropDownListFor(m => m.TenantTypeId, selectList, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.CheckBoxFor(m => m.RequireFeaturedImage)
+                @Html.LabelFor(m => m.RequireFeaturedImage)
+            </div>
+            <div id="descriptionDiv" class="form-group" hidden="@IsDescriptionShow">
+                @Html.LabelFor(m => m.FeaturedImageDescrption)
+                @Html.TextBoxFor(m => m.FeaturedImageDescrption, htmlAttributes: new { @class = "form-control" })
+            </div>
+
+            <div class="form-group">
+                @Html.CheckBoxFor(m => m.AllowExternalLink)
+                @Html.LabelFor(m => m.AllowExternalLink)
+            </div>
+            <div class="form-group ">
+                <button type="submit" class="btn btn-primary tn-mr-10 tn-btn-wp">确定</button>
+                <button type="button" class="btn btn-default tn-btn-wp" id="cancel">关闭</button>
+            </div>
+        }
+    </div>
+</div>
+<script>
+    require(['jquery'], function () {
+        //编辑回调函数
+        $.fn.EditSpecialContentTypeCallBack = function (data) {
+            if (data.state == 1) {
+                var typeId = $("#specialContentTypeList option:selected").val();
+                $.get("@SiteUrls.Instance()._ListSpecialContentTypes()", { tenantType: typeId }, function (data) {
+                    $("#_listSpecialContentTypes").html(data);
+                })
+                layer.closeAll();
+                layer.msg(data.successmsg, { icon: 1 });
+            }
+            else {
+                layer.msg(data.errormsg, { icon: 2 });
+            }
+        }
+        //显示标题详情box
+        $("#RequireFeaturedImage").click(function () {
+            var flag = this.checked;
+            if (flag) {
+                $("#descriptionDiv").show();
+            }
+            else {
+                $("#descriptionDiv").hide();
+            }
+        })
+        //取消
+        $("#cancel").click(function () {
+            layer.closeAll();
+        });
+    })
+</script>

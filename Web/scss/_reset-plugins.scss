@@ -1,0 +1,87 @@
+// bootstrap-table
+.bootstrap-table {
+	.table.table-no-bordered {
+		> thead {
+			> tr {
+				> th {
+					border-right-width: 0;
+				}
+			}
+		}
+		> tbody {
+			> tr {
+				>td {
+					border-right-width: 0;
+				}
+			}
+		}
+	}
+}
+// .fixed-table-container {
+// 	thead {
+// 		th {
+// 			border-left-width: 0;
+// 		}
+// 	}
+// 	tbody {
+// 		td {
+// 			border-left-width: 0;
+// 		}
+// 	}
+// }
+
+//弹出框
+.layui-layer-setwin {
+    top: 20px !important;
+    right: 15px !important;
+}
+.layui-layer{
+    .panel {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    }
+}
+.layui-layer.layui-layer-loading{
+    min-width:40px;
+    background-color:rgba(255,255,255,0);
+    border:none;
+    -webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, 0);
+     box-shadow: 0 3px 9px rgba(0, 0, 0, 0); 
+}
+/*//ie下弹出框滚动条出来了
+.layui-layer.layui-layer-page.layer-ext-tnui.layer-anim{
+    overflow:hidden;
+}*/
+//qq表情
+.qqFace{
+        background-color: #fff;
+    padding: 15px;
+    border: 1px solid #e5e5e5;
+}
+//标签
+.ui-autocomplete.ui-front.ui-menu.ui-widget.ui-widget-content.ui-corner-all {
+        list-style:none;
+        background-color:#fff;
+        border:1px solid #ccc;
+        border-radius:4px;
+        padding:5px;
+        line-height:1.8;
+        cursor: default;
+        margin:0;
+        z-index:10;
+        width:500px!important ;
+    }
+     .ui-autocomplete.ui-front.ui-menu.ui-widget.ui-widget-content.ui-corner-all li a{
+        display:block;
+        padding:2px 10px;
+        color:#333;
+    }
+    .ui-state-focus {
+         background-color:#e5e5e5;
+         border-radius:4px;
+    }
+    //分享
+ .bd_weixin_popup {
+        height:320px!important;
+    }
+   

@@ -1,0 +1,114 @@
+﻿@model PagingDataSet<Section>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table tn-va-middle table-hover">
+        <thead>
+            <tr>
+                <th class="text-nowrap">贴吧名称</th>
+                <th class="text-nowrap">主题数/回贴数/用户数</th>
+                <th class="text-nowrap">所属分类</th>
+                <th class="text-nowrap">吧主</th>
+                <th class="text-nowrap">创建时间</th>
+                <th class="text-nowrap">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr id="remove-@item.SectionId">
+                    <td class="text-nowrap" title="@item.Name">
+                        <a target="_blank" href="@CachedUrlHelper.Action("BarSectionDetail", "Post", null, new RouteValueDictionary { { "sectionId", item.SectionId } })">@item.Name</a>
+                        <span class="label label-default " @if (item.IsEnabled) { <text> style="display:none" </text>               }>@(item.IsEnabled ? string.Empty : "已禁用")</span>
+                        <span id="special-@item.SectionId" class="label label-danger " @if (!item.IsSpecial(item.SectionId)) { <text> style="display:none" </text>       }>@(item.IsSpecial(item.SectionId) ? "推荐" : string.Empty)</span>
+                    </td>
+                    <td class="text-nowrap">@item.ThreadCount/@(item.ThreadAndPostCount - item.ThreadCount)/@item.GetFavoritedUserCount()</td>
+                    <td class="text-nowrap">@if (item.Category != null)
+                    {
+                        <label title="@item.Category.CategoryName">@HtmlUtility.TrimHtml(item.Category.CategoryName, 10)</label>                       
+                    }
+                    </td>
+                    <td class="text-nowrap">@item.User.UserName</td>
+                    <td class="text-nowrap">@item.DateCreated.ConvertToUserDate().ToString("yyyy-MM-dd HH:mm:ss")</td>
+
+                    <td class="text-nowrap">
+                        <a href="javascript:;" class="a tn-mr-10 EditSection" role="button" title="编辑" data-id="@item.SectionId"><i class="fa fa-lg fa-pencil"></i></a>
+                        <a id="delete-@item.SectionId" data-id="@item.SectionId" class="a tn-mr-10 delete" href="javascript:;" role="button" title="删除"><i class="fa fa-lg fa-trash"></i></a>
+                        <a href="javascript:;" data-id="@item.SectionId" data-isapproved="1" role="button" title="推荐" class="a tn-mr-10 specialsection @if (item.IsSpecial(item.SectionId)){<text>hidden</text>}"><i class="fa fa-lg fa-flag-o"></i></a>
+                        <a href="javascript:;" data-id="@item.SectionId" data-isapproved="0" role="button" title="取消推荐" class="a tn-mr-10 specialsection @if (!item.IsSpecial(item.SectionId)){<text>hidden</text>} "><i class="fa fa-lg fa-flag"></i></a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="text-center">
+        @Html.AjaxPagingButton(Model, "_ListSections", CachedUrlHelper.Action("_ListSections", "ControlPanel"))
+    </div>
+}
+else
+{
+    <div class="text-center tn-mb-20 tn-mt-20 text-warning">
+        暂无贴吧
+    </div>
+}
+
+
+
+<script>
+    require(['jquery','tnlayer'], function (_,tnlayer) {
+           //删除贴吧
+            $('#_ListSections').on("click", ".delete", function () {
+                var $this = $(this);
+                layer.confirm("确定删除吗?", { btn: ['确认', '取消'] }, function () {
+                    $.post('@CachedUrlHelper.Action("DeleteSection", "ControlPanel")',
+                        { sectionId: $this.data('id') }, function (data) {
+                            if (data.state == 1) {
+                                $this.parent().parent().remove();
+                                layer.msg(data.msg, {
+                                    icon: 1
+                                });
+                            }
+                            else {
+                                layer.msg(data.msg, {
+                                    icon: 2
+                                });
+                            }
+                        })
+                })
+            });
+
+            //编辑贴吧
+            $('.EditSection').on("click", function () {
+                var $this = $(this);
+                var sectionid = $this.data('id');
+                var url = "@CachedUrlHelper.Action("_EditBarSection", "ControlPanel")" + "?sectionId=" + sectionid + "&t=" + (new Date()).valueOf();
+                tnlayer.layermodal('贴吧设置', url, '660px', '700px');
+            });
+
+            //推荐 取消推荐贴吧
+            $('.specialsection').on("click", function () {
+                var $this = $(this);
+                var isapproved = true;
+                if ($this.data('isapproved') == 0) {
+                    isapproved = false;
+                }
+                $.post("@CachedUrlHelper.Action("UpdateSpecialSection", "ControlPanel")", { t: (new Date()).valueOf(), isApproved: isapproved, sectionId: $this.data('id') }, function (data) {
+                    if (data.state == 1) {
+                        layer.msg(data.msg, {
+                            icon: 1
+                        });
+
+                        $.get('@CachedUrlHelper.Action("_ListSections", "ControlPanel")', { t: (new Date()).valueOf() }, function (html) {
+                            $('#_ListSections').html(html);
+                        })
+                    }
+                    else {
+                        layer.msg(data.msg, {
+                            icon: 2
+                        });
+                    }
+                })
+            })
+     })
+</script>
+

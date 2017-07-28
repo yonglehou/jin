@@ -1,0 +1,31 @@
+﻿@{
+    var siteSettings = ViewData.Get<SiteSettings>("siteSettings", null);
+    //处理页脚链接
+    var linksList = new List<string>();
+    if (!string.IsNullOrEmpty(siteSettings.Links))
+    {
+        var links = siteSettings.Links.Replace("\n", "").Replace("</a>", "</a>;");
+         linksList = links.Split(';').ToList();
+    }
+
+}
+
+@if (siteSettings != null)
+{
+    <ul class="list-inline">
+        @for (int i = 0; i < linksList.Count(); i++)
+        {
+            <li>@Html.Raw(linksList.ElementAt(i))</li>
+            if (i < linksList.Count() - 2)
+            {
+                <li>|</li>
+            }
+        }
+    </ul>
+    <div class="jh-footer-powered">
+        @Html.Raw(siteSettings.Copyright)
+        @Html.Raw(siteSettings.BeiAnScript)
+        @Html.Raw(siteSettings.StatScript)
+        Powered by<a target="_blank" href="http://www.jinhusns.com/"><strong>近乎</strong></a>v5.0
+    </div>
+}

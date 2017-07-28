@@ -1,0 +1,75 @@
+﻿@charset "utf-8";
+/* CSS Document */
+/*header*/
+.js-header {
+    background-color:#064982;
+    padding:40px 0 60px;
+    margin-bottom:40px;
+    text-align:center;
+}
+.js-header h1 {
+    color:#fff;
+    font-size:60px;
+}
+.js-header p {
+    color:#4fa3e9;
+}
+/*left*/
+ ul.nav-tabs{
+        width: 220px;
+        margin-top: 20px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.067);
+    }
+    ul.nav-tabs li{
+        margin: 0;
+        border-top: 1px solid #ddd;
+    }
+    ul.nav-tabs li:first-child{
+        border-top: none;
+    }
+       ul.nav-tabs li ul.nav li:first-child{
+        border-top:1px solid #ddd ;
+    }
+    ul.nav-tabs li a{
+        margin: 0;
+        padding: 8px 16px;
+        border-radius: 0;
+    }
+        ul.nav-tabs li ul.nav li a{
+        margin: 0;
+        padding: 8px 30px;
+        border-radius: 0;
+    }
+.col-xs-3 .nav>.active:focus>a,.col-xs-3 .nav>.active:hover>a, .col-xs-3 .nav>.active>a {
+
+	    color: #fff;
+        background: #0088cc;
+        border: 1px solid #0088cc;
+
+}
+ .nav .nav {
+	display: none;
+}
+ @media (min-width:992px) {
+ .nav>.active>ul {
+		display: block
+	}
+}
+    ul.nav-tabs li:first-child a{
+        border-radius: 4px 4px 0 0;
+    }
+    ul.nav-tabs.affix{
+        top: 30px; /* Set the top position of pinned element */
+    }
+/*right*/
+.js-section {
+    margin-bottom:60px;
+}
+.js-section h1 {
+    font-weight:bold;
+}
+.js-margin-bottom {
+    margin-bottom:700px;
+}

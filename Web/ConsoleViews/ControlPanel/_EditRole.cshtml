@@ -1,0 +1,132 @@
+﻿@model RoleEditModel
+<div class="panel tn-survey-form">
+    <div class="panel-body">
+        @using (Html.BeginAjaxForm("_EditRole", "ControlPanel", "", FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "EditRoleCallBack" }, new { @id = "RoleForm", @class = "tn-form-validation" }))
+        {
+        <div class="form-group">
+			@Html.HiddenFor(n=>n.IsBuiltIn)
+            <div class="row">
+                <div class="col-xs-12">
+                    @Html.LabelFor(m => m.RoleId, htmlAttributes: new { @class = "control-label" })
+                </div>
+            </div>
+            @if (Model.RoleId == 0)
+                {
+                @Html.TextBoxFor(m => m.RoleId, htmlAttributes: new { @class = "form-control", @Value = "", @maxlength = "9" })
+                @Html.ValidationMessageFor(m => m.RoleId)
+            }
+            else
+            {
+            <input value="@Model.RoleId" name="RoleId" readonly="readonly" class="form-control" />
+            }
+        </div>
+            <div class="form-group">
+                @*<div class="row">
+                        <div class="col-xs-12">
+
+                        </div>
+                    </div>*@
+                @Html.LabelFor(m => m.RoleName)
+                @Html.TextBoxFor(m => m.RoleName, htmlAttributes: new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.RoleName)
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.Description)
+                @Html.TextBoxFor(m => m.Description, htmlAttributes: new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.Description)
+            </div>
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-xs-4">
+                        @Html.LabelFor(m => m.RoleImageAttachmentId)
+                    </div>
+                    <div class="col-xs-6">
+                        <span class="help-block" style="margin-top:0">16px*16px图片为最佳</span>
+                    </div>
+                </div>
+                @Html.HiddenFor(m => m.RoleImageAttachmentId)
+                @Html.ValidationMessageFor(m => m.RoleImageAttachmentId)
+                @Html.HiddenFor(m => m.RoleAttachmentPath)
+                @if (Model.RoleImageAttachmentId == null || Model.RoleImageAttachmentId == "0")
+                {
+                <div class="row">
+                    <div id="UploadFileImgs" class="col-xs-8" style="width:80px">
+                        @Html.FileUploader("UploadRoleIcon", TenantTypeIds.Instance().Role(), UserContext.CurrentUser.UserId, "+", extensions: "jpg,jpeg,png,gif", callbacks: new { uploadSuccess = "succeedImageCallback" })
+                    </div>
+                </div>
+                }
+                else
+                {
+                <div class="row form-group">
+                    <div id="UploadFileImgs" class="col-xs-8" style="width:80px">
+                        <div class="tn-pic-attachment">
+                            <img class="img-thumbnail img-responsive" src="@Model.RoleImageUrl()" alt="...">
+                            <button class="btn btn-default btn-xs btn-removeImage" type="button"><i class="fa fa-remove"></i></button>
+                        </div>
+                    </div>
+                </div>
+                }
+            </div>
+            <div class="form-group">
+                @*<label class="checkbox-inline col-xs-12">
+
+                    </label>*@
+                @Html.CheckBoxFor(m => m.ConnectToUser)
+                @Html.LabelFor(m => m.ConnectToUser)
+            </div>
+            <div class="form-group ">
+                <button type="submit" class="btn btn-primary tn-mr-10 tn-btn-wp">确定</button>
+                <button type="button" class="btn btn-default tn-btn-wp" id="cancel">关闭</button>
+            </div>
+        }
+    </div>
+</div>
+<script>
+    require(['jquery'], function () {
+        //上传成功回调
+        $.fn.succeedImageCallback = function (file, data) {
+            var $this = $("#UploadFileImgs");
+            var itemTmpl = '<div class="tn-pic-attachment">\
+                                <img class="img-thumbnail img-responsive" src="' + data.path + '" alt="...">\
+                                <button class="btn btn-default btn-xs btn-removeImage" type="button"><i class="fa fa-remove"></i></button>\
+                                </div>';
+            $('input[name="RoleImageAttachmentId"]').val(data.id);
+            $('input[name="RoleAttachmentPath"]').val(data.path);
+            $this.append(itemTmpl);
+            $this.find("div[id^='uploader-UploadRoleIcon']").remove();
+        }
+        //移除图片
+        $('#RoleForm').on('click', '.btn-removeImage', function () {
+            var $this = $(this);
+            var temp = '@Html.FileUploader("UploadRoleIcon", TenantTypeIds.Instance().Role(), UserContext.CurrentUser.UserId, "+", extensions: "jpg,jpeg,png,gif", callbacks: new { uploadSuccess = "succeedImageCallback" })';
+            $this.parent().parent().html(temp);
+            $('input[name="RoleImageAttachmentId"]').val("");
+        });
+        //编辑角色回调函数
+        $.fn.EditRoleCallBack = function (data) {
+            var keyword = $("#keyword").val();
+            var startDate = $("#minDate").val();
+            var endDate = $("#maxDate").val();
+            var state = $("#state option:selected").val();
+            var roleId = $("#role option:selected").val();
+            if (roleId == "") {
+                roleId = 0
+            }
+            if (data.state == 1) {
+                var successmsg = data.successmsg;
+                $.get('@CachedUrlHelper.Action("_ListRoles", "ControlPanel")', { requestDate: new Date().getTime() }, function (data) {
+                    $("#_listRoles").html(data);
+                })
+                layer.closeAll();
+                layer.msg(successmsg, { icon: 1 });
+            }
+            else {
+                layer.msg(data.errormsg, { icon: 2 })
+            }
+        }
+        //取消
+        $("#cancel").click(function () {
+            layer.closeAll();
+        });
+    })
+</script>

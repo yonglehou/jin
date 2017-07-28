@@ -1,0 +1,94 @@
+﻿@model CategoryEditModel
+
+<div class="panel">
+    <div class="panel-body">
+        <div class="tab-content ">
+            <div role="tabpanel" class="tab-pane active">
+                @using (Html.BeginAjaxForm("_EditCategory", "ControlPanel", null, FormMethod.Post, new AjaxFormOptions { OnSuccessCallBack = "_editSuccess" }, new { @class = "form-horizontal tn-form-validation", @id = "_EditCategory" }))
+                {
+                @Html.HiddenFor(n => n.CategoryId)
+                    @Html.ValidationMessageFor(n => n.CategoryId)
+
+                    @Html.HiddenFor(n => n.OwnerId)
+                    @Html.ValidationMessageFor(n => n.OwnerId)
+
+                    @Html.HiddenFor(n => n.TenantTypeId)
+                    @Html.ValidationMessageFor(n => n.TenantTypeId)
+
+                    @Html.HiddenFor(n => n.ParentId)
+                    @Html.ValidationMessageFor(n => n.ParentId)
+
+                    if (Model.ParentId > 0)
+                    {
+                    <div class="form-group">
+                        <label class="col-xs-3 text-left">@Html.LabelFor(n => n.ParentName)</label>
+                        <div class="col-xs-12">
+                            @Html.TextBoxFor(n => n.ParentName, new { @class = "form-control col-xs-10", @readonly = "" })
+                            @Html.ValidationMessageFor(n => n.ParentName)
+                        </div>
+                    </div>
+                    }
+                    <div class="form-group">
+                        <label class="col-xs-3 text-left">@Html.LabelFor(n => n.CategoryName)</label>
+                        <div class="col-xs-12">
+                            @Html.TextBoxFor(n => n.CategoryName, new { @class = "form-control col-xs-10", @id = "CategoryName" })
+                            @Html.ValidationMessageFor(n => n.CategoryName)
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-3 text-left">@Html.LabelFor(n => n.Description)</label>
+                        <div class="col-xs-12">
+                            @Html.TextAreaFor(n => n.Description, new { @class = "form-control col-xs-10", @rows = "3" })
+
+                            @Html.ValidationMessageFor(n => n.Description)
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-primary tn-btn-wp" id="submitcategory">保存</button>
+                    <button type="button" class="btn btn-default tn-btn-wp" id="cancel">取消</button>
+
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    require(['jquery'], function () {
+        //手动提交表单
+        $('#submitcategory').on('click', function () {
+            //不允许类别名称只输入空格
+            if ($.trim($('#CategoryName').val()) == '') {
+                layer.msg('请输入类别名称!', { icon: 2 });
+            }
+            else {
+                $('#_EditCategory').submit();
+            }
+        });
+
+        //beiginajaxform成功回调函数
+        $.fn._editSuccess = function (data) {
+            if (data.MessageType) {
+                var tenantTypeId = $('#selectTenantType').val();
+                $.get('@CachedUrlHelper.Action("_ListCategories","ControlPanel")', { tenantTypeId: tenantTypeId, t: (new Date()).valueOf() }, function (html) {
+                    $('#_ListCategories').html(html);
+                });
+                layer.closeAll();
+                layer.msg(data.MessageContent, { icon: 1 });
+            }
+            else {
+                layer.msg(data.MessageContent, { icon: 2 });
+            }
+
+        };
+
+        //取消
+        $("#cancel").click(function () {
+            layer.closeAll();
+        });
+
+    })
+
+</script>
+

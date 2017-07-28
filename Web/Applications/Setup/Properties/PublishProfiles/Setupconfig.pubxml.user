@@ -1,0 +1,163 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+您 Web 项目的发布/打包进程将使用此文件。您可以通过编辑此 MSBuild 文件
+来自定义该进程的行为。若要了解与此相关的详细信息，请访问 http://go.microsoft.com/fwlink/?LinkID=208121。
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <TimeStampOfAssociatedLegacyPublishXmlFile />
+    <_PublishTargetUrl>C:\Users\Tunynet\Desktop\新建文件夹\发布区域\专业版\近乎_V5.0.0.0_免费安装版\Web\Applications\Setup</_PublishTargetUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <File Include="Application.Config">
+      <publishTime>05/25/2017 10:58:33</publishTime>
+    </File>
+    <File Include="bin/aliyun-net-sdk-core.dll">
+      <publishTime>05/21/2016 17:01:26</publishTime>
+    </File>
+    <File Include="bin/aliyun-net-sdk-dm.dll">
+      <publishTime>05/21/2016 17:01:26</publishTime>
+    </File>
+    <File Include="bin/aliyun-net-sdk-sms.dll">
+      <publishTime>12/05/2016 10:38:06</publishTime>
+    </File>
+    <File Include="bin/Antlr3.Runtime.dll">
+      <publishTime>09/27/2012 16:57:18</publishTime>
+    </File>
+    <File Include="bin/Autofac.dll">
+      <publishTime>06/16/2014 17:41:22</publishTime>
+    </File>
+    <File Include="bin/AutoMapper.dll">
+      <publishTime>05/17/2016 03:44:46</publishTime>
+    </File>
+    <File Include="bin/C5.dll">
+      <publishTime>04/22/2012 13:01:28</publishTime>
+    </File>
+    <File Include="bin/CodeKicker.BBCode.dll">
+      <publishTime>04/26/2017 16:14:41</publishTime>
+    </File>
+    <File Include="bin/Common.Logging.dll">
+      <publishTime>01/06/2011 21:23:58</publishTime>
+    </File>
+    <File Include="bin/Enyim.Caching.dll">
+      <publishTime>07/28/2011 13:38:42</publishTime>
+    </File>
+    <File Include="bin/Fasterflect.dll">
+      <publishTime>02/19/2013 17:02:18</publishTime>
+    </File>
+    <File Include="bin/HtmlAgilityPack.dll">
+      <publishTime>07/14/2016 11:01:16</publishTime>
+    </File>
+    <File Include="bin/log4net.dll">
+      <publishTime>12/21/2011 10:25:52</publishTime>
+    </File>
+    <File Include="bin/Lucene.Net.dll">
+      <publishTime>10/26/2012 00:52:54</publishTime>
+    </File>
+    <File Include="bin/Microsoft.AspNet.SignalR.Core.dll">
+      <publishTime>07/14/2016 02:35:18</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.dll">
+      <publishTime>02/13/2015 13:16:30</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.Security.dll">
+      <publishTime>02/13/2015 13:16:36</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Web.Infrastructure.dll">
+      <publishTime>07/25/2012 11:48:56</publishTime>
+    </File>
+    <File Include="bin/MiniProfiler.dll">
+      <publishTime>08/26/2015 08:57:06</publishTime>
+    </File>
+    <File Include="bin/Newtonsoft.Json.dll">
+      <publishTime>08/03/2014 20:33:56</publishTime>
+    </File>
+    <File Include="bin/Owin.dll">
+      <publishTime>11/13/2012 12:19:34</publishTime>
+    </File>
+    <File Include="bin/Quartz.dll">
+      <publishTime>04/22/2012 13:01:28</publishTime>
+    </File>
+    <File Include="bin/RazorEngine.dll">
+      <publishTime>01/17/2013 18:31:30</publishTime>
+    </File>
+    <File Include="bin/Spacebuilder.Setup.dll">
+      <publishTime>06/05/2017 16:23:22</publishTime>
+    </File>
+    <File Include="bin/System.Runtime.InteropServices.dll">
+      <publishTime>11/05/2016 04:56:54</publishTime>
+    </File>
+    <File Include="bin/System.Web.Helpers.dll">
+      <publishTime>08/08/2012 17:58:20</publishTime>
+    </File>
+    <File Include="bin/System.Web.Mvc.dll">
+      <publishTime>01/28/2015 04:02:18</publishTime>
+    </File>
+    <File Include="bin/System.Web.Optimization.dll">
+      <publishTime>05/15/2013 10:43:38</publishTime>
+    </File>
+    <File Include="bin/System.Web.Razor.dll">
+      <publishTime>09/25/2012 11:40:52</publishTime>
+    </File>
+    <File Include="bin/System.Web.WebPages.Deployment.dll">
+      <publishTime>01/28/2015 04:04:30</publishTime>
+    </File>
+    <File Include="bin/System.Web.WebPages.dll">
+      <publishTime>01/28/2015 04:04:30</publishTime>
+    </File>
+    <File Include="bin/System.Web.WebPages.Razor.dll">
+      <publishTime>01/28/2015 04:04:30</publishTime>
+    </File>
+    <File Include="bin/Tunynet.Core.dll">
+      <publishTime>06/05/2017 16:23:09</publishTime>
+    </File>
+    <File Include="bin/Tunynet.Infrastructure.dll">
+      <publishTime>05/27/2017 15:26:02</publishTime>
+    </File>
+    <File Include="bin/Tunynet.Modules.dll">
+      <publishTime>06/05/2017 16:23:15</publishTime>
+    </File>
+    <File Include="bin/Tunynet.Presentation.dll">
+      <publishTime>06/05/2017 16:23:21</publishTime>
+    </File>
+    <File Include="bin/WebGrease.dll">
+      <publishTime>09/27/2012 16:57:18</publishTime>
+    </File>
+    <File Include="bin/zh-Hans/System.Web.Mvc.resources.dll">
+      <publishTime>01/28/2015 04:02:22</publishTime>
+    </File>
+    <File Include="bin/zh-Hans/System.Web.WebPages.Deployment.resources.dll">
+      <publishTime>01/28/2015 04:04:32</publishTime>
+    </File>
+    <File Include="bin/zh-Hans/System.Web.WebPages.Razor.resources.dll">
+      <publishTime>01/28/2015 04:04:32</publishTime>
+    </File>
+    <File Include="bin/zh-Hans/System.Web.WebPages.resources.dll">
+      <publishTime>01/28/2015 04:04:32</publishTime>
+    </File>
+    <File Include="packages.config">
+      <publishTime>05/25/2017 10:58:33</publishTime>
+    </File>
+    <File Include="Setup/Install/MySql/01_Install_Schema.sql">
+      <publishTime>06/05/2017 11:00:58</publishTime>
+    </File>
+    <File Include="Setup/Install/MySql/02_Install_InitialData.sql">
+      <publishTime>06/05/2017 13:34:40</publishTime>
+    </File>
+    <File Include="Setup/Install/MySql/03_Install_SampleData.sql">
+      <publishTime>06/02/2017 17:57:48</publishTime>
+    </File>
+    <File Include="Setup/Install/SqlServer/01_Install_Schema.sql">
+      <publishTime>06/05/2017 11:01:41</publishTime>
+    </File>
+    <File Include="Setup/Install/SqlServer/02_Install_InitialData.sql">
+      <publishTime>06/05/2017 13:35:03</publishTime>
+    </File>
+    <File Include="Setup/Install/SqlServer/03_Install_SampleData.sql">
+      <publishTime>06/02/2017 17:57:48</publishTime>
+    </File>
+    <File Include="Web.config">
+      <publishTime>05/25/2017 10:58:33</publishTime>
+    </File>
+  </ItemGroup>
+</Project>

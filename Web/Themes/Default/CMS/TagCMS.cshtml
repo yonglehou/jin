@@ -1,0 +1,44 @@
+﻿@model Tag
+@{
+    ViewData["Title"] = new string[] { Model.TagName };
+    var hotTags = ViewData.Get<IEnumerable<Tag>>("hotTags", new List<Tag>());
+}
+
+<div class="container">
+    <div class="row jh-my-news">
+        <div class="col-xs-9">
+            <div class="jh-padding-white tn-mb-20">
+                <a href="@CachedUrlHelper.Action("TagCMS","CMS","",new RouteValueDictionary { { "tagName" ,Model.TagName}})">
+                    <i class="fa fa-tags" aria-hidden="true"></i> @Model.TagName
+                </a>
+            </div>
+            <div id="labellist" class="jh-padding-white">
+                @Html.Action("_ListTagCMS", "CMS", new { tagName = Model.TagName })
+            </div>
+        </div>
+        @if (hotTags.Any())
+        {
+            <div class="col-xs-3">
+                <div class="tn-gray-bg">
+                    <div class="tn-title">
+                        <h5>热门标签</h5>
+                    </div>
+                    @foreach (var item in hotTags)
+                {
+                        <div class="tn-hot-tag">
+                            <a class="btn btn-default" type="button" href="@CachedUrlHelper.Action("TagCMS","CMS","",new RouteValueDictionary { { "tagName" ,item.TagName}})" title="@item.TagName">@(HtmlUtility.TrimHtml(item.TagName, 12))</a>
+                            <span class="tn-gray-color tn-ml-15">@item.ItemCount</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<!--<@Scripts.Render("~/Bundle/Scripts/page")-->
+<script>
+    require(['jquery','page'],function(){
+
+    })
+</script>
+

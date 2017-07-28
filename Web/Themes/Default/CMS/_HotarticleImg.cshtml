@@ -1,0 +1,23 @@
+﻿@model IEnumerable<ContentItem>
+
+@if (Model.Any())
+{
+    <div class="tn-gray-bg">
+        <div class="tn-title">
+            <h5>热点图片</h5>
+        </div>
+        @{
+            foreach (var item in Model)
+            {
+                <div class="jh-thumbnail">
+                    <a href="@SiteUrls.Instance().CMSImgDetail(item.ContentItemId)" target="_blank">
+                        <div class="jh-vedio-img">
+                            <img class="lazy" data-original="@item.FristFeaturedImage("HotList")" width="225" height="127">
+                        </div>
+                    </a>
+                    <p><a href="@SiteUrls.Instance().CMSImgDetail(item.ContentItemId)" target="_blank">@HtmlUtility.TrimHtml(item.Subject, 20)</a></p>
+                </div>
+            }
+        }
+    </div>
+            }

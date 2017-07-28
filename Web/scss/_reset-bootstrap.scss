@@ -1,0 +1,244 @@
+// typography
+body,
+.popover {
+	font-family: $font-stack;
+}
+h1 {
+	font-size: 28px;
+}
+h2 {
+	font-size: 24px;
+}
+h3 {
+	font-size: 20px;
+}
+h4 {
+	font-size: 18px;
+}
+h5 {
+	font-size: 16px;
+}
+h6 {
+	font-size: 14px;
+}
+// h1 small {
+// 	font-size: 22px;
+// }
+// h2 small {
+// 	font-size: 20px;
+// }
+// h3 small {
+// 	font-size: 18px;
+// }
+// h4 small {
+// 	font-size: 16px;
+// }
+// h5 small {
+// 	font-size: 14px;
+// }
+// h6 small {
+// 	font-size: 12px;
+// }
+p {
+	margin: 0 0 15px;
+	line-height: 1.75;
+}
+.label {
+	font-weight: normal;
+}
+
+// nav
+.navbar {
+	border-radius: 0;
+}
+
+// breadcrumb
+.breadcrumb {
+	padding-left: 0;
+	font-size: 16px;
+	background-color: transparent;
+	> li.tn-active {
+		font-size: 20px;
+		&:before {
+			font-size: 12px;
+		}
+	}
+	a {
+		color: $text-color;
+		&:hover, &:active, &:focus {
+			color: $theme-color;
+			text-decoration: none;
+		}
+	}
+    .a {
+        font-size:18px;
+		color: #0069cf;
+		&:hover, &:active, &:focus {
+			color: $text-color;
+			text-decoration: none;
+		}
+	}
+}
+.no-rgba {
+	.breadcrumb {
+		li {
+			display: inline;
+		}
+	}
+}
+
+// form
+label {
+	font-weight: normal;
+}
+textarea {
+	resize: none;
+}
+.help-block{
+    /*display:inline-block ;*/
+    color:#999;
+}
+
+// from feedback
+a.form-control-feedback, button.form-control-feedback {
+	pointer-events: auto;
+}
+
+// Input Group
+.input-group {
+	.input-group-addon {
+		background-color: #fff;
+		+ .form-control {
+			border-left-width: 0;
+			padding-left: 0;
+			+ .input-group-addon {
+				margin-left: -1px;
+			}
+		}
+	}
+	.input-group-btn {
+		&:first-child {
+			+ .form-control {
+				border-left-width: 0;
+				padding-left: 0;
+			}
+		}
+		.btn {
+			&:hover, &:focus {
+				background-color: #fff;
+				border-color: $boot-border-color;
+				color: $theme-color;
+			}
+			&.dropdown-toggle {
+				margin-left: 0;
+				margin-right: 0;
+			}
+		}
+        .btn.btn-primary{
+			&:hover, &:focus {
+				background-color:$theme-color;
+				border-color: $theme-color;
+				color: #fff;
+			}
+		}
+	}
+	div.input-group-btn {
+		&:first-child {
+			+ .form-control {
+				padding-left: 12px;
+			}
+		}
+	}
+	.form-control {
+		box-shadow: 0 0 0;
+		z-index: 3;
+		&:focus {
+			// border-color: $boot-border-color;
+			// box-shadow: 0 0 8px rgba(102, 175, 233, 0.6);
+		}
+		&:first-child {
+			border-right-width: 0;
+			+ .input-group-addon {
+				border-left-width: 0;
+			}
+			+ span.input-group-btn {
+				.btn {
+					border-left-width: 0;
+				}
+			}
+		}
+		+ div.input-group-btn {
+			.btn {
+				margin-left: 0;
+				+ .dropdown-toggle {
+					margin-left: -1px;
+				}
+			}
+		}
+	}
+	&.active {
+		-webkit-transition: box-shadow 0.15s ease-in-out 0s;
+		-moz-transition: box-shadow 0.15s ease-in-out 0s;
+		-ms-transition: box-shadow 0.15s ease-in-out 0s;
+		-o-transition: box-shadow 0.15s ease-in-out 0s;
+		transition: box-shadow 0.15s ease-in-out 0s;
+		box-shadow: 0 0 8px rgba(102, 175, 233, .6);
+		.input-group-addon, .input-group-btn .btn {
+			border-color: $input-focus-border;
+			-webkit-transition: border-color ease-in-out .15s;
+			-moz-transition: border-color ease-in-out .15s;
+			-ms-transition: border-color ease-in-out .15s;
+			-o-transition: border-color ease-in-out .15s;
+			transition: border-color ease-in-out .15s;
+			
+		}
+	}
+}
+
+// Line-height
+.form-control-static {
+	line-height: 1.42857;
+}
+//btn
+.btn-sm, .btn-group-sm > .btn {
+  font-size: 13px;
+}
+//table
+.table-condensed{
+    font-size:13px;
+}
+th{
+    font-weight:normal ;
+    color:$text-muted;
+}
+.table{
+    i{
+        font-size:18px;
+    }
+}
+.table-hover > tbody > tr.active:hover {
+    background-color: #fcf8e3;
+}
+.table > thead > tr > td.active, .table > tbody > tr > td.active, .table > tfoot > tr > td.active, .table > thead > tr > th.active, .table > tbody > tr > th.active, .table > tfoot > tr > th.active, .table > thead > tr.active > td, .table > tbody > tr.active > td, .table > tfoot > tr.active > td, .table > thead > tr.active > th, .table > tbody > tr.active > th, .table > tfoot > tr.active > th {
+    background-color: #fcf8e3;
+}
+.table > thead > tr > td.active:hover, .table > tbody > tr > td.active:hover, .table > tfoot > tr > td.active:hover, .table > thead > tr > th.active:hover, .table > tbody > tr > th.active:hover, .table > tfoot > tr > th.active:hover, .table > thead > tr.active > td:hover, .table > tbody > tr.active > td:hover, .table > tfoot > tr.active > td:hover, .table > thead > tr.active > th:hover, .table > tbody > tr.active > th:hover, .table > tfoot > tr.active > th:hover {
+    background-color: #fcf8e3;
+}
+.table-hover > tbody > tr > td.active:hover, .table-hover > tbody > tr > th.active:hover, .table-hover > tbody > tr.active:hover > td, .table-hover > tbody > tr:hover > .active, .table-hover > tbody > tr.active:hover > th {
+    background-color: #fcf8e3;
+}
+//·ÖÒ³µ¼º½
+.pagination > li > a, .pagination > li > span {
+    color:$text-color;
+}
+.pagination > .active > a, .pagination > .active > span, .pagination > .active > a:hover, .pagination > .active > span:hover, .pagination > .active > a:focus, .pagination > .active > span:focus {
+    background-color: $theme-color;
+    border-color:$theme-color;
+}
+a:hover, a.active, a:focus {
+    text-decoration: none;
+    outline: none;
+    outline: none;
+    outline-offset: -2px;
+}

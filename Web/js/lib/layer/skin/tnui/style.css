@@ -1,0 +1,292 @@
+﻿html #layui_layer_skintnuistylecss {
+	display: none;
+	position: absolute;
+	width: 1989px;
+}
+.layer-ext-tnui[type="dialog"],
+.layui-layer {
+	min-width: 320px;
+	background-color: #fff;
+	-webkit-background-clip: padding-box;
+	      background-clip: padding-box;
+	border: 1px solid #999;
+	border: 1px solid rgba(0, 0, 0, .2);
+	border-radius: 6px;
+	outline: 0;
+	-webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, .5);
+	      box-shadow: 0 3px 9px rgba(0, 0, 0, .5);
+}
+.layer-ext-tnui-msg[type="dialog"]{min-width:200px;}
+.layui-layer-title {
+	padding: 15px;
+	height: auto;
+	color: initial;
+	line-height: 1.5;
+	font-size: 18px;
+	border-bottom: 1px solid #e5e5e5;
+	background-color: transparent;
+	border-radius: 6px 6px 0 0;
+}
+.layui-layer-content {
+	padding: 15px;
+}
+.layui-layer-content .layui-layer-ico {
+	height: 32px;
+	width: 32px;
+	top:11px;
+	font-family: FontAwesome;
+	line-height: 1;
+	font-size: 32px;
+	font-style: normal;
+	background: none;
+}
+.layui-layer-ico0:after {
+	content: "\f06a";
+	color: #8a6d3b;
+}
+.layui-layer-ico1:after {
+	content: "\f05d";
+	color: #3c763d;
+}
+.layui-layer-ico2:after {
+	content: "\f05c";
+	color: #a94442;
+}
+.layui-layer-ico3:after {
+	content: "\f29c";
+	color: #8a6d3b;
+}
+.layui-layer-ico4:after {
+	content: "\f023";
+	color: #a94442;
+}
+.layui-layer-ico5:after {
+	content: "\f119";
+	color: #8a6d3b;
+}
+.layui-layer-ico6:after {
+	content: "\f118";
+	color: #31708f;
+}
+.layui-layer-ico7:after {
+	content: "\f0ed";
+	color: #31708f;
+}
+.layui-layer-setwin {
+	top: 10px;
+	right: 10px;
+}
+.layui-layer-setwin a {
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+}
+.layui-layer-setwin .layui-layer-min cite:hover {
+	background-color: #56abe4;
+}
+.layui-layer-setwin .layui-layer-max {
+	background: url(default.png) no-repeat -80px 0;
+}
+.layui-layer-setwin .layui-layer-max:hover {
+	background: url(default.png) no-repeat -64px 0;
+}
+.layui-layer-setwin .layui-layer-maxmin {
+	background: url(default.png) no-repeat -32px 0;
+}
+.layui-layer-setwin .layui-layer-maxmin:hover {
+	background: url(default.png) no-repeat -16px 0;
+}
+.layui-layer-setwin .layui-layer-close1,
+.layui-layer-setwin .layui-layer-close2 {
+	background: none;
+	color: #000;
+	opacity: 0.2;
+}
+.layui-layer-setwin .layui-layer-close1:after,
+.layui-layer-setwin .layui-layer-close2:after {
+	content: "\f00d";
+	font-family: FontAwesome;
+	line-height: 1;
+	position: absolute;
+	right: 0;
+	top: 0;
+}
+.layui-layer-setwin .layui-layer-close1:hover,
+.layui-layer-setwin .layui-layer-close2:hover {
+	background: none;
+	opacity: 0.5;
+	text-decoration: none;
+}
+.layui-layer-padding {
+	padding: 15px 15px 15px 55px;
+}
+.layui-layer-btn {
+	padding: 15px;
+	text-align: right;
+	border-top: 1px solid #e5e5e5;
+}
+.layui-layer-btn a {
+	display: inline-block;
+	padding: 6px 12px;
+	margin-bottom: 0;
+	font-size: 14px;
+	font-weight: normal;
+	line-height: 1.42857143;
+	text-align: center;
+	white-space: nowrap;
+	vertical-align: middle;
+	-ms-touch-action: manipulation;
+	  touch-action: manipulation;
+	cursor: pointer;
+	-webkit-user-select: none;
+	 -moz-user-select: none;
+	  -ms-user-select: none;
+	      user-select: none;
+	background-image: none;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	height: auto;
+}
+.layui-layer-btn .layui-layer-btn0 {
+	color: #fff;
+	background-color: #337ab7;
+	border-color: #2e6da4;
+}
+.layui-layer-btn .layui-layer-btn0:hover {
+	color: #fff;
+	background-color: #286090;
+	border-color: #204d74;
+}
+.layui-layer-btn .layui-layer-btn1 {
+	color: #333;
+	background-color: #fff;
+	border-color: #ccc;
+}
+.layui-layer-btn .layui-layer-btn1:hover {
+	color: #333;
+	background-color: #e6e6e6;
+	border-color: #adadad;
+}
+.layui-layer-btn .layui-layer-btn2 {
+	background: #f60;
+	color: #fff;
+	border: 1px solid #f60;
+	border-radius: 3px;
+}
+.layui-layer-btn .layui-layer-btn3 {
+	background: #f00;
+	color: #fff;
+	border: 1px solid #f00;
+	border-radius: 3px;
+}
+.layui-layer-title span.layui-layer-tabnow {
+	height:47px;
+}
+.layui-layer-tips .layui-layer-content {
+	padding: 15px;
+	font-size: 14px;
+	line-height: 1.42857143;
+	background-color: #fff;
+	color: initial;
+	-webkit-background-clip: padding-box;
+	      background-clip: padding-box;
+	border: none;
+	border-radius: 6px;
+	-webkit-box-shadow: none;
+			box-shadow: none;
+}
+.layui-layer-tips i.layui-layer-TipsG,
+.layui-layer-tips i.layui-layer-TipsG:after {
+	position: absolute;
+	display: block;
+	width: 0;
+	height: 0;
+	border-color: transparent;
+	border-style: solid;
+}
+.layui-layer-tips i.layui-layer-TipsG {
+	border-width: 11px;
+}
+.layui-layer-tips i.layui-layer-TipsG:after {
+	content: "";
+	border-width: 10px;
+}
+.layui-layer-tips i.layui-layer-TipsT {
+  bottom: -11px;
+  left: 15px;
+  border-top-color: #999;
+  border-top-color: rgba(0, 0, 0, .25);
+  border-bottom-width: 0;
+}
+.layui-layer-tips i.layui-layer-TipsT:after {
+  bottom: 1px;
+  margin-left: -10px;
+  content: " ";
+  border-top-color: #fff;
+  border-bottom-width: 0;
+}
+.layui-layer-tips i.layui-layer-TipsR {
+  top: 15px;
+  left: -11px;
+  border-right-color: #999;
+  border-right-color: rgba(0, 0, 0, .25);
+  border-left-width: 0;
+}
+.layui-layer-tips i.layui-layer-TipsR:after {
+  bottom: -10px;
+  left: 1px;
+  content: " ";
+  border-right-color: #fff;
+  border-left-width: 0;
+}
+.layui-layer-tips i.layui-layer-TipsB {
+  top: -11px;
+  left: 15px;
+  border-top-width: 0;
+  border-bottom-color: #999;
+  border-bottom-color: rgba(0, 0, 0, .25);
+}
+.layui-layer-tips i.layui-layer-TipsB:after {
+  top: 1px;
+  margin-left: -10px;
+  content: " ";
+  border-top-width: 0;
+  border-bottom-color: #fff;
+}
+.layui-layer-tips i.layui-layer-TipsL {
+  top: 15px;
+  right: -11px;
+  border-right-width: 0;
+  border-left-color: #999;
+  border-left-color: rgba(0, 0, 0, .25);
+}
+.layui-layer-tips i.layui-layer-TipsL:after {
+  right: 1px;
+  bottom: -10px;
+  content: " ";
+  border-right-width: 0;
+  border-left-color: #fff;
+}
+.layui-layer-nobg {
+	/*background-color: transparent;
+	border-width: 0;
+	box-shadow: 0 0 0 rgba(0, 0, 0, 0);*/
+	text-align: center;
+}
+.layui-layer-nobg img {
+	max-width: 100%;
+	max-height: 100%;
+}
+.layui-layer-nobg .layui-layer-close {
+	background-color: #fff;
+	border-radius: 50%;
+	opacity: 0.8;
+}
+.layui-layer-nobg .layui-layer-close:hover {
+	background-color: #fff;
+	opacity: 1;
+}
+.layui-layer-nobg .layui-layer-close:after {
+	right: 8px;
+	top: 8px;
+}

@@ -1,0 +1,189 @@
+﻿@{
+    ViewData["Title"] = new string[] { "评论管理" };
+    TempData["subMenu-check"] = new string[] { "Public", "ManageComments" };
+    var auditStatus = ViewData.Get<List<SelectListItem>>("auditStatus", null);
+    var tenantTypes = ViewData.Get<List<SelectListItem>>("tenantTypes", null);
+}
+@Styles.Render("~/Bundle/Styles/daterangepicker")
+<!--
+@Scripts.Render("~/Bundle/Scripts/daterangepicker")
+@Scripts.Render("~/Bundle/Scripts/page")-->
+
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-lg-12">
+        <h3>评论管理</h3>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="form-inline tn-tool-column ">
+            <div class="form-group">
+                审核状态  @Html.DropDownList("selectAuditStatus", auditStatus, new { @id = "selectAuditStatus", @class = "form-control filter" })
+            </div>
+            <div class="form-group">
+                所属  @Html.DropDownList("tenantTypes", tenantTypes, new { @id = "selectTenantType", @class = "form-control filter" })
+            </div>
+            <div class="form-group has-feedback">
+                发布时间  @Html.DateTimePicker("Daterangepicker", null, true)
+                <span class="form-control-feedback"><i class="fa fa-calendar"></i></span>
+            </div>
+            <div class="form-group">
+                关键字  @Html.TextBox("keyword", string.Empty, new { @id = "keyword", @class = "color form-control", @style = "width:200px", @placeholder = "可搜索评论内容、作者" })
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary" id="searchcomments" type="button">搜索</button>
+            </div>
+        </div>
+        <hr />
+        <div class="form-inline tn-tool-column">
+            <div class="form-group" style="margin-right:0px">
+                <input id="select-all" type="checkbox" value="0" />
+            </div>
+            <div class="form-group">
+                <a class="btn btn-default auditchange" data-isapproved="true" href="javascript:;"><i class="fa fa-check"></i> 通过审核</a>
+                <a class="btn btn-default auditchange" data-isapproved="false" href="javascript:;"><i class="fa fa-times-circle"></i> 不通过审核</a>
+                <a class="btn btn-default" id="delall" href="javascript:;"><i class="fa fa-trash"></i> 删除</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div id="_ListComments">
+            @Html.Action("_ListComments", "ControlPanel")
+        </div>
+    </div>
+</div>
+
+<script>
+    require(['jquery', 'moment', 'daterangepicker', 'datepicker'], function () {
+        function FilterComments(isFilter) {
+            var datePicker = $('#Daterangepicker');
+            var minDate = datePicker.siblings('[name="minDate"]').val();
+            var maxDate = datePicker.siblings('[name="maxDate"]').val();
+            var tenantTypeId = $('#selectTenantType').val();
+            var auditStatus = $('#selectAuditStatus').val();
+            var keyword = $('#keyword').val();
+            if (isFilter == true) {
+                var pageIndex = 1;
+            }
+            else {
+                var pageIndex = $("#pageIndex").val();
+            }
+
+            $.get('@CachedUrlHelper.Action("_ListComments", "ControlPanel")', { tenantTypeId: tenantTypeId, publicAuditStatus: auditStatus, keyword: keyword, minDate: minDate, maxDate: maxDate, pageIndex: pageIndex, t: (new Date()).valueOf() }, function (data) {
+                $('#_ListComments').html(data);
+            });
+            $('#select-all').prop('checked', false);
+            $('#select-all').attr('value', '0');
+        }
+
+        //筛选审核状态和所属
+        $('.filter').on('change', function () {
+            FilterComments(true);
+        });
+
+        //点击搜索按钮时筛选
+        $('#searchcomments').on('click', function () {
+            FilterComments(true);
+        });
+
+        //全选
+        $("#select-all").on("click", function () {
+            if ($("#select-all").val() == "0") {
+                $(".tn-checkbox").each(function () {
+                    this.checked = true;
+                    $.fn.checkedActive($(this));
+                    $("#select-all").val("1");
+                });
+            } else {
+                $(".tn-checkbox").each(function () {
+                    this.checked = false;
+                    $.fn.checkedActive($(this));
+                    $("#select-all").val("0");
+                });
+            }
+        });
+
+        //批量删除
+        $('#delall').on('click', function () {
+            if ($('input[name="commentId"]:checked').length) {
+                layer.confirm('确定要删除么?',
+                    { btn: ['确定', '取消'], icon: 3 }, function () {
+                        var commentIds = [];
+                        $('.tn-checkbox:checked').each(function () {
+                            commentIds.push($(this).data('commentid'));
+                        });
+
+                        $.post('@CachedUrlHelper.Action("DeleteComments","ControlPanel")', { commentIds: commentIds.join(';') }, function (data) {
+                            if (data.MessageType == 1) {
+                                layer.msg(data.MessageContent, { icon: 1 });
+                                if ($('.tn-checkbox:checked').length == $('.tn-checkbox').length) {
+                                    if ($('#pageIndex').val() > 1) {
+                                        $('#pageIndex').val($('#pageIndex').val() - 1);
+                                    } else {
+                                        $('#pageIndex').val("1");
+                                    }
+                                }
+                                FilterComments(false);
+                            }
+                            else {
+                                layer.msg(data.MessageContent, { icon: 2 });
+                            }
+                        });
+                    });
+            }
+            else {
+                layer.msg('请选择一条评论', { icon: 2 });
+            }
+        });
+
+        //批量更改审核状态
+        $('.auditchange').on('click', function () {
+            var $this = $(this);
+            if ($('input[name="commentId"]:checked').length) {
+                var commentIds = [];
+                $('.tn-checkbox:checked').each(function () {
+                    commentIds.push($(this).data('commentid'));
+                });
+
+                var isApproved = $this.data('isapproved');
+                $.post('@CachedUrlHelper.Action("UpdateComments", "ControlPanel")', { isApproved: isApproved, commentIds: commentIds.join(';') }, function (data) {
+                    if (data.MessageType == 1) {
+                        layer.msg(data.MessageContent, { icon: 1 });
+                        //是否选中了当前页的所有内容
+                        if ($('.tn-checkbox:checked').length == $('.tn-checkbox').length) {
+                            //判断是否正在筛选某种状态
+                            var isFilterOn = true;
+                            $('.filter').each(function () {
+                                if ($(this).val() != 0 && $(this).val() != "") {
+                                    isFilterOn = true;
+                                    return false;
+                                } else {
+                                    isFilterOn = false;
+                                    return true;
+                                }
+                            });
+                            //有任何一个筛选器在工作,则返回前一页
+                            if (isFilterOn) {
+                                if ($('#pageIndex').val() > 1) {
+                                    $('#pageIndex').val($('#pageIndex').val() - 1);
+                                } else {
+                                    $('#pageIndex').val("1");
+                                }
+                            }
+                        }
+                        FilterComments(false);
+                    }
+                    else {
+                        layer.msg(data.MessageContent, { icon: 2 });
+                    }
+                });
+            }
+            else {
+                layer.msg("请选择一条评论", { icon: 2 });
+            }
+        });
+    })
+</script>

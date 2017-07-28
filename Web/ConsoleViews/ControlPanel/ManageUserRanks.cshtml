@@ -1,0 +1,74 @@
+﻿@{
+    TempData["subMenu-check"] = new string[] { "User", "ManageUserRanks" };
+    ViewData["Title"] = new string[] { "用户等级" };
+}
+
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-xs-12">
+        <h3>用户等级</h3>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <form class="form-inline tn-tool-column">
+            <div class="form-group">
+                <a class="btn btn-default layeruserrank"><i class="fa fa-plus"></i> 添加等级</a>
+                <a class="btn btn-default" href="javascript:;" id="btn-resetuserrank">按规则重新计算所有用户等级</a>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body" id="listuserrank">
+        @Html.Action("_ListUserRanks", "ControlPanel")
+    </div>
+</div>
+
+<script>
+    require(['jquery', 'tnlayer'], function ($, tnlayer) {
+
+        $(".layeruserrank").click(function () {
+            tnlayer.layermodal('添加用户等级', '@CachedUrlHelper.Action("_EditUserRank", "ControlPanel")?t=' + new Date().getTime(), '450px', '450px')
+        })
+        //按规则重新计算所有用户等级
+        $("#btn-resetuserrank").click(function (e) {
+            e.preventDefault();
+            $.post("@CachedUrlHelper.Action("ResetAllUserRank", "ControlPanel")", { t: new Date().getTime() }, function (data) {
+                if (data.MessageType) {
+                    layer.msg(data.MessageContent, {
+                        icon: 1
+                    });
+                }
+                else {
+                    layer.msg(data.MessageContent, {
+                        icon: 2
+                    });
+                }
+            })
+        })
+        //删除
+        $(document).on('click', 'a[id^=delete-]', function () {
+            var param = jQuery.param({ userRank: $(this).attr("id").replace(/[^0-9]/ig, ""), t: new Date().getTime() });
+            layer.confirm('确定要删除该用户等级？', {
+                btn: ['确认', '取消'], //按钮
+                shade: false //不显示遮罩
+            }, function () {
+                $.post("@CachedUrlHelper.Action("DeleteUserRank", "ControlPanel")", param, function (data) {
+                    if (data.MessageType) {
+                        layer.msg(data.MessageContent, {
+                            icon: 1
+                        })
+                        $.get("@CachedUrlHelper.Action("_ListUserRanks", "ControlPanel")", { t: new Date().getTime() }, function (data) {
+                            $("#listuserrank").html(data)
+                        });
+                    }
+                    else {
+                        layer.msg(data.MessageContent, {
+                            icon: 2
+                        })
+                    }
+                });
+            });
+        })
+    })
+</script>

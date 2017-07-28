@@ -1,0 +1,176 @@
+﻿@{
+    var user = UserContext.CurrentUser;
+
+}
+@Styles.Render("~/Bundle/Styles/jcrop")
+<style type="text/css">
+    #preview-pane .preview-container {
+        width: 120px;
+        height: 120px;
+        overflow: hidden;
+        margin-left: 6px;
+    }
+
+    #preview-pane .preview-container2 {
+        width: 80px;
+        height: 80px;
+        overflow: hidden;
+        margin-left: 26px;
+    }
+</style>
+
+<div class="panel-body text-center jh-model-photo">
+    <div class="jh-photo-left" style="position:relative;">
+        <!-- <h3>Demo:</h3> -->
+        <div class="img-container tn-mb-20" style="width:330px;height:330px;background-color:#f0f0f0;">
+            <img style="display:none;" id="image" src="" alt="Picture">
+        </div>
+        <div class="uploadfileuserbtns" style="position:absolute;left:40px;top:130px;">
+            @Html.FileUploader("UploadFileUser", TenantTypeIds.Instance().User(), user.UserId, "+", extensions: "jpg,jpeg,png", showProgress: false, uploadUrl: CachedUrlHelper.Action("_EditAvatar", "Common"), callbacks: new { uploadSuccess = "succeedImageUser" })
+            <p>只支持JPG、PNG、GIF，大小不超过5M</p>
+        </div>
+        <div class="text-center docs-buttons">
+            <button type="button" class="btn btn-primary btn-submit">确定</button>
+            <button type="button" class="btn btn-default" onclick="layer.closeAll();">取消</button>
+        </div>
+    </div>
+    <div class="jh-photo-right" id="preview-pane" style="height :330px;width:28%;">
+        <p class="tn-mt-20">预览</p>
+        <!-- <h3>Preview:</h3> -->
+        <div class="img-circle preview-container">
+            <img style="display:none;" src="" class="jcrop-preview" alt="Preview" />
+        </div>
+        <p class="text-muted">120px*120px</p>
+        <div class="img-circle preview-container2">
+            <img style="display:none;" src="" class="jcrop-preview" alt="Preview" />
+        </div>
+        <p class="text-muted">50px*50px</p>
+
+        <!-- <h3>Data:</h3> -->
+        <div class="docs-data" style="display:none">
+            <div onsubmit="return false;">
+                <span class="input-group">
+                    <b>X</b>
+                    <input type="text" name="cx" id="crop-x" class="span1">
+                </span>
+                <span class="input-group">
+                    <b>Y</b>
+                    <input type="text" name="cy" id="crop-y" class="span1">
+                </span>
+                <span class="input-group">
+                    <b>W</b>
+                    <input type="text" name="cw" id="crop-w" class="span1">
+                </span>
+                <span class="input-group">
+                    <b>H</b>
+                    <input type="text" name="ch" id="crop-h" class="span1">
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    require(['jquery', 'tnlayer', 'uploader', 'jcrop'], function ($, tnlayer) {
+        //上传成功回调
+        $.fn.succeedImageUser = function (file, data) {
+            if (data.type == 0) {
+                layer.msg(data.error, {
+                    icon: 2
+                });
+                return false
+            }
+            var $pimg = $('#preview-pane .preview-container img'),
+                $pimg2 = $('#preview-pane .preview-container2 img'),
+                $img = $('.img-container img');
+            $("#image").attr("style", "")
+            $pimg.attr("style", "")
+            $pimg2.attr("style", "")
+            $(".uploadfileuserbtns").remove();
+            $pimg.attr("src", data.path + "?t=" + new Date().getTime())
+            $pimg2.attr("src", data.path + "?t=" + new Date().getTime())
+            $img.attr("src", data.path + "?t=" + new Date().getTime())
+            jcrop();
+        }
+
+        $(".uploadfileuserbtn").click(function () {
+            $('a[name="UploadFileUser"] label').click();
+        })
+        $(".btn-submit").click(function () {
+            var x1 = $("#crop-x").val();
+            var y1 = $("#crop-y").val();
+            var w = $("#crop-w").val();
+            var h = $("#crop-h").val();
+
+            $.get('@CachedUrlHelper.Action("_CropAvatar", "Common")?srcWidth=' + w + '&srcHeight=' + h + '&srcX=' + x1 + '&srcY=' + y1,
+                function (data) {
+                    layer.msg("裁剪成功", {
+                        icon: 1
+                    });
+                    window.location.reload();
+                });
+        });
+
+        function jcrop() {
+            // Create variables (in this scope) to hold the API and image size
+            var jcrop_api,
+                boundx = 330,
+                boundy = 330,
+                // Grab some information about the preview pane
+                $pcnt = $('#preview-pane .preview-container'),
+                $pcnt2 = $('#preview-pane .preview-container2'),
+                $pimg = $('#preview-pane .preview-container img'),
+                $pimg2 = $('#preview-pane .preview-container2 img'),
+                xsize = $pcnt.width(),
+                xsize2 = $pcnt2.width(),
+                ysize = $pcnt.height();
+            ysize2 = $pcnt2.height();
+
+            var d = document,
+                ge = 'getElementById';
+            $('.img-container').on('cropmove cropend', function (e, s, c) {
+                d[ge]('crop-x').value = c.x;
+                d[ge]('crop-y').value = c.y;
+                d[ge]('crop-w').value = c.w;
+                d[ge]('crop-h').value = c.h;
+            });
+
+            // Most basic attachment example
+            $('#image').Jcrop({
+                boxWidth: 330,
+                boxHeight: 330,
+                //允许新选框
+                allowSelect: false,
+                //选框宽高比。说明：width/height
+                aspectRatio: 1 / 1,
+                //选框最小尺寸
+                minSize: [50, 50],
+                //创建选框，参数格式为：[x, y, x2, y2]
+                setSelect: [0, 0, 100, 200],
+                onChange: updatePreview,
+                onSelect: updatePreview,
+            })
+
+            function updatePreview(c) {
+                if (parseInt(c.w) > 0) {
+                    var rx = xsize / c.w;
+                    var rx2 = xsize2 / c.w;
+                    var ry = ysize / c.h;
+                    var ry2 = ysize2 / c.h;
+                    $pimg.css({
+                        width: Math.round(rx * boundx) + 'px',
+                        height: Math.round(ry * boundy) + 'px',
+                        marginLeft: '-' + Math.round(rx * c.x - 8) + 'px',
+                        marginTop: '-' + Math.round(ry * c.y) + 'px'
+                    });
+                    $pimg2.css({
+                        width: Math.round(rx2 * boundx) + 'px',
+                        height: Math.round(ry2 * boundy) + 'px',
+                        marginLeft: '-' + Math.round(rx2 * c.x - 5) + 'px',
+                        marginTop: '-' + Math.round(ry2 * c.y) + 'px'
+                    });
+                }
+            }
+        }
+    });
+</script>

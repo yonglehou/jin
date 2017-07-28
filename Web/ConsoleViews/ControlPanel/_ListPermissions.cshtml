@@ -1,0 +1,125 @@
+﻿@model Dictionary<OwnerType, Dictionary<long, IEnumerable<string>>>
+@{
+    var rolesDictionary = ViewData.Get<Dictionary<long, string>>("rolesDictionary", null);
+    var allPermissions = ViewData.Get<IEnumerable<PermissionItem>>("allPermissions", null);
+}
+<div>
+    @if (Model != null)
+    {
+    <table class="table table-hover tn-va-middle">
+        <thead>
+            <tr>
+                <th>角色或用户</th>
+                @foreach (var item in allPermissions)
+                {
+                <th>@item.ItemName</th>
+                }
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+                {
+
+                    foreach (var permissionDictionaries in item.Value)
+                    {
+                    <tr>
+                        @if (item.Key == OwnerType.Role)
+                        {
+                        <td>
+                            <i class="fa fa-lg fa-group"></i>&nbsp;
+                            @if (rolesDictionary != null)
+                            {
+                            <span>@rolesDictionary[permissionDictionaries.Key]</span>
+                            }
+                        </td>
+                        }
+                        else
+                        {
+                            var userName = DefaultUserIdToUserNameDictionary.GetDisplayName(permissionDictionaries.Key);
+                            <td class="userid" data-userid="@permissionDictionaries.Key" data-username="@userName">
+                                <i class="fa fa-lg fa-user"></i>&nbsp;
+                                <span>@userName</span>
+                            </td>
+                        }
+                        @foreach (var permission in allPermissions)
+                        {
+                            if (permissionDictionaries.Value.Contains(permission.ItemKey))
+                            {
+                            <td><i class="fa fa-lg fa-check"></i></td>
+                            }
+                            else
+                            {
+                            <td></td>
+                            }
+                        }
+                        <td>
+                            <a role="button" class="editpermission tn-mr-10" data-url="@CachedUrlHelper.Action("_EditPermission","ControlPanel",null,new RouteValueDictionary { {"ownerType",item.Key} , { "ownerId",permissionDictionaries.Key} })" title="编辑授权"><i class="fa fa-lg fa-pencil fa-fw"></i></a>
+                            <a role="button" class="deletepermission tn-mr-10" data-ownerid="@permissionDictionaries.Key" data-ownertype="@item.Key" title="清空权限"><i class="fa fa-lg fa-trash fa-fw"></i></a>
+                        </td>
+                    </tr>
+                }
+
+            }
+
+        </tbody>
+    </table>
+    }
+    else
+    {
+    <div class="row text-center text-warning wrapper">
+        没有查询到权限信息
+    </div>
+    }
+</div>
+<hr />
+<div>
+    <table class="table table-bordered alert alert-warning">
+        <thead>
+            <tr>
+                <th class="text-center">权限项</th>
+                <th class="text-center">描述</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in allPermissions)
+            {
+            <tr>
+                <td>@item.ItemName</td>
+                <td>@item.Discription</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script>
+    require(['jquery', 'tnlayer'], function (_, tnlayer) {
+        //清空用户的所有权限
+        $('.deletepermission').on('click', function () {
+            var $this = $(this);
+            layer.confirm('您真的要清空该用户的所有权限么?',
+                { btn: ['确定', '取消'], icon: 3 }, function () {
+                    $.post('@CachedUrlHelper.Action("_EditPermission","ControlPanel")', { permissionItemKeysString: '', ownerIds: $this.data('ownerid'), ownerType: $this.data('ownertype') }, function (data) {
+                        if (data.MessageType) {
+                            $.get('@CachedUrlHelper.Action("_ListPermissions","ControlPanel")', { t: new Date().valueOf() }, function (html) {
+                                $('#_ListPermissions').html(html);
+                            });
+                            layer.msg(data.MessageContent, { icon: 1 })
+                        }
+                        else {
+                            layer.msg(data.MessageContent, { icon: 2 })
+                        }
+                    });
+                });
+        });
+
+        //编辑用户或角色授权
+        $('.editpermission').click(function () {
+            var $this = $(this);
+            var url = $this.data('url') + "&t=" + (new Date()).valueOf();
+            tnlayer.layermodal('编辑授权', url, '450px', '620px');
+        });
+
+    })
+</script>

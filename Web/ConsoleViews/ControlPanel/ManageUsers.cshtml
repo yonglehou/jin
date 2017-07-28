@@ -1,0 +1,71 @@
+﻿@{
+    TempData["subMenu-check"] = new string[] { "User", "ManageUser" };
+    IEnumerable<SelectListItem> roleSelectList = ViewData.Get<List<SelectListItem>>("roleSelectList", new List<SelectListItem>());
+    IEnumerable<SelectListItem> stateList = ViewData.Get<List<SelectListItem>>("stateList", new List<SelectListItem>());
+    ViewData["Title"] = new string[] { "用户管理" };
+}
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-lg-12">
+        <h3>用户管理</h3>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body ">
+        <div class="form-inline tn-tool-column">
+            <div class="form-group" style="width:265px">
+                <label for="keyword">关键字：</label>
+                @Html.TextBox("keyword", null, new RouteValueDictionary { { "class", "color form-control" }, { "placeholder", "昵称/姓名/邮箱/手机号" } })
+            </div>
+            <div class="form-group has-feedback" style="width:308px">
+                <label for="registeDate">注册日期：</label>
+                @Html.DateTimePicker("registeDate", null, Request.QueryString.Get("minDate", string.Empty), Request.QueryString.Get("maxDate", string.Empty), true)
+                <span class="form-control-feedback"><i class="fa fa-calendar"></i></span>
+            </div>
+            <div class="form-group" style="width:280px">
+                <label for="state">用户状态：</label>
+                @Html.DropDownList("state", stateList, "全部状态", new RouteValueDictionary { { "class", "color form-control" } })
+            </div>
+            <div class="form-group" style="width:280px">
+                <label for="role">用户角色：</label>
+                @Html.DropDownList("role", roleSelectList, "全部角色", new RouteValueDictionary { { "class", "form-control" } })
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary" type="button" id="search">搜索</button>
+            </div>
+        </div>
+        <hr />
+        <div class="form-inline tn-tool-column">
+            <div class="form-group">
+                <a class="btn btn-default edit-user layeruser" href="javascript:;"><i class="fa fa-plus"></i> 添加用户</a>
+                <a class="btn btn-default delete-user" href="javascript:;"><i class="fa fa-trash"></i> 删除</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div id="_listUsers" class="panel-body">
+        @Html.Action("_ListUsers", "ControlPanel", new RouteValueDictionary(new { roleId = 0, state = 0 }))
+    </div>
+</div>
+@Styles.Render("~/Bundle/Styles/daterangepicker")
+
+<script>
+    require(['jquery', 'tnlayer', 'page', 'datepicker'], function ($, tnlayer) {
+
+      
+
+     
+        $(".layeruser").click(function () {
+            tnlayer.layermodal('添加用户', '@SiteUrls.Instance()._EditUser(0)', '450px', '550px')
+        })
+
+        $(".tn-main").keydown(function () {
+            if (event.keyCode == "13") {
+                $('#search').click();
+            }
+        })
+        $(function () {
+            $("#registeDate").val("")
+        })
+    })
+</script>

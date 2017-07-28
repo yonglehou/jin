@@ -1,0 +1,91 @@
+﻿@model IEnumerable<SpecialContentType>
+@{
+    Layout = null;
+}
+@if (Model.Count() > 0)
+{
+    <table class="table tn-va-middle">
+        <thead>
+            <tr>
+                <th>类别Id</th>
+                <th>名称</th>
+                <th>描述</th>
+                <th>需要标题图</th>
+                <th>允许添加外链</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var specialContentType in Model)
+            {
+                <tr>
+                    <td>@specialContentType.TypeId</td>
+                    <td>
+                        @specialContentType.Name
+                    </td>
+                    <td>@specialContentType.Description</td>
+                    <td>
+                        @if (specialContentType.RequireFeaturedImage)
+                        {
+                            <i class="fa fa-2x fa-check"></i>
+                        }
+                        else
+                        {
+                            <i class="fa fa-2x fa-times"></i>
+                        }
+                    </td>
+                    <td>
+                        @if (specialContentType.AllowExternalLink)
+                        {
+                            <i class="fa fa-2x fa-check"></i>
+                        }
+                        else
+                        {
+                            <i class="fa fa-2x fa-times"></i>
+                        }
+                    </td>
+                    <td class="text-nowrap">
+                        <a class="a tn-mr-10 layerspecialcontenttype" data-id="@specialContentType.TypeId" href="javascript:;" title="编辑" ><i class="fa fa-pencil"></i></a>
+                        @if (!specialContentType.IsBuiltIn)
+                        {
+                            <a class="a tn-mr-10 deleteType" title="删除" data-id="@specialContentType.TypeId" href="javascript:;"><i class="fa fa-trash"></i></a>
+                        }
+                        <a class="a tn-mr-10" title="查看" href="@CachedUrlHelper.Action("ManageSpecialContentItems","ControlPanel","",new RouteValueDictionary (new { belong=specialContentType.TenantTypeId.Trim(),typeId = specialContentType.TypeId}))"><i class="fa fa-eye"></i></a>
+                        @*@Html.ActionLink("查看推荐内容","ManageSpecialContentItems",new { belong = specialContentType.TenantTypeId.Trim(), typeId = specialContentType.TypeId })*@
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<script>
+    require(['jquery','tnlayer'], function ($,tnlayer) {
+        $('.layerspecialcontenttype').click(function(){
+            var typeId=$(this).data("id");
+            tnlayer.layermodal('编辑推荐类别', '@CachedUrlHelper.Action("_EditSpecialContentType", "ControlPanel")?typeId=' + typeId+'&t='+new Date().getTime(), '450px', '630px')
+         })
+        $(function () {
+            $(".deleteType").click(function () {
+                var id = $(this).data("id");
+                layer.confirm("是否确认删除该类别", {
+                    btn: ['确认', '取消']
+                },
+                function () {
+                    $.post('@CachedUrlHelper.Action("_DeleteSpecialContentType", "ControlPanel")', { typeId: id },
+                        function (data) {
+                            if (data.state = 1) {
+                                layer.msg("删除成功", { icon: 1 });
+                            }
+                            else {
+                                layer.msg("删除失败", { icon: 2 });
+                            }
+                            var typeId = $("#specialContentTypeList option:selected").val();
+                            $.get("@SiteUrls.Instance()._ListSpecialContentTypes()", { tenantType: typeId }, function (data) {
+                                $("#_listSpecialContentTypes").html(data);
+                            })
+                        })
+                })
+            })
+        })
+    })
+</script>

@@ -1,0 +1,117 @@
+﻿@model Dictionary<long, IEnumerable<AuditItemInUserRole>>
+@{
+    //所有角色
+    var allRoles = ViewData.Get<List<Role>>("allRoles", null);
+    //所有的审核项
+    var auditItems = ViewData.Get<IEnumerable<AuditItem>>("auditItems", null);
+}
+
+<table class="table tn-va-middle">
+    <thead>
+        <tr>
+            <th style="width:16.7%">角色</th>
+            @foreach (var auditItem in auditItems)
+            {
+            <th>@auditItem.ItemName</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @if (allRoles != null && allRoles.Any())
+        {
+            foreach (var role in allRoles)
+            {
+            <tr class="rolesaudits" data-roleid="@role.RoleId">
+                <td>@role.RoleName</td>
+                @foreach (var auditItem in auditItems)
+                {
+                    AuditStrictDegree auditStrictDegree = AuditStrictDegree.NotSet;
+                    bool auditIsLocked = false;
+                    IEnumerable<AuditItemInUserRole> auditItemInUserRole = null;
+                    if (Model.TryGetValue(role.RoleId, out auditItemInUserRole))
+                    {
+                        //获取当前用户资讯的审核严格程度
+                        var roleAuditItem = auditItemInUserRole.Where(n => n.ItemKey == auditItem.ItemKey);
+
+                        if (roleAuditItem != null && roleAuditItem.Any())
+                        {
+                            auditStrictDegree = roleAuditItem.FirstOrDefault().StrictDegree;
+                            auditIsLocked = roleAuditItem.FirstOrDefault().IsLocked;
+                        }
+                    }
+                    <td data-itemkey="@auditItem.ItemKey" data-strictdegree="@auditStrictDegree">
+                        <div class="row">
+                            <div class="col-xs-6">
+                                <select class="form-control input-sm col-xs-6" disabled="@(auditIsLocked?true:false)">
+                                    <option value="@((int)AuditStrictDegree.NotSet)" selected="@(auditStrictDegree==AuditStrictDegree.NotSet? true :false)">@AuditStrictDegree.NotSet.GetDisplayName()</option>
+                                    <option value="@((int)AuditStrictDegree.None)" selected="@(auditStrictDegree==AuditStrictDegree.None? true :false)">@AuditStrictDegree.None.GetDisplayName()</option>
+                                    <option value="@((int)AuditStrictDegree.Create)" selected="@(auditStrictDegree==AuditStrictDegree.Create? true :false)">@AuditStrictDegree.Create.GetDisplayName()</option>
+                                    <option value="@((int)AuditStrictDegree.Update)" selected="@(auditStrictDegree==AuditStrictDegree.Update? true :false)">@AuditStrictDegree.Update.GetDisplayName()</option>
+                                </select>
+                            </div>
+                        </div>
+                    </td>
+                }
+            </tr>
+            }
+        }
+        <tr>
+            <td></td>
+            <td>
+                <button type="button" class="btn btn-primary tn-btn-wp submitrolesauditrules">确定</button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<script>
+
+    require(['jquery'], function () {
+        //异步修改角色审核规则
+        $('.submitrolesauditrules').on('click', function () {
+            layer.confirm('确定要修改角色审核规则么?', { btn: ["确定", "取消"], icon: 3 }, function () {
+
+                //拼接出jsonText字符串
+                var jsonText = '[';
+                $('.rolesaudits').each(function () {
+                    var roleId = $(this).data('roleid');
+                    var $this = $(this);
+
+                    if ($this.index() > 0) {
+                        jsonText = jsonText + ',';
+                    }
+
+                    $this.children().each(function () {
+                        var $thisChildren = $(this);
+                        if ($thisChildren.index() > 1) {
+                            jsonText = jsonText + ',';
+                        }
+                        if ($thisChildren.index() > 0) {
+                            var itemKey = $thisChildren.data('itemkey');
+                            var strictDegree = $thisChildren.children().children().children().val();
+                            jsonText = jsonText + '{“roleId“:“' + roleId +
+                                '“,“itemKey“:“' + itemKey +
+                                '“,“strictDegree“:“' + strictDegree +
+                                '“}';
+                        }
+                    });
+                });
+                jsonText = jsonText + ']';
+                $.post('@CachedUrlHelper.Action("_EditRolesAuditRules","ControlPanel")', { jsonText: jsonText }, function (data) {
+                    if (data.MessageType) {
+                        layer.msg(data.MessageContent, { icon: 1 });
+
+                        //异步刷新角色审核规则
+                        $.get('@CachedUrlHelper.Action("_EditRolesAuditRules","ControlPanel")', { t: (new Date()).valueOf() }, function (html) {
+                            $('#_EditRolesAuditRules').html(html);
+                        });
+                    }
+                    else {
+                        layer.msg(data.MessageContent, { icon: 2 });
+                    }
+                });
+            });
+        });
+    })
+
+</script>

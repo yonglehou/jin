@@ -1,0 +1,47 @@
+﻿@model List<PointItem>
+@{
+    var experience = ViewData.Get<string>("experience", string.Empty);
+    var trade = ViewData.Get<string>("trade", string.Empty);
+}
+
+@if (Model.Any())
+{
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>积分项目</th>
+                <th>@experience</th>
+                <th>@trade</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.ItemName</td>
+                    <td>@item.ExperiencePoints</td>
+                    <td>@item.TradePoints</td>
+                    <td>
+                        <a class="layerpointrole" data-id="@item.ItemKey" role="button" title="编辑"><i class="fa fa-pencil fa-lg"></i></a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="text-center text-warning">
+        暂无任何积分规则
+    </div>
+}
+<script>
+    require(['jquery','tnlayer'], function (_,tnlayer) {
+        $('.layerpointrole').click(function () {
+            var key = $(this).data("id");
+            tnlayer.layermodal('编辑积分规则', '@CachedUrlHelper.Action("_EditPointRule", "ControlPanel")?itemKey=' + key + '&t=' + new Date().getTime(), '450px', '420px')
+        })
+    })
+</script>

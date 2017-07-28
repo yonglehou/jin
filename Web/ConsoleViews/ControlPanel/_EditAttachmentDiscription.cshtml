@@ -1,0 +1,63 @@
+﻿@model AttachmentEditModel
+@{
+    var contentItemId = ViewData.Get<long>("contentItemId", 0);
+}
+<div class="panel-body jn-training-creation jn-block">
+    <div class="tab-content ">
+        <div role="tabpanel" class="tab-pane active" id="tab_jcxx">
+            @using (Html.BeginForm("_EditAttachmentDiscription", "ControlPanel", FormMethod.Post, new { @class = "form-horizontal tn-form-validation", @id = "EditAttachmentDiscription" }))
+            {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(n => n.AttachmentId)
+                @Html.ValidationMessageFor(n => n.AttachmentId)
+                <div class="form-group">
+                    <label class="col-xs-3 text-left">描述</label>
+                    <div class="col-xs-12">
+                        @Html.TextAreaFor(n => n.Discription, new { @class = "form-control", @rows = "3" })
+                        @Html.ValidationMessageFor(n => n.Discription)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-xs-3"></label>
+                    <div class="col-xs-12">
+                        <button type="button" class="btn btn-primary btn-submit submit-Attachment">保存</button>
+                        <button id="remove" type="button" class="btn  btn-default">取消</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+      require(['jquery'],function(){
+          //提交表单
+            $('.submit-Attachment').on('click', function () {
+                $("#EditAttachmentDiscription").validate();
+                if ($("#EditAttachmentDiscription").valid()) {
+                    $.post('@CachedUrlHelper.Action("_EditAttachmentDiscription", "ControlPanel")', $("#EditAttachmentDiscription").serialize(), function(data) {
+                        if (data.MessageType) {
+                            layer.msg(data.MessageContent, {
+                                icon: 1
+                            });
+                            var getTimestamp = new Date().getTime();
+                            $.get("@CachedUrlHelper.Action("_EditCMSImg", "ControlPanel")?contentItemId=" + @contentItemId + "&t=" + getTimestamp, function(data) {
+                                $("#photoslist").html(data)
+                            });
+                            layer.closeAll();
+                        }
+                        else {
+                            layer.msg(data.MessageContent, {
+                                icon: 2
+                            });
+                        }
+                    });
+                }
+            });
+
+            //取消
+            $("#remove").click(function() {
+                layer.closeAll();
+            });
+      })
+</script>

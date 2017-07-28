@@ -1,0 +1,85 @@
+﻿@model List<LinkEntity>
+@{
+    var categoryId = ViewData.Get<long>("categoryId", 0L);
+}
+@if (Model.Count() > 0)
+{
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>链接名称</th>
+                        <th>链接地址</th>
+                        <th>链接说明</th>
+                        <th>链接类别</th>
+                        <th>是否启用</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr id="removelink-@item.LinkId">
+                            <td title="@item.LinkName">
+                                @item.LinkName
+                                @if (item.GetImageUrl("Small").ToString() != "../img/4x3.jpg")
+                                {
+                                    <img style="max-width:100px;max-height:30px;" class="img-thumb" data-src="@item.GetImageUrl("")" src="@item.GetImageUrl("Small")" />
+                                }
+                            </td>
+                            <td>@HtmlUtility.TrimHtml(item.LinkUrl, 30)</td>
+                            <td>@HtmlUtility.TrimHtml(item.Description, 30)</td>
+                            <td>@(item.Categories.Any() ? item.Categories.First().CategoryName : "")</td>
+                            <td>
+                                @if (item.IsEnabled)
+                                {<i class="fa fa-check" title="启用"></i>}
+                                else
+                                { <i class="fa fa-close" title="禁用"></i>}
+                            </td>
+                            <td>
+                                <a class="layerlinkedit" data-id="@item.LinkId" role="button" title="编辑"><i class="fa fa-pencil fa-lg"></i></a>
+                                <a id="delete-@item.LinkId" role="button" title="删除"><i class="fa fa-trash fa-lg"></i></a>
+                                @if (Model.IndexOf(item) > 0 && categoryId > 0)
+                                {
+                                    <a data-href="@CachedUrlHelper.Action("ChangeLinkOrder","ControlPanel",null,new RouteValueDictionary { {"fromLinkId",item.LinkId }, {"toLinkId",Model[Model.IndexOf(item)-1].LinkId } })" name="moveup" role="button" title="上移"><i class="fa fa-arrow-up"></i></a>
+                                }
+                                @if (Model.IndexOf(item) < Model.Count - 1 && categoryId > 0)
+                                {
+                                    <a data-href="@CachedUrlHelper.Action("ChangeLinkOrder","ControlPanel",null,new RouteValueDictionary { {"fromLinkId",item.LinkId }, {"toLinkId",Model[Model.IndexOf(item)+1].LinkId } })" name="movedown" role="button" title="下移"><i class="fa fa-arrow-down"></i></a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <div class="text-center text-warning">
+        暂无任何链接
+    </div>
+}
+
+<script>
+    require(['jquery', 'tooltip', 'tnlayer'], function ($, _, tnlayer) {
+
+        $(".layerlinkedit").click(function () {
+            var linkId=$(this).data("id");
+            tnlayer.layermodal('编辑链接', '@CachedUrlHelper.Action("_EditLink", "ControlPanel")?linkId='+linkId+'&t=' + new Date().getTime(), '450px', '630px')
+        })
+        var t = new Tooltip();
+        t.init();
+        $('img.img-thumb').hover(function () {
+            var $this = $(this);
+            var src = $this.data('src');
+            t.tip("<img src='" + src + "' style='max-height:500px;max-width:500px;' />")
+        }, function () {
+            var $this = $(this);
+            var src = $this.attr('src');
+            t.tip();
+        })
+    })
+</script>

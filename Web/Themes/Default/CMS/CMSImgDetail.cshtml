@@ -1,0 +1,322 @@
+﻿@model ContentItem
+@{
+    if (Model != null)
+    {
+        ViewData["Title"] = new string[] { Model.Subject, Model.ContentCategory != null ? Model.ContentCategory.CategoryName : "" };
+        ViewData["Description"] = Model.Subject;
+    }
+    var user = UserContext.CurrentUser;
+    var attachmentList = ViewData.Get<IEnumerable<Attachment>>("attachmentList", new List<Attachment>());
+    var index = 0;
+}
+<style>
+    .sp-fade-arrows, .sp-thumbnail-arrows {
+        display: none !important;
+    }
+
+    .bdsharebuttonbox {
+        padding: 15px;
+    }
+
+        .bdsharebuttonbox > li > a {
+            padding: 0 20px;
+        }
+
+            .bdsharebuttonbox > li > a:hover {
+                background-color: transparent;
+                color: #bf0a10;
+            }
+
+    .tn-footer {
+        display: none;
+    }
+</style>
+@if (Model != null)
+{
+    <div class="">
+        <div class="tn-article-detail">
+            <div class="row">
+                <div class="col-xs-7"><h4 class="pull-left" title="@Model.Subject">@HtmlUtility.TrimHtml(Model.Subject, 27)</h4></div>
+                <div class="col-xs-5 text-right">
+                    <ul class="list-inline">
+                        @if (!Model.IsComment)
+                        {
+                        <li><a target="_blank" class="btn btn-default" href="@CachedUrlHelper.Action("CommentList","portal",null, new RouteValueDictionary { { "commentedObjectId", Model.ContentItemId }, { "tenantTypeId",TenantTypeIds.Instance().ContentItem()} })"><i class="fa fa-commenting"></i> @Model.CommentCount()</a></li>
+                        }
+                        @Html.Hidden("sliderProplay", 0)
+                        <li><button class="btn btn-default sliderProplay" type="button"><i class="fa fa-play-circle-o"></i> 播放</button></li>
+                        @if (Model.IsFavorited())
+                        {
+                        <li><a class="btn btn-default btn-sm" id="favorite" data-href="@CachedUrlHelper.Action("Favorite", "CMS", null, new RouteValueDictionary { { "contentItemId", Model.ContentItemId }, { "isFavorite", false } })" role="button" onclick="$.fn.Favorite();" onmouseover="showbtn();" onmouseout="hidebtn();">已收藏</a></li>
+                        }
+                        else
+                        {
+                        <li><a class="btn btn-default btn-sm @(user == null?"siteMessage":"")" id="favorite" data-href="@CachedUrlHelper.Action("Favorite", "CMS", null, new RouteValueDictionary { { "contentItemId", Model.ContentItemId }, { "isFavorite", true }})" role="button" onclick="$.fn.Favorite();">收藏</a></li>
+                        }
+                        <li>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-default  btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-share-square-o"></i>分享</button>
+                                <ul class="bdsharebuttonbox dropdown-menu" data-tag="share_1">
+                                    <li><a class="bds_tsina" data-cmd="tsina">微博</a></li>
+                                    <li><a class="bds_weixin" data-cmd="weixin">微信</a></li>
+                                    <li><a class="bds_renren" data-cmd="renren">人人</a></li>
+                                    <li><a class="bds_sqq" data-cmd="sqq">QQ好友</a></li>
+                                    <li><a class="bds_qzone" data-cmd="qzone" href="#">QQ空间</a></li>
+                                    <li><a class="bds_douban" data-cmd="douban">豆瓣</a></li>
+                                    <li><a class="bds_linkedin" data-cmd="linkedin">领英</a></li>
+                                </ul>
+                            </div>
+                        </li>
+                        @if (Model.IsAuthorizer())
+                        {
+                        <li>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-default  btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-reorder"></i></button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a href="javascript:;" class="layerimg">推荐</a>
+                                    </li>
+                                    <li><a href="@CachedUrlHelper.Action("EditCMS","ControlPanel")?contentItemId=@Model.ContentItemId&contentCategoryId=@Model.ContentCategoryId">编辑</a></li>
+                                    <li><a id="delete-@Model.ContentItemId" href="#">删除</a></li>
+                                </ul>
+                            </div>
+                        </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+            <div id="example3" class="slider-pro jh-slider-pro">
+                <div class="sp-slides">
+                    @foreach (var item in attachmentList)
+                    {
+                        index++;
+                        <div class="sp-slide">
+                            <img class="sp-image" src="~/js/lib/slider-pro/css/images/blank.gif"
+                                 data-src="@item.GetDirectlyUrl("Big")" />
+                            <p class="sp-layer sp-white sp-padding" data-horizontal="0" data-vertical="0" data-position="topRight">
+                                <a onclick="$.fn.imgopen('@item.GetDirectlyUrl()')" target="_blank" class="jh-img-amplify"></a>
+                            </p>
+                            <div class="sp-caption">
+                                <div class="InfoWrap" onmouseover="$.fn.showdiscription(this);" onmouseout="$.fn.hidediscription(this);">
+                                    <div class="Info info_bg_hastext">
+                                        <div class="infoNum">
+                                            <span class="curNum">@index</span><span class="tatolNum">/@attachmentList.Count()</span>
+                                        </div>
+                                        <div class="infoTxtWrap" style="height:90px;">
+                                            <div class="infoCon">
+                                                <div class="infoTxt tn-no-top">
+                                                    <p>@Html.Raw(item.Discription)</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="btnWrap">
+                    <div class="btn btnLeft" id="BtnLeft" bosszone="gqPre" style="visibility: visible;"><a href="javascript:;" onclick="$.fn.previousimg()" hidefocus="true"></a></div>
+                    <div class="btn btnRight" id="BtnRight" bosszone="gqNext" style="visibility: visible;"><a href="javascript:;"  onclick="$.fn.nextimg()" hidefocus="true"></a></div>
+                </div>
+                <a href="javascript:;;" class="sBtn sBtnLeft" onclick="$.fn.previousimg()"></a>
+                <a href="javascript:;" class="sBtn sBtnRight" onclick="$.fn.nextimg()"></a>
+                <div class="sp-thumbnails">
+                    @{
+                        foreach (var item in attachmentList)
+                        {
+                        <img class="sp-thumbnail" src="@item.GetDirectlyUrl("Small")" />
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @Styles.Render("~/Bundle/Styles/slider")
+@Styles.Render("~/Bundle/Styles/Uploader")
+                        <link type="text/css" href="~/js/lib/slider-pro/css/jh-img-style.css" rel="stylesheet" />
+                        <script>
+                            require(['jquery', 'tnlayer', 'uploader', 'sliderpro', 'onscroll'], function ($, tnlayer) {
+
+                           
+                                $(".layerimg").click(function () {
+                                    tnlayer.layermodal('组图推荐', '@SiteUrls.Instance()._RecommendContent(Model.ContentItemId,TenantTypeIds.Instance().CMS_Image(),Model.Subject,Model.FeaturedImageAttachmentId)'.replace(/&amp;/g, "&"), '450px', '450px')
+                                })
+
+                                window._bd_share_config = {
+                                    common: {
+                                        bdText: '@Model.Subject',
+                                        bdDesc: '@Model.Summary',
+                                    },
+                                    share: [{
+                                        //分享按钮的尺寸
+                                        "bdSize": 16,
+                                    }]
+                                }
+                                with (document) 0[(getElementsByTagName('head')[0] || body).appendChild(createElement('script')).src = 'http://bdimg.share.baidu.com/static/api/js/share.js?cdnversion=' + ~(-new Date() / 36e5)];
+
+                                //展示详情
+                                $.fn.showdiscription = function (e) {
+                                    var pheight = $(e).find("p")[0].offsetHeight;
+                                    if (pheight > 90) {
+                                        $(e).find(".infoTxtWrap")[0].style.height = pheight + 10 + "px";
+                                    }
+                                }
+                                $.fn.hidediscription = function (e) {
+                                    $(e).find(".infoTxtWrap")[0].style.height = "90px"
+                                }
+
+                                $.fn.imgopen = function (c_url) {
+                                    window.open(c_url)
+                                }
+                                $(".sliderProplay").click(function () {
+                                    if ($("#sliderProplay").val() == 0) {
+                                        $(this).html("<i class='fa fa-pause-circle-o'></i> 停止")
+                                        startimg()
+                                        $("#sliderProplay").val(1)
+                                    }
+                                    else {
+                                        $(this).html("<i class='fa fa-play-circle-o'></i> 播放")
+                                        endimg()
+                                        $("#sliderProplay").val(0)
+                                    }
+                                })
+
+                                //删除
+                                $(document).on('click', 'a[id^=delete-]', function (e) {
+                                    //添加时间戳
+                                    var id = $(this).attr("id").replace(/[^0-9]/ig, "");
+                                    layer.confirm("确定删除么？", {
+                                        btn: ['确认', '取消'],//按钮
+                                        scrollbar: false
+                                    }, function () {
+                                        var parm = jQuery.param({ contentItemId: id, t: new Date().getTime() }, true);
+                                        $.post('@CachedUrlHelper.Action("_DeleteCMS", "ControlPanel")', parm, function (data) {
+                                            if (data.MessageType) {
+                                                layer.msg(data.MessageContent, {
+                                                    icon: 1
+                                                });
+                                                window.location.href = "@CachedUrlHelper.Action("CMSImg", "portal")";
+                                            }
+                                            else {
+                                                layer.msg(data.MessageContent, {
+                                                    icon: 2
+                                                });
+                                            }
+                                        });
+                                    });
+                                });
+                                var _searchTimer;
+                                function startimg() {
+                                    clearInterval(_searchTimer)
+                                    _searchTimer = setInterval($.fn.nextimg, 2000);
+                                }
+                                function endimg() {
+                                    clearInterval(_searchTimer)
+                                }
+                                $.fn.nextimg = function () {
+                                    $(".sp-next-arrow").click()
+                                }
+                                $.fn.previousimg = function () {
+                                    $(".sp-previous-arrow").click()
+                                }
+                                sliderPros()
+                                function sliderPros() {
+                                    var sliderProHeight = 750;
+                                    var sliderProWidth = 500;
+                                    var clientHeight = getScrollHeight();
+                                    if (clientHeight < 300) {
+                                        sliderProHeight = 285;
+                                        sliderProWidth = 210;
+                                    }
+                                    else {
+                                        sliderProHeight = clientHeight - 360;
+                                        sliderProWidth = sliderProHeight / 3 * 4;;
+                                    }
+                                    $('#example3').sliderPro({
+                                        width: sliderProWidth,
+                                        height: sliderProHeight,
+                                        fade: true,
+                                        //箭头导航按钮
+                                        arrows: true,
+                                        //圆点导航按钮
+                                        buttons: false,
+                                        //“全屏”按钮是否可用
+                                        fullScreen: false,
+                                        //是否打乱图片顺序
+                                        shuffle: false,
+                                        smallSize: 10,
+                                        mediumSize: 10,
+                                        largeSize: 10,
+                                        //设置幻灯片是否无限循环
+                                        loop: false,
+                                        //箭头按钮是否可用
+                                        thumbnailArrows: true,
+                                        autoplay: false,
+                                        autoHeight: true
+                                    });
+                                }
+                                //推荐成功回调
+                                $.fn.recommendCallBack = function (data) {
+                                    if (data.state == 1) {
+                                        layer.closeAll();
+                                        layer.msg("推荐成功", { icon: 1 });
+                                    }
+                                    else {
+                                        layer.msg("推荐失败", { icon: 2 });
+                                    }
+                                }
+
+                                //收藏
+                                $.fn.Favorite = function () {
+                                    if ($("#favorite").hasClass("siteMessage")) {
+                                        layer.msg("请登录后操作", {
+                                            icon: 2
+                                        });
+                                        return false;
+                                    }
+                                    $.post($("#favorite").data("href"), { t: new Date().getTime() }, function (data) {
+                                        if (data.state.indexOf("收藏") != -1) {
+                                            layer.msg(data.msg, {
+                                                icon: 1
+                                            })
+                                            $("#favorite").text(data.state);
+                                            if (data.isFavorite == true) {
+                                                $("#favorite").data("href", "@CachedUrlHelper.Action("Favorite", "CMS", null, new RouteValueDictionary { { "contentItemId", Model.ContentItemId } })&isFavorite=false");
+                                                $("#favorite").mouseover(function () { $("#favorite").text("取消收藏") });
+                                                $("#favorite").mouseout(function () { $("#favorite").text("已收藏") });
+
+                                            } else {
+                                                $("#favorite").data("href", "@CachedUrlHelper.Action("Favorite", "CMS", null, new RouteValueDictionary { { "contentItemId", Model.ContentItemId } })&isFavorite=true");
+                                                $("#favorite").off("mouseover");
+                                                $("#favorite").off("mouseout");
+                                            }
+                                        } else {
+                                            layer.msg(data.msg, {
+                                                icon: 2
+                                            })
+                                        }
+                                    })
+                                }
+                                //鼠标移入
+                                function showbtn() {
+                                    $("#favorite").text("取消收藏");
+                                }
+                                //鼠标移出
+                                function hidebtn() {
+                                    $("#favorite").text("已收藏");
+                                }
+                            })
+                        </script>
+                        }
+                        else
+                        {
+                        <div class="jh-padding-white">
+                            <div class="tn-article-detail">
+                                <div class="row">
+                                    <div class="col-xs-7"><h4 class="pull-left">资讯已删除 </h4></div>
+                                </div>
+                            </div>
+                        </div>
+                        }

@@ -1,0 +1,51 @@
+﻿@model CaptchaMvc.Models.MathBuildInfoModel
+
+<img id="@Model.ImageElementId" src="@Model.ImageUrl" />
+@Html.Hidden(Model.TokenElementId, Model.TokenValue)
+
+@{
+    string id;
+    if (!Model.Attributes.TryGetValue("CaptchaId", out id))
+    {
+        id = Guid.NewGuid().ToString("N");
+        Model.Attributes["CaptchaId"] = id;
+    }
+    string functionName;
+    if (!Model.Attributes.TryGetValue("CaptchaFuncName", out functionName))
+    {
+        functionName = string.Format("______{0}________()", Guid.NewGuid().ToString("N"));
+        Model.Attributes["CaptchaFuncName"] = functionName;
+    }
+
+    <script type="text/javascript">
+        $(function () {
+            $('#@id').show();
+        });
+
+        function @functionName {
+            $('#@id').hide();
+            $.post("@Model.RefreshUrl", { @Model.TokenParameterName: $('#@Model.TokenElementId').val(), @Model.MathParamterName: "0" },
+                function () {  $('#@id').show();
+                });
+            return false;
+        }
+    </script>
+    <a href="#@id" id="@id" onclick="@functionName" style="display: none;">@ViewData["InputText"]</a>
+}
+
+<br />
+@if ((bool)ViewData["IsRequired"])
+{
+    @Html.TextBox(Model.InputElementId, null, new Dictionary<string, object>
+                                                  {
+                                                      {"data-val", "true"},
+                                                      {"data-val-required", ViewData["RequiredMessage"]}
+                                                  })
+}
+else
+{
+    @Html.TextBox(Model.InputElementId)
+}
+
+@TempData["Message"]
+@Html.ValidationMessage(Model.InputElementId)

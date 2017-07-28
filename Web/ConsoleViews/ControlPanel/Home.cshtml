@@ -1,0 +1,212 @@
+﻿@{
+    var systemInfo = ViewData.Get<SystemInfo>("SystemInfo", new SystemInfo());
+    var tunyNetLicenses = ViewData.Get<List<Tunynet.Product.TunynetLicense>>("tunyNetLicenses", new List<Tunynet.Product.TunynetLicense>());
+    string spacebuilderVersion = ViewData.Get<string>("spacebuilderVersion", string.Empty);
+}
+<style>
+    fieldset > legend {
+        padding: 10px 10px;
+    }
+
+    .form-group {
+        height: 25px;
+        margin-bottom: 10px;
+    }
+
+    fieldset a > span {
+        color: #ff0000;
+        font-size: large;
+        font-weight: 700;
+    }
+</style>
+<div class="row">
+    <div class="col-xs-6">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <fieldset id="_BasicInfo">
+                    <legend>待办事项</legend>
+                    <div class="form-group">
+                        <label class="col-xs-11 control-label"><a href="@SiteUrls.Instance().ManageCMS()"><span id="cmsNeedAuditNum">0</span></a>篇资讯需审核</label>
+                        <a href="@SiteUrls.Instance().ManageCMS()" type="button">管理</a>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-11 control-label"><a href="@SiteUrls.Instance().ManageThreads()"><span id="postNeedAuditNum">0</span></a>个贴子需审核</label>
+                        <a href="@SiteUrls.Instance().ManageThreads()" type="button">管理</a>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-11 control-label"><a href="@SiteUrls.Instance().ManageComments()"><span id="commentNeedAuditNum">0</span></a>条评论需审核</label>
+                        <a href="@SiteUrls.Instance().ManageComments()" type="button">管理</a>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-6">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <fieldset id="_BasicInfo">
+                    <legend>数据统计</legend>
+                    <div class="form-group">
+                        <label class="col-xs-6 control-label">资讯</label>
+                        <label class="col-xs-3">总计: <span id="cmsCountAll">0</span></label>
+                        <label class="col-xs-3">24小时新增: <span id="cmsCountPerDay">0</span></label>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-6 control-label">贴子</label>
+                        <label class="col-xs-3">总计: <span id="threadCountAll">0</span></label>
+                        <label class="col-xs-3">24小时新增: <span id="threadCountPerDay">0</span></label>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-6 control-label">评论</label>
+                        <label class="col-xs-3">总计: <span id="commentCountAll">0</span></label>
+                        <label class="col-xs-3">24小时新增: <span id="commentCountPerDay">0</span></label>
+                    </div>                   
+                </fieldset>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-6">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <fieldset id="_BasicInfo">
+                    <legend>产品信息</legend>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">产品版本</label>
+                        <label class="col-xs-8">@spacebuilderVersion</label>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">最新版本</label>
+                        <label id="mostRecentVersion" class="col-xs-5">Loading...</label>
+                        <a id="updateHistory" class="col-xs-3" type="button" href="#">查看更新说明</a>
+                    </div>
+                    @foreach (var license in tunyNetLicenses)
+                    {
+                        if (license.Product.Level != "Free")
+                        {
+                            Tunynet.Product.DomainConstraint domainConstraint = null;
+                            foreach (Tunynet.Product.IConstraint constraint in license.Constraints)
+                            {
+                                if (constraint is Tunynet.Product.DomainConstraint)
+                                {
+                                    domainConstraint = constraint as Tunynet.Product.DomainConstraint;
+                                }
+                            }
+
+                            string domainNameLicensed = string.Empty;
+                            if (domainConstraint != null && domainConstraint.Domains.Length > 0)
+                            {
+                                domainNameLicensed = string.Join(" , ", domainConstraint.Domains);
+                            }
+                            string licensedApplicationNames = string.Join(" , ", license.ApplicationConstraint.Applications.Select(n => n.Value));
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label">商业授权</label>
+                                @switch (license.Product.Level)
+                                {
+                                    case "Standard":
+                                    <label class="col-xs-5">标准版</label>
+                                        break;
+                                    case "Professional":
+                                    <label class="col-xs-5">专业版</label>
+                                        break;
+                                    case "Source":
+                                    <label class="col-xs-5">源码版</label>
+                                        break;
+                                    default:
+                                    <label class="col-xs-5">标准版</label>
+                                        break;
+                                }
+                                @*<a class="col-xs-3" type="button" href="#">商业授权查询</a>*@
+                            </div>
+                            if (!string.IsNullOrEmpty(domainNameLicensed))
+                            {
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label">授权域名</label>
+                                <label class="col-xs-8">@domainNameLicensed</label>
+                            </div>
+                            }
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label">授权应用</label>
+                                <label class="col-xs-8">@licensedApplicationNames</label>
+                            </div>
+                        }
+                        else
+                        {
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label">产品类型</label>
+                            <label class="col-xs-8">免费版(仅限个人非盈利站点使用)</label>
+                        </div>
+                        }
+                    }
+                </fieldset>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-6">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <fieldset id="_BasicInfo">
+                    <legend>运行环境</legend>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">操作系统</label>
+                        <label class="col-xs-8">@systemInfo.OSName</label>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">IIS 版本</label>
+                        <label class="col-xs-8">@systemInfo.IIS</label>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">.NET Framework 版本</label>
+                        <label class="col-xs-8">@systemInfo.Framework</label>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">.NET 信任级别</label>
+                        <label class="col-xs-8">@systemInfo.NetTrustLevel</label>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">数据库版本</label>
+
+                        <label class="col-xs-8">@systemInfo.DataBaseVersion</label>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">数据库占用</label>
+                        <label class="col-xs-8">@systemInfo.GetDBSize</label>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    require(['jquery'], function () {
+        $($.get('@CachedUrlHelper.Action("GetDataStatistics","ControlPanel")', { t: (new Date()).valueOf() }, function (data) {
+            //资讯/贴子/评论/问题/回答 需审核数
+            $('#cmsNeedAuditNum').text(data.jsonNeedAuditNum.cmsNeedAuditNum)
+            $('#postNeedAuditNum').text(data.jsonNeedAuditNum.postNeedAuditNum)
+            $('#commentNeedAuditNum').text(data.jsonNeedAuditNum.commentNeedAuditNum)
+          
+
+            //资讯/贴子/评论/问题/回答 总/24小时全局计数
+            var jsonDataSatistics = data.jsonDataSatistics;
+            $('#cmsCountAll').text(jsonDataSatistics.jsonCMSCount.cmsCount.cmsCountAll);
+            $('#cmsCountPerDay').text(jsonDataSatistics.jsonCMSCount.cmsCount.cmsCountPerDay);
+
+            $('#threadCountAll').text(jsonDataSatistics.jsonThreadCount.threadCount.threadCountAll);
+            $('#threadCountPerDay').text(jsonDataSatistics.jsonThreadCount.threadCount.threadCountPerDay);
+
+            $('#commentCountAll').text(jsonDataSatistics.jsonCommentCount.commentCount.commentCountAll);
+            $('#commentCountPerDay').text(jsonDataSatistics.jsonCommentCount.commentCount.commentCountPerDay);
+        }));
+
+        //最新版本信息
+        $.get('@CachedUrlHelper.Action("GetMostRecentVersion","ControlPanel")', function (data) {
+            var mostRecentVersion = $.parseJSON(data);
+            $('#mostRecentVersion').text(mostRecentVersion.MostRecentVersionInfo + '(' + mostRecentVersion.MostRecentVersion + ')');
+            $('#updateHistory').attr('href', mostRecentVersion.MostRecentVersionHistoryUrl);
+        });
+    });
+
+
+</script>

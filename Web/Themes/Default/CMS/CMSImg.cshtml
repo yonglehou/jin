@@ -1,0 +1,135 @@
+﻿@{
+    ViewData["Title"] = new string[] { "图片" };
+    var cmsImgList = ViewData.Get<IEnumerable<SpecialContentItem>>("cmsImgList", null);
+    var currentuser = UserContext.CurrentUser;
+}
+
+<div class="container">
+    <div class="row jh-img-home slider-home">
+        <div class="col-xs-9">
+            @if (currentuser != null && currentuser.IsSuperAdministrator())
+            {
+                <button class="btn btn-default" style="position:absolute;right:0;display:none;z-index:100" id="recommend-manage"><i class="fa fa-cog"></i></button>
+            }
+            @if (cmsImgList.Any())
+            {
+                <div class="ly-slider tn-mb-30">
+                    <div id="example3" class="slider-pro jh-slider-pro-home">
+                        <div class="sp-slides">
+                            @foreach (var item in cmsImgList)
+                            {
+                                <div class="sp-slide">
+                                    <a href="@SiteUrls.Instance().CMSImgDetail(item.ItemId)" target="_blank">
+                                        <img class="sp-image" data-original="~/js/lib/slider-pro/css/images/blank.gif"
+                                             data-src="@item.FeaturedImageUrl()" />
+                                    </a>
+                                    <div class="sp-layer sp-black sp-padding"
+                                         data-position="bottomLeft" data-vertical="0" data-width="100%"
+                                         data-show-transition="up">
+                                        <div class="col-xs-5" title="@item.ItemName">
+                                            @HtmlUtility.TrimHtml(item.ItemName, 30)
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <a href="javascript:;;" class="jh-prev" onclick="$.fn.previousimg()"></a>
+                        <div class="sp-thumbnails">
+                            @{
+                                foreach (var item in cmsImgList)
+                                {
+                                    <img class="sp-thumbnail" src="@item.FeaturedImageUrl("Small")" />
+                                }
+                            }
+                        </div>
+                        <a href="javascript:;" class="jh-next" onclick="$.fn.nextimg()"></a>
+                    </div>
+                </div>
+                                }
+
+            <div class="jh-padding-white tn-mb-20" id="CMSImgList">
+                @Html.Action("_ListCMSImg", "CMS")
+            </div>
+        </div>
+        <div class="col-xs-3">
+            @Html.Action("_HotarticleImg", "CMS")
+        </div>
+    </div>
+</div>
+@Html.Hidden("hiddenlabindexs", 1)
+@Styles.Render("~/Bundle/Styles/slider")
+
+@*
+    @Scripts.Render("~/Bundle/Scripts/slider")
+    @Scripts.Render("~/Bundle/Scripts/page")
+*@
+
+<link type="text/css" href="~/js/lib/slider-pro/css/jh-img-style.css" rel="stylesheet" />
+<script src="~/js/tn.onscroll.js"></script>
+
+@if (currentuser != null && currentuser.IsSuperAdministrator())
+{
+    <script>
+        require(['jquery'], function () {
+            $(".slider-home").hover(function myfunction() {
+                $("#recommend-manage").show();
+            }, function myfunction() {
+                var xoda2 = $("#recommend-manage");
+                $("#recommend-manage").hide();
+            }
+                )
+        })
+    </script>
+}
+<script>
+    require(['jquery', 'tnlayer', 'page', 'sliderpro'], function ($, tnlayer) {
+        $("#recommend-manage").click(function () {
+            tnlayer.layermodal('资讯推荐', '@SiteUrls.Instance()._ManageSpecialContentItems(SpecialContentTypeIds.Instance().CMS_Image())'.replace(/&amp;/g, "&"), '450px', 'auto')
+        })
+        window.onscroll = function () {
+            if (getScrollTop() + getClientHeight() == getScrollHeight()) {
+                var count = Math.ceil($(".hiddenlabindex").val());
+                if (count == Math.ceil($("#hiddenlabindexs").val())) {
+                    if (count < 3) {
+                        var _that = $(".pagenext");
+                        $("#hiddenlabindexs").val(count + 1);
+                        _that.click();
+                    }
+                }
+            }
+        }
+
+
+        $.fn.nextimg = function () {
+            $(".sp-next-arrow").click()
+        }
+        $.fn.previousimg = function () {
+            $(".sp-previous-arrow").click()
+        }
+
+        $('#example3').sliderPro({
+            width: 850,
+            height: 400,
+            fade: true,
+            //箭头导航按钮
+            arrows: true,
+            //圆点导航按钮
+            buttons: false,
+            //“全屏”按钮是否可用
+            fullScreen: false,
+            //是否打乱图片顺序
+            shuffle: false,
+            smallSize: 10,
+            mediumSize: 10,
+            largeSize: 10,
+            //设置幻灯片是否无限循环
+            loop: false,
+            //箭头按钮是否可用
+            thumbnailArrows: true,
+            autoplay: false
+        });
+
+
+
+    })
+</script>

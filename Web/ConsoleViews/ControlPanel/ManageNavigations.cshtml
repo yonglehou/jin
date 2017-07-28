@@ -1,0 +1,186 @@
+﻿@model IEnumerable<Navigation>
+@{
+    ViewData["Title"] = new string[] { "导航管理" };
+    TempData["subMenu-check"] = new string[] { "Setting", "ManageNavigations" };
+
+    string routeUrl = string.Empty;
+}
+<div id="ManageNavigations">
+    <div class="row tn-page-heading tn-mb-10">
+        <div class="col-lg-12">
+            <h3>导航管理</h3>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div class="form-inline tn-tool-column">
+                <div class="form-group">
+                    <button type="button" class="btn btn-default btn-newcategory layernavigation"><i class="fa fa-plus"></i> 新建导航</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div id="_ListNavigations">
+                @if (Model == null || !Model.Any())
+                {
+                <div class="row text-warning text-center wrapper">
+                    没有查询到导航数据
+                </div>
+                }
+                else
+                {
+                <table class="table table-hover tn-va-middle">
+                    <thead>
+                        <tr>
+                            <th>导航名称</th>
+                            <th>导航Id</th>
+                            <th>链接</th>
+                            <th>是否启用</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                        <tr class="parent-@item.ParentNavigationId" data-itemnavigationid="@item.NavigationId" data-itemparentnavigationid="@item.ParentNavigationId">
+                            <td style="text-indent:@(item.Depth)em">
+                                <span title="@item.NavigationText" @{if (!item.IsEnabled) { <text> style="color:gray" </text>}}>
+                                    @if (item.Depth > 0)
+                                    {
+                                        if (item.Children != null && item.Children.Any())
+                                        {
+                                        <text>├─</text>
+                                        }
+                                        else
+                                        {
+                                        <text>└─</text>
+                                        }
+                                    }
+                                    @HtmlUtility.TrimHtml(item.NavigationText, 28)
+                                </span>
+                                @if (item.NavigationType == NavigationTypes.AddCategory)
+                                {
+                                <span class="label label-default">@item.NavigationType.GetDisplayName()</span>
+                                }
+                            </td>
+                            <td>@item.NavigationId</td>
+
+                            @if (string.IsNullOrWhiteSpace(item.NavigationUrl))
+                            {
+                                try
+                                {
+                                    routeUrl = Url.RouteUrl(item.UrlRouteName);
+                                }
+                                catch (Exception)
+                                {
+
+                                    routeUrl = "未找到与路由名称  \"" + item.UrlRouteName + "\"  相匹配的链接";
+                                }
+                            }
+                            <td>
+                                <span title="@(!string.IsNullOrWhiteSpace(item.NavigationUrl) ? item.NavigationUrl :routeUrl)">@(!string.IsNullOrWhiteSpace(item.NavigationUrl) ? HtmlUtility.TrimHtml(item.NavigationUrl, 22) : HtmlUtility.TrimHtml(routeUrl, 22))</span>
+                            </td>
+                            <td>
+                                @if (item.IsEnabled)
+                                {
+                                <i class="fa fa-check fa-lg tn-green-color"></i>
+                                }
+                                else
+                                {
+                                <i class="fa fa-ban fa-lg tn-red-color"></i>
+                                }
+                            </td>
+                            <td>
+                                <a class="newnavigation tn-mr-10 layerchildrennavigation" data-id="@item.NavigationId" role="button" title="添加子导航"><i class="fa fa-plus fa-lg"></i></a>
+                                <a class="editnavigation tn-mr-10 layernavigationupdate" data-id="@item.NavigationId" data-parentid="@item.ParentNavigationId" role="button" title="编辑导航"><i class="fa fa-pencil fa-lg"></i></a>
+                                <a class="deletenavigation tn-mr-10" role="button" title="删除导航" data-itemnavigationid="@item.NavigationId"><i class="fa fa-trash fa-lg"></i></a>
+
+                                @*找出在同一个父导航下的，深度相 同的兄弟节点，计算出比自己展示顺序（DisplayOrder）小的个数，如果为0个说明自己位于兄弟节点中的第一个无法上移*@
+                                @if (Model.Where(n => n.ParentNavigationId == item.ParentNavigationId && n.Depth == item.Depth && n.DisplayOrder < item.DisplayOrder).Count() > 0)
+                                {
+                                <a href="javascript:;" class="upanddown tn-mr-10" data-upordown="up" role="button" title="上移"><i class="fa fa-arrow-up fa-lg"></i></a>
+                                }
+                                @*找出在同一个导航别下的，深度相同的兄弟节点，计算出比自己展示顺序（DisplayOrder）大的个数，如果为0个说明自己位于兄弟节点中的最后一个无法下移*@
+                                @if (Model.Where(n => n.ParentNavigationId == item.ParentNavigationId && n.Depth == item.Depth && n.DisplayOrder > item.DisplayOrder).Count() > 0)
+                                {
+                                <a href="javascript:;" class="upanddown tn-mr-10" data-upordown="down" role="button" title="下移"><i class="fa fa-arrow-down fa-lg"></i></a>
+                                }
+                            </td>
+                        </tr>
+                        }
+
+                    </tbody>
+                </table>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    require(['jquery', 'layer', 'tnlayer'], function ($, _, tnlayer) {
+        $('.layernavigation').click(function () {
+            tnlayer.layermodal('添加导航', '@CachedUrlHelper.Action("_EditNavigation","ControlPanel")', '450px', '500px')
+        })
+        $('.layerchildrennavigation').click(function () {
+            var navigationId = $(this).data("id");
+            tnlayer.layermodal('添加子导航', '@CachedUrlHelper.Action("_EditNavigation","ControlPanel")?parentNavigationId=' + navigationId, '450px', '500px')
+        })
+        $('.layernavigationupdate').click(function () {
+            var navigationId = $(this).data("id");
+            var parentNavigationId = $(this).data("parentid");
+            tnlayer.layermodal('编辑导航', '@CachedUrlHelper.Action("_EditNavigation","ControlPanel")?navigationId=' + navigationId + '&parentNavigationId=' + parentNavigationId, '450px', '500px')
+        })
+
+        //删除导航
+        $('.deletenavigation').on('click', function () {
+            var $this = $(this);
+            layer.confirm("确定要删除么？",
+            { btn: ["确定", "取消"], icon: 3 }, function () {
+                var itemNavigationId = $this.data('itemnavigationid');
+                $.post('@CachedUrlHelper.Action("DeleteNavigation","ControlPanel")', { navigationId: itemNavigationId, t: (new Date()).valueOf() }, function (data) {
+                    if (data.MessageType) {
+                        layer.msg(data.MessageContent, { icon: 1 });
+                        //异步刷新列表
+                        $.get('@CachedUrlHelper.Action("ManageNavigations","ControlPanel")', { t: (new Date()).valueOf() }, function (html) {
+                            $('#ManageNavigations').html(html);
+                        });
+                    }
+                    else {
+                        layer.msg(data.MessageContent, { icon: 2 });
+                    }
+                });
+            });
+        });
+
+        //上移/下移
+        $('.upanddown').on('click', function () {
+            var $this = $(this);
+            var fromNavigationId = $this.closest('tr').data('itemnavigationid');
+            var parentNavigationId = $this.closest('tr').data('itemparentnavigationid');
+            var toNavigationId;
+
+            if ($this.data('upordown') == 'up') {
+                toNavigationId = $this.closest('tr').prevAll('.parent-' + parentNavigationId).data('itemnavigationid');
+            }
+            else {
+                toNavigationId = $this.closest('tr').nextAll('.parent-' + parentNavigationId).data('itemnavigationid');
+            }
+
+            $.post('@CachedUrlHelper.Action("ChangeNavigationOrder","ControlPanel")', { fromNavigationId: fromNavigationId, toNavigationId: toNavigationId, t: (new Date()).valueOf() }, function (data) {
+                if (data.MessageType) {
+                    layer.msg(data.MessageContent, { icon: 1 });
+                    //异步刷新列表
+                    $.get('@CachedUrlHelper.Action("ManageNavigations", "ControlPanel")', { t: (new Date()).valueOf() }, function (html) {
+                        $('#ManageNavigations').html(html);
+                    });
+                }
+            });
+        });
+    })
+
+
+
+</script>

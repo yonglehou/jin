@@ -1,0 +1,210 @@
+﻿@{
+    Layout = null;
+}
+@{
+
+    Dictionary<string, bool> directoryPermissions = ViewData.Get<Dictionary<string, bool>>("DirectoryPermissions", new Dictionary<string, bool>());
+
+    SystemInfo sysInfo = new SystemInfo();
+    bool sussess = true;
+}
+<!doctype html>
+<html class="no-js" lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge, chrome=1">
+    <title>环境检测</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../css/bootstrap.css">
+    <link rel="stylesheet" href="../css/font-awesome.css">
+    <!--框架样式-->
+    <link rel="stylesheet" href="../css/tnui.css">
+    <link rel="stylesheet" href="../css/jh-install.css">
+    <script type="text/javascript" src="../js/modernizr-2.8.3.min.js"></script>
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="../js/html5shiv.min.js"></script>
+    <script type="text/javascript" src="../js/respond.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <div class="tn-doc">
+        <div class="tn-content">
+            <div class="container">
+                <div class="jh-install-logo">
+                    <img alt="..." src="../img/logo-big.png" width="124">
+                    <span class="jh-install-wizard"> v5.0 安装向导</span>
+                </div>
+                <div class="jh-install-block">
+                    <div class="jh-install-nav">
+                        <ul class="list-inline">
+                            <li class="active">
+                                    <span class="jh-nav-number">1</span>
+                                    环境检测
+                            </li>
+                            <li>
+                                    <span class="jh-nav-number">2</span>
+                                    连接数据库
+                            </li>
+                            <li>
+                                    <span class="jh-nav-number">3</span>
+                                    初始化数据
+                            </li>
+                            <li>
+                                    <span class="jh-nav-number">4</span>
+                                    安装完成
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="jh-install-content">
+                        <h6 class="tn-weight-bold">数据库要求</h6>
+                        <p>SQL Server 2008 R2（SQL Server Express 2008 R2）以上版本 或 MySQL5.x</p>
+                        <table class="table table-hover">
+                            <caption>
+                                运行环境
+                            </caption>
+                            <thead>
+                                <tr>
+                                    <th width="40%">项目</th>
+                                    <th width="30%">所需配置</th>
+                                    <th width="25%">当前配置</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>.NET Framework</td>
+                                    <td>4</td>
+                                    <td>@sysInfo.Framework</td>
+                                    <td>
+                                        @{
+                                            if (Convert.ToDouble(sysInfo.Framework) >= 4)
+                                            {
+                                                <i class="fa  fa-check-circle tn-green-color fa-lg"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fa  fa-times-circle-o tn-red-color fa-lg"></i>
+                                                sussess = false;
+                                            }
+
+                                        }
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>IIS</td>
+                                    <td>IIS7.0以上</td>
+                                    <td>@sysInfo.IIS</td>
+                                    <td>
+                                        @{
+                                            int iis = Convert.ToInt32(sysInfo.IIS.Substring(3));
+
+                                            if (iis >= 7)
+                                            {
+                                                <i class="fa  fa-check-circle tn-green-color fa-lg"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fa  fa-check-circle tn-green-color fa-lg"></i>
+                                                sussess = false;
+                                            }
+                                        }
+
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-hover">
+                            <caption>
+                                可写权限
+                            </caption>
+                            <thead>
+                                <tr>
+                                    <th width="40%">目录/文件</th>
+                                    <th width="30%">所需权限</th>
+                                    <th width="25%">当前权限</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>./App_Data</td>
+                                    <td>读写</td>
+
+                                    @if (directoryPermissions["App_Data"])
+                                    {
+                                        <td>读写</td>
+                                        <td><i class="fa  fa-check-circle tn-green-color fa-lg"></i></td>
+                                    }
+                                    else
+                                    {
+                                        <td>不可写</td>
+                                        <td><i class="fa  fa-times-circle-o tn-red-color fa-lg"></i></td>
+                                        sussess = false;
+                                    }
+
+                                </tr>
+                                <tr>
+                                    <td>./Uploads</td>
+                                    <td>读写</td>
+                                    @if (directoryPermissions["Uploads"])
+                                    {
+                                        <td>读写</td>
+                                        <td><i class="fa  fa-check-circle tn-green-color fa-lg"></i></td>
+                                    }
+                                    else
+                                    {
+                                        <td>不可写</td>
+                                        <td><i class="fa  fa-times-circle-o tn-red-color fa-lg"></i></td>
+                                        sussess = false;
+                                    }
+                                </tr>
+                                <tr>
+                                    <td>./web.config</td>
+                                    <td>读写</td>
+                                    @if (directoryPermissions["Webconfig"])
+                                    {
+                                        <td>读写</td>
+                                        <td><i class="fa  fa-check-circle tn-green-color fa-lg"></i></td>
+                                    }
+                                    else
+                                    {
+                                        <td>只读或不存在</td>
+                                        <td><i class="fa  fa-times-circle-o tn-red-color fa-lg"></i></td>
+                                        sussess = false;
+                                    }
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="text-center tn-mt-50">
+                            @if (sussess)
+                            {
+                                <button type="button" class="btn btn-success successNext">下一步</button>
+                                
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-primary reTested">重新检测</button>
+                            }
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="../js/jquery-1.12.0.min.js"></script>
+    <script type="text/javascript" src="../js/main.js"></script>
+    <script type="text/javascript">
+        $(document).on("click", ".successNext", function () {
+
+            window.location.href = "@CachedUrlHelper.Action("Setup_Step2", "Setup")";
+        });
+        $(document).on("click", ".reTested", function () {
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>

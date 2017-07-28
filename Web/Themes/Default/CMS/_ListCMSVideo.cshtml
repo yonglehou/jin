@@ -1,0 +1,32 @@
+﻿@model PagingDataSet<ContentItem>
+
+@if (Model.Any())
+{
+    <div class="jh-padding-white">
+        <div class="row">
+            @foreach (var item in Model)
+            {
+            <div class="col-xs-3 jh-video-small">
+                <a href="@SiteUrls.Instance().CMSDetail(item.ContentItemId)">
+                    <div class="jh-video-block">
+                        <img src="@item.FristFeaturedImage("List")" controls="controls" style="width :100%;">
+                        <ul class="list-inline">
+                            <li class="pull-left"><i class="fa fa-play-circle-o" aria-hidden="true"></i> @ContentItemExtension.ReadCount(item)</li>
+                            <li class="pull-right"><i class="fa fa-commenting"></i> @ContentItemExtension.CommentCount(item)</li>
+                        </ul>
+                    </div>
+                    <p title="@item.Subject">@HtmlUtility.TrimHtml(item.Subject, 18)</p>
+                </a>
+            </div>
+            }
+        </div>
+    </div>
+    <div class="text-center">
+        @Html.AjaxPagingButton(Model, "listcmsvideo", CachedUrlHelper.Action("_ListCMSVideo", "CMS",null), PaginationMode.NextLoadMore)
+    </div>
+}
+else
+{
+    <div class="text-center text-warning">暂无文章</div>
+}
+

@@ -1,0 +1,226 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{BEF6DCFD-C4EC-41D0-84C4-BCE86C3A073B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Tunynet.Spacebuilder</RootNamespace>
+    <AssemblyName>Tunynet.Spacebuilder</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="aliyun-net-sdk-core, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\aliyun-net-sdk-dm.1.0.0\lib\aliyun-net-sdk-core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="aliyun-net-sdk-dm, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\aliyun-net-sdk-dm.1.0.0\lib\aliyun-net-sdk-dm.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="aliyun-net-sdk-sms, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\aliyun-net-sdk-sms.1.0.4-V20160927\lib\netstandard1.6\aliyun-net-sdk-sms.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AntiXssLibrary, Version=4.3.0.0, Culture=neutral, PublicKeyToken=d127efab8a9c114f, processorArchitecture=MSIL">
+      <HintPath>..\packages\AntiXSS.4.3.0\lib\net40\AntiXssLibrary.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Autofac, Version=3.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.3.5.0\lib\net40\Autofac.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AutoMapper, Version=5.0.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.5.0.0-beta-1\lib\net45\AutoMapper.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="CaptchaMvc, Version=2.5.0.0, Culture=neutral, PublicKeyToken=fe46ad421dd3b0e6, processorArchitecture=MSIL">
+      <HintPath>..\packages\CaptchaMvc.Mvc5.1.5.0\lib\net45-full\CaptchaMvc.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="DevTrends.MvcDonutCaching, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MvcDonutCaching.1.2.1\lib\net40\DevTrends.MvcDonutCaching.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="HtmlAgilityPack, Version=1.4.9.5, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.1.4.9.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="HtmlSanitizationLibrary, Version=4.3.0.0, Culture=neutral, PublicKeyToken=d127efab8a9c114f, processorArchitecture=MSIL">
+      <HintPath>..\packages\AntiXSS.4.3.0\lib\net40\HtmlSanitizationLibrary.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http.Extensions, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http.Primitives, Version=4.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Mvc, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Tunynet.Infrastructure, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\Tunynet.Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="Tunynet.Product">
+      <HintPath>..\libs\Tunynet.Product.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="Extensions\NavigationExtensions.cs" />
+    <Compile Include="Model\UserProfile.cs" />
+    <Compile Include="Model\Enum\SelectUserStatusEnum.cs" />
+    <Compile Include="Tasks\DeleteTrashDataTask.cs" />
+    <Compile Include="UrlGetter\CMS_ImageSpecialUrlGetter.cs" />
+    <Compile Include="UrlGetter\CMS_VideoSpecialUrlGetter.cs" />
+    <Compile Include="UrlGetter\CMS_ArticleSpecialUrlGetter.cs" />
+    <Compile Include="UrlGetter\ContentItemSpecialUrlGetter.cs" />
+    <Compile Include="UrlGetter\ContentItemCommentUrlGetter.cs" />
+    <Compile Include="UrlGetter\ThreadSpecialUrlGetter.cs" />
+    <Compile Include="UrlGetter\ThreadCommentUrlGetter.cs" />
+    <Compile Include="Controllers\CMSController.cs" />
+    <Compile Include="Controllers\ControlPanelController.cs" />
+    <Compile Include="Controllers\UserSpaceController.cs" />
+    <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\CommonController.cs" />
+    <Compile Include="Controllers\PostController.cs" />
+    <Compile Include="Controllers\PortalController.cs" />
+    <Compile Include="Controllers\MessageController.cs" />
+    <Compile Include="Extensions\ContentCategoryExtension.cs" />
+    <Compile Include="Extensions\ContentItemExtension.cs" />
+    <Compile Include="Extensions\SMSExtensions.cs" />
+    <Compile Include="Extensions\EmailBuilderExtensions.cs" />
+    <Compile Include="Extensions\EmailSettingsManager.cs" />
+    <Compile Include="Extensions\FollowExtension.cs" />
+    <Compile Include="Extensions\ThreadExtension.cs" />
+    <Compile Include="SiteUrls.cs" />
+    <Compile Include="Model\ContentCategory.cs" />
+    <Compile Include="Model\Enum\UserTypeEnum.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UrlRoutingRegistration.cs" />
+    <Compile Include="ViewModels\AdvertisingEditModel.cs" />
+    <Compile Include="ViewModels\AdvertisingPositionEditModel.cs" />
+    <Compile Include="ViewModels\AuditItemInRolesEditModel.cs" />
+    <Compile Include="ViewModels\BanUserEditModel.cs" />
+    <Compile Include="ViewModels\AttachmentEditModel.cs" />
+    <Compile Include="ViewModels\LoginEditModel.cs" />
+    <Compile Include="ViewModels\PointItemEditModel.cs" />
+    <Compile Include="ViewModels\ProfileEditModel.cs" />
+    <Compile Include="ViewModels\ResetPasswordEditModel.cs" />
+    <Compile Include="ViewModels\RewardEditModel.cs" />
+    <Compile Include="ViewModels\RoleEditModel.cs" />
+    <Compile Include="ViewModels\SearchApiModel.cs" />
+    <Compile Include="ViewModels\SiteSettingEditModel.cs" />
+    <Compile Include="ViewModels\TagEditModel.cs" />
+    <Compile Include="ViewModels\TunynetProductVersion.cs" />
+    <Compile Include="ViewModels\UserInRoleEditModel.cs" />
+    <Compile Include="ViewModels\UserManageEditModel.cs" />
+    <Compile Include="ViewModels\UserProfileEditModel.cs" />
+    <Compile Include="ViewModels\AccountTypeEditModel.cs" />
+    <Compile Include="ViewModels\ContentCategoryModel.cs" />
+    <Compile Include="ViewModels\ContentItemEditModel.cs" />
+    <Compile Include="ViewModels\RegisterEditModel.cs" />
+    <Compile Include="ViewModels\SectionEditModel.cs" />
+    <Compile Include="ViewModels\UserRankEditModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj">
+      <Project>{77deaa6e-b73d-4311-a377-1d36d4934596}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Modules\Modules.csproj">
+      <Project>{02a241d2-7c6d-4fb3-a439-57d1e3b0e014}</Project>
+      <Name>Modules</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Presentation\Presentation.csproj">
+      <Project>{e9f63bc3-4463-43f4-a62a-f598c4e45e2c}</Project>
+      <Name>Presentation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ThirdParty\AccountBindings\AccountBindings.csproj">
+      <Project>{d4df7dc6-a98f-4bc7-b0d9-193645470602}</Project>
+      <Name>AccountBindings</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Repositories\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="DevTrends.MvcDonutCaching.README.txt" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />
+  <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">
+    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=317567." HelpKeyword="BCLBUILD2001" />
+    <Error Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="The build restored NuGet packages. Build the project again to include these packages in the build. For more information, see http://go.microsoft.com/fwlink/?LinkID=317568." HelpKeyword="BCLBUILD2002" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

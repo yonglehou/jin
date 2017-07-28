@@ -1,0 +1,66 @@
+﻿@model Searchers
+@{
+    ViewData["Title"] = new string[] { "索引管理" };
+    TempData["subMenu-check"] = "Tool";
+    TempData["subMenu-check"] = new string[] { "Tool", "ManageSearchIndexs" };
+}
+
+<div class="row tn-page-heading tn-mb-10">
+    <div class="col-lg-12">
+        <h3>索引管理</h3>
+    </div>
+</div>
+<div class="tn-main">
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <table class="table tn-va-middle">
+                <thead>
+                    <tr>
+                        <th>索引</th>
+                        <th>位置</th>
+                        <th>文件大小</th>
+                        <th>最后更新时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Data != null)
+                    {
+                        foreach (var item in Model.Data)
+                        {
+                            <tr>
+                                <td>@item.Name</td>
+                                <td>@item.IndexPath</td>
+                                <td>@item.Size</td>
+                                <td>@item.LastModified.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                                <td><a role="button" data-code="@item.Code" class="reBuildIndex">重建</a></td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+     require(['jquery'],function(){
+          $('.reBuildIndex').on('click', function () {
+                var $this = $(this);
+                layer.confirm('确定要重建索引么?<br/>重建过程可能需要一定时间', { btn: ["确定", "取消"], icon: 3 }, function () {
+                    $.post('@CachedUrlHelper.Action("RebuildIndex", "ControlPanel")', { code: $this.data('code') }, function (data) {
+                        if (data.state == 1) {
+                            layer.msg("重建索引成功", {
+                                icon: 1
+                            });
+                            setTimeout(function () { window.location.reload(true); }, 600);
+                        } else {
+                            layer.msg("重建索引失败", {
+                                icon: 2
+                            });
+                        }
+                    })
+                })
+            })
+     })
+</script>

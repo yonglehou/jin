@@ -1,0 +1,172 @@
+﻿@{
+    ISettingsManager<SiteSettings> siteSettingsManager = DIContainer.Resolve<ISettingsManager<SiteSettings>>();
+    var siteSettings = siteSettingsManager.Get();
+    var user = UserContext.CurrentUser;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge, chrome=1">
+    <title>@Formatter.GenerateTitle(true, ViewData.Get<string[]>("Title", null))</title>
+    @if (!string.IsNullOrEmpty(siteSettings.SearchMetaDescription))
+    {
+    <meta name="description" content="@(ViewData.Get("Description", siteSettings.SearchMetaDescription))">
+    }
+    @if (!string.IsNullOrEmpty(siteSettings.SearchMetaKeyWords))
+    {
+    <meta name="keywords" content="@(ViewData.Get("KeyWords", siteSettings.SearchMetaKeyWords))">
+    }
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    @Styles.Render("~/Bundle/Styles/Site")
+    @Styles.Render("~/Bundle/Styles/SiteThemes")
+    @Styles.Render("~/Bundle/Styles/tipsy")
+    @Styles.Render("~/Bundle/Styles/layer")
+    <script src="~/js/jquery-1.12.0.min.js"></script>
+    <script src="~/js/require.js"></script>
+    <script src="~/js/config.js"></script>
+    <script src="~/js/frameThemes.js"></script>
+        
+    @*去掉浏览器记住密码后的黄色背景*@
+    <style type="text/css">
+        input:-webkit-autofill, select:-webkit-autofill, textarea:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+        }
+    </style>
+
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="/js/html5shiv.min.js"></script>
+       <script type="text/javascript" src="/js/respond.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+    <div class="tn-doc">
+        @Html.Action("_Header", "Portal")
+     
+        <div class="tn-content">
+            <div class="container">
+                @Html.AntiForgeryToken()
+                @RenderBody()
+            </div>
+        </div>
+        <div class="tn-footer">
+            <div class="container text-center">
+                @Html.Action("_Footer", "Portal")
+            
+            </div>
+        </div>
+        @*返回顶部*@
+        <div class="jh-position-fixed">
+            <ul class="list-unstyled jh-share-style">
+                <li id="topid"><a href="#"><i class="fa fa-chevron-up "></i><br>顶部</a></li>
+            </ul>
+        </div>
+    </div>
+   
+    @if (Utility.IsMiniProfilerEnabled())
+    {
+    @StackExchange.Profiling.MiniProfiler.RenderIncludes(position: StackExchange.Profiling.RenderPosition.Left, showTrivial: false, showTimeWithChildren: false, startHidden: false);
+    }
+    @if (user != null)
+    {
+    <script>
+        /****返回顶部js代码 add by zhoums*****/
+        $(function () {
+            $("#topid").hide();
+        });
+        $(document).scroll(function () {
+            if ($(window).scrollTop() > 0) {
+                if ($(window).scrollTop() > 100) {
+                    $("#topid").show();
+                }
+            }
+            else {
+                $("#topid").hide();
+            }
+        })
+        $(document).on("click", "#topid", function () {
+            $('body,html').animate({ scrollTop: 0 }, 700);
+        });
+        /***************end add*************/
+
+        require(['jquery', 'tnlayer', 'signalr.hubs'], function ($, tnlayer) {
+
+           
+            $(function () {
+
+                //判断是否有发送通知权限
+                if (window.Notification && Notification.permission !== "granted") {
+                    //向用户请求获取通知权限
+                    Notification.requestPermission(function (status) {
+                        if (Notification.permission != status) {
+                            Notification.permission = status;
+                        }
+                    })
+                };
+                if ($.connection.NoticeHub!=null) {
+                    var chat = $.connection.NoticeHub;
+                    $.connection.hub.logging = false;
+                    //初始化连接
+                    chat.client.noticeUser = function sendNotice(id, message, userAvatarUrl, relativeObjectUrl) {
+
+                        if (localStorage["lastNoticeId"] != id) {
+                            localStorage["lastNoticeId"] = id;
+                            //如果用户允许发送通知 推送通知
+                            if (window.Notification && Notification.permission === "granted") {
+                                var n = new window.Notification(message, { icon: userAvatarUrl });
+                                n.onclick = function () {
+                                    window.open(relativeObjectUrl);
+                                }
+                            }
+                            else if (window.Notification && Notification.permission !== "denied") {
+                                Notification.requestPermission(function (status) {
+                                    if (Notification.permission !== status) {
+                                        Notification.permission = status;
+                                    }
+                                    if (status === "granted") {
+                                        var n = new Notification(message);
+                                    }
+                                    else {
+
+                                        layer.alert(message);
+                                    }
+                                })
+                            }
+                            else {
+
+                                layer.alert(message);
+                            }
+                        }
+                    }
+                    $.connection.hub.start();
+                }
+            });
+
+
+
+            //断开hub连接
+            $("a[href='/account/signout']").click(function () {
+                $.connection.hub.stop();
+            })
+
+        })
+
+    </script>
+    }
+    else
+    {
+    <script>
+        require(['jquery', 'signalr.hubs'], function ($) {
+            $(function () {
+                try {
+                    $.connection.hub.stop();
+                } catch (e) { }
+            });
+        })
+    </script>
+    }
+
+</body>
+</html>

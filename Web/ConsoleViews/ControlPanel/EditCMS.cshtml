@@ -1,0 +1,265 @@
+﻿@model ContentItemEditModel
+@{
+    TempData["subMenu-check"] = new string[] { "CMS", "ManageCMS" };
+    ViewData["Title"] = new string[] { (Model.ContentItemId > 0 ? "编辑" : "发布") + "资讯" };
+    //栏目
+    var category = ViewData.Get<ContentCategory>("category", new ContentCategory());
+    var user = UserContext.CurrentUser;
+    //标签
+    var tagsOfItem = ViewData.Get<IEnumerable<ItemInTag>>("tagsOfItem", new List<ItemInTag>());
+    var tagsOfItemvalue = string.Join(",", tagsOfItem.Select(n => n.TagName));
+}
+
+<div class="row tn-page-heading tn-mb-20">
+    <div class="col-xs-12">
+        <ol class="breadcrumb">
+            <li><a href="@CachedUrlHelper.Action("ManageCMS","ControlPanel")">资讯管理</a></li>
+            @if (!string.IsNullOrEmpty(category.CategoryName))
+            {
+                <li><a href="@CachedUrlHelper.Action("ManageCMS","ControlPanel")?contentCategoryId=@category.CategoryId">@category.CategoryName</a></li>
+            }
+            <li class="tn-active">发布文章</li>
+        </ol>
+    </div>
+</div>
+<div class="panel panel-default tn-survey-form">
+    <div class="panel-body">
+        @using (Html.BeginForm("EditCMS", "ControlPanel", FormMethod.Post, new { @class = "form-horizontal tn-form-validation", @id = "EditCMS" }))
+            {
+            @Html.HiddenFor(n => n.ContentItemId)
+            @Html.HiddenFor(n => n.ContentModelId)
+            @Html.HiddenFor(n => n.DateCreated)
+            @Html.Hidden("CategoryId", category.CategoryId)
+            @Html.ValidationMessageFor(n => n.ContentItemId)
+            @Html.ValidationMessageFor(n => n.ContentModelId)
+            @Html.ValidationMessageFor(n => n.DateCreated)
+            @Html.ValidationMessage("Author")
+            @Html.ValidationMessage("CategoryId")
+            @Html.HiddenFor(n => n.BodyImageAttachmentId)
+            @Html.ValidationMessageFor(n => n.BodyImageAttachmentId)
+            <div class="form-group">
+                <div class="col-xs-12">
+                    @Html.TextBoxFor(n => n.Subject, new { @class = "form-control", @placeholder = "标题" })
+                    @Html.ValidationMessageFor(n => n.Subject)
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-12">
+                    @Html.HtmlEditor("Body", TenantTypeIds.Instance().CMS_Article(), Model.ContentItemId, Model.Body, new Dictionary<string, object> { { "style", "height:400px;" }, { "maximumWords", 20000 } }, "allsattachment")
+                    @Html.ValidationMessageFor(n => n.Body)
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-12" id="TemporaryAttachments">
+                    @Html.Action("_TemporaryAttachments", "ControlPanel", new { tenantTypeId = TenantTypeIds.Instance().CMS_Article() })
+                </div>
+                <div class="col-xs-12" id="Attachments">
+                    @Html.Action("_Attachments", "ControlPanel", new { contentItemId = Model.ContentItemId, tenantTypeId = TenantTypeIds.Instance().CMS_Article() })
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-xs-2 control-label tn-width-90">摘要</label>
+                <div class="col-xs-4">
+                    @Html.TextAreaFor(n => n.Summary, new { @class = "form-control", @rows = "3" })
+                    @Html.ValidationMessageFor(n => n.Summary)
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-xs-2 control-label tn-width-90">标题图</label>
+                <div class="col-xs-2" id="UploadFileImgs">
+                    <input type="hidden" name="FeaturedImageAttachmentId" value="@Model.FeaturedImageAttachmentId" />
+                    @if (Model.FeaturedImageAttachmentId > 0)
+                    {
+                        <div class="tn-pic-attachment">
+                            <img class="img-thumbnail img-responsive" src="@(new AttachmentService(TenantTypeIds.Instance().CMS_Article()).Get(Model.FeaturedImageAttachmentId).GetDirectlyUrl("Small"))">
+                            <button class="btn btn-default btn-xs btn-removeImage" type="button"><i class="fa fa-remove"></i></button>
+                        </div>
+                    }
+                    else
+                    {
+                        @Html.FileUploader("UploadFile", TenantTypeIds.Instance().CMS_Article(), user.UserId, "+", extensions: "jpg,jpeg,png,bmp", associateId: Model.ContentItemId, callbacks: new { uploadSuccess = "succeedImageSyntony" })
+                    }
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-xs-2 control-label tn-width-90">设置标签</label>
+                <div class="col-xs-4">
+                    <input type="text" class="form-control tokenfield focus" id="tokenfield" value="@tagsOfItemvalue" />
+                    <span class="help-block">多个标签请用空格隔开,最多添加5个标签,标签长度不能超过60</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-xs-1 control-label tn-width-90">所属栏目</label>
+                <div class="col-xs-2">
+                    @Html.TextBox("CategoryId", category.CategoryName, new { @disabled = "", @class = "form-control jn-select-sm" })
+                    @Html.ValidationMessage("CategoryId")
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-xs-2 control-label tn-width-90">发布时间</label>
+                <div class="col-xs-2 has-feedback">
+                    @Html.DateTimePickerFor(n => n.DatePublished, new DateTimePicker { EnabledTime = true })
+                    <span class="form-control-feedback"><i class="fa fa-calendar"></i></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-xs-2 control-label tn-width-90">设置</label>
+                <div class="col-xs-4">
+                    <div class="">
+                        <label class="checkbox-inline tn-width-100">
+                            <input value="true" name="IsComment" type="checkbox" @(Model.IsComment ? "checked" : "")>
+                            禁止评论
+                        </label>
+                    </div>
+                    <div class="tn-mt-10">
+                        <label>
+                            <input value="true" name="IsVisible" type="checkbox" @(Model.IsVisible ? "checked" : "")>
+                            内容末尾显示附件列表
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-4 col-xs-offset-2">
+                    <button type="button" class="btn btn-primary btn-submit tn-btn-wp">确定</button>
+                    <a type="button" class="btn btn-default tn-btn-wp" href="@CachedUrlHelper.Action("ManageCMS","ControlPanel")?contentCategoryId=@category.CategoryId">取消</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+@Styles.Render("~/Bundle/Styles/tokenfield")
+@Styles.Render("~/Bundle/Styles/Uploader")
+@Styles.Render("~/Bundle/Styles/daterangepicker")
+
+<script>
+
+    require(['jquery', 'ZeroClipboard', 'ueditor', 'datepicker', 'uploader', 'tnlayer', 'validate.unobtrusive', 'tokenfield', 'tag'], function ($, ZeroClipboard) {
+        window['ZeroClipboard'] = ZeroClipboard;
+        function haveContent() {
+            if ($("#Subject").val().length > 0) { return true; }
+            if (UE.getEditor("Body").getContent() != "") { return true; }
+            if ($("#Summary").val().length > 0) { return true; }
+            if ($("[name='FeaturedImageAttachmentId']").val().length > 0 && parseInt($("[name='FeaturedImageAttachmentId']").val()) > 0) { return true; }
+            if ($('#tokenfield').tokenfield('getTokens').length > 0) { return true; }
+            return false;
+        }
+        $(window).bind('beforeunload', function () {
+            if (!haveContent()) { beforeunloadn() }
+            else
+            {
+                return "离开后页面上的内容将不会被保存，确定要离开么？";
+            }
+        });
+        function beforeunloadn() {
+            $(window).unbind('beforeunload');//取消提醒
+        }
+        //提交表单
+        $('.btn-submit').on('click', function () {
+            beforeunloadn()
+            var bodyImageIds = [];
+            //编辑器 img
+            var bodyImageId = $("#BodyImageAttachmentId");
+            //var imgIds = "";
+            var _img = $(UE.getEditor("Body").getContent()).find("img")
+            $(_img).each(function () {
+                bodyImageIds.push($(this).data('id'));
+            });
+            //临时附件
+            var _temporarya = $("#TemporaryAttachments").find("a")
+            $(_temporarya).each(function () {
+                bodyImageIds.push($(this).data('id'));
+            });
+            //正式附件
+            var _attachments = $("#Attachments").find("a")
+            $(_attachments).each(function () {
+                bodyImageIds.push($(this).data('id'));
+            });
+            //标题图
+            bodyImageIds.push($("[name='FeaturedImageAttachmentId']").val());
+            bodyImageId.val(bodyImageIds.join(','));
+            $('#EditCMS').submit();
+        });
+
+        //附件上传成功回调
+        $.fn.succeedSyntony = function () {
+            $('#schedule').hide();
+            var parm = jQuery.param({ t: new Date().getTime() }, true);
+            $.get("@CachedUrlHelper.Action("_TemporaryAttachments", "ControlPanel")", parm, function (data) {
+                $("#TemporaryAttachments").html(data)
+            });
+        }
+
+        //删除附件
+        $(document).on('click', 'a[id^=delete-]', function () {
+            var _that = $(this);
+            var param = jQuery.param({ attachmentId: _that.attr("id").replace(/[^0-9]/ig, ""), t: new Date().getTime() }, true);
+            $.post('@CachedUrlHelper.Action("_DeleteAttachments", "ControlPanel")', param, function (data) {
+                if (data.MessageType) {
+                    layer.msg(data.MessageContent, {
+                        icon: 1
+                    });
+                    _that.parent().remove();
+
+                }
+                else {
+                    layer.msg(data.MessageContent, {
+                        icon: 2
+                    });
+                }
+            });
+        });
+        //标题图上传成功回调
+        $.fn.succeedImageSyntony = function (file, data) {
+            var $this = $("#UploadFileImgs");
+            var itemTmpl = '<div class="tn-pic-attachment">\
+                                <img class="img-thumbnail img-responsive" src="' + data.path + '" alt="...">\
+                                <button class="btn btn-default btn-xs btn-removeImage" type="button"><i class="fa fa-remove"></i></button>\
+                                </div>';
+            $this.append(itemTmpl);
+            var uploadFileInput = $("[name='FeaturedImageAttachmentId']");
+            uploadFileInput.val(data.id);
+            $this.find("div[id^='uploader-UploadFile']").remove();
+        }
+
+
+        //移除标题图
+        $(document).on('click', '.btn-removeImage', function () {
+            var temp = '@Html.FileUploader("UploadFile", TenantTypeIds.Instance().CMS_Article(), user.UserId, "+", extensions: "jpg,jpeg,png,bmp", associateId: Model.ContentItemId,callbacks: new { uploadSuccess = "succeedImageSyntony" })';
+            var $this = $(this);
+            var uploadFileInput = $("[name='FeaturedImageAttachmentId']");
+            uploadFileInput.val("0")
+            $this.parent().parent().append(temp);
+            $this.parent().remove();
+        });
+
+
+        //标签
+        $('#tokenfield').tokenfield({
+            limit: 5,
+            showAutocompleteOnFocus: true,
+        })
+
+        $('#tokenfield').on('tokenfield:createtoken', function (event) {
+            var existingTokens = $(this).tokenfield('getTokens');
+            if (event.attrs.value.length > 60) {
+                layer.msg("标签长度不能超过60", {
+                    icon: 2
+                });
+                return false;
+            }
+            else {
+                $.each(existingTokens, function (index, token) {
+                    if (token.value === event.attrs.value)
+                        event.preventDefault();
+                });
+            };
+        });
+
+
+    })
+
+
+
+</script>
+

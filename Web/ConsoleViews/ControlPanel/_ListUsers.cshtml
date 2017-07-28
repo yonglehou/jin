@@ -1,0 +1,364 @@
+﻿@model PagingDataSet<User>
+@{
+    Layout = null;
+    var qurey = ViewData.Get<UserQuery>("query", new UserQuery());
+    var state = ViewData.Get<string>("state", "");
+}
+@if (Model.Count() > 0)
+{
+    <table class="table tn-va-middle">
+        <thead>
+            <tr>
+                <th><input type="checkbox" value="0" id="selectAll" /></th>
+                <th>用户Id</th>
+                <th>昵称</th>
+                <th>姓名</th>
+                <th>等级</th>
+                <th>上次登录</th>
+                <th>注册日期</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+                {
+                <tr id="@user.UserId">
+                    <td>
+                        <input class="userCheckBox tn-checkbox" type="checkbox" data-id="@user.UserId" />
+                    </td>
+                    <td>@user.UserId</td>
+                    <td>
+                        <a href="@SiteUrls.Instance().SpaceHome(user.UserId)" target="_blank">@user.UserName</a>
+                        @if (user.IsBanned)
+                    {
+                            <span class="bannedUser" data-id="@user.UserId"><i title="封禁原因: @user.BanReason" style="color:#666;vertical-align: middle" class="fa fa-ban fa"></i></span>
+                        }
+                        else
+                        {
+                            foreach (var role in user.GetUserRoles())
+                            {
+                                string imageurl = role.RoleImageUrl();
+                                if (role.RoleImageUrl() != string.Empty)
+                                {
+                                    <span><img src="@imageurl" title="@role.RoleName" /></span>
+                                }
+                            }
+                        }
+                        @if (user.IsModerated || user.IsForceModerated)
+                    {
+                        if (user.IsForceModerated)
+                        {
+                                <span class="moderatedUser" data-id="@user.UserId"><i title="永久管制" class="fa fa-unlock-alt" style="color:#666;vertical-align: middle"></i></span>
+                            }
+                            else
+                            {
+                                <span class="moderatedUser" data-id="@user.UserId"><i title="管制" class="fa fa-unlock-alt" style="color:#666;vertical-align: middle"></i></span>
+                            }
+                        }
+                    </td>
+                    <td>@user.TrueName</td>
+                    <td>@user.Rank</td>
+                    <td>@user.LastActivityTime.ToUserDateString()</td>
+                    <td>@user.DateCreated.ToUserDateString()</td>
+                    <td class="text-nowrap">
+                        <a href="javascript:;" data-id="@user.UserId" class="edit-user layeruserid">修改</a>
+                        <a href="javascript:;" data-id="@user.UserId" class="edit-password layerpassword">改密码</a>
+                        <span class="dropdown">
+                            <a href="#" data-toggle="dropdown" class="dropdown-toggle">更多<strong class="caret"></strong></a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a href="javascript:;" data-id="@user.UserId" class="layeruserrole">设置用户角色</a>
+                                </li>
+                                <li>
+                                    <a href="javascript:;" data-id="@user.UserId" class="layerrewarduser">奖惩用户</a>
+                                </li>
+                                <li>
+                                    @if (user.IsBanned)
+                                    {
+                                        <a href="javascript:;" data-id="@user.UserId" class="unbanUser">解封用户</a>
+                                    }
+                                    else
+                                    {
+                                        <a href="javascript:;" data-id="@user.UserId" class="layerbanuser">封禁用户</a>
+                                    }
+                                </li>
+                            </ul>
+                        </span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="text-center clearfix text-warning">无查询用户</div>
+}
+<div class="text-center">
+    @Html.AjaxPagingButton(Model, "_listUsers", SiteUrls.Instance()._ListUsers(qurey.Keyword, qurey.RoleId, state, qurey.RegisterTimeLowerLimit, qurey.RegisterTimeUpperLimit))
+</div>
+
+<script>
+    require(['jquery','tnlayer'], function ($,tnlayer) {
+        $('.layeruserid').click(function () {
+            var userId = $(this).data("id");
+            tnlayer.layermodal('修改用户', '@CachedUrlHelper.Action("_EditUser", "ControlPanel")?userId=' + userId + '&t=' + new Date().getTime(), '450px', 'auto')
+        });
+        $('.layerpassword').click(function () {
+            var userId = $(this).data("id");
+            tnlayer.layermodal('修改密码', '@CachedUrlHelper.Action("_ChangePassword", "ControlPanel")?userId=' + userId + '&t=' + new Date().getTime(), '450px', 'auto')
+        });
+        $('.layeruserrole').click(function () {
+            var userId = $(this).data("id");
+            tnlayer.layermodal('设置用户角色', '@CachedUrlHelper.Action("_SetRole", "ControlPanel")?userId=' + userId + '&t=' + new Date().getTime(), '450px', 'auto')
+        });
+        $('.layerrewarduser').click(function () {
+            var userId = $(this).data("id");
+            tnlayer.layermodal('奖惩用户', '@CachedUrlHelper.Action("_RewardUser", "ControlPanel")?userId=' + userId + '&t=' + new Date().getTime(), '450px', 'auto')
+        });
+        $('.layerbanuser').click(function () {
+            var userId = $(this).data("id");
+            tnlayer.layermodal('封禁用户', '@CachedUrlHelper.Action("_BanUser", "ControlPanel")?userId=' + userId + '&t=' + new Date().getTime(), '450px', 'auto')
+        });
+
+
+        $(function () {
+            //搜索
+            $("#search").click(function () {
+                var keyword = $("#keyword").val();
+                var startDate = $("#minDate").val();
+                var endDate = $("#maxDate").val();
+                var state = $("#state option:selected").val();
+                var roleId = $("#role option:selected").val();
+                if (roleId == "") {
+                    roleId = 0;
+                }
+                if (state == "") {
+                    state = 0;
+                }
+                $.get('@CachedUrlHelper.Action("_ListUsers","ControlPanel")',
+                    { keyword: keyword, startDate: startDate, endDate: endDate, state: state, roleId: roleId, requestDate: new Date().getTime() }
+                    , function (data) {
+                        $("#_listUsers").html(data)
+                    })
+            })
+
+            //全选
+            $(document).on("click", "#selectAll", function () {
+                if (this.checked == true) {
+                    $(".tn-checkbox").each(function () {
+                        this.checked = true;
+                    });
+                    checkedActive($(this));
+                } else {
+                    $(".tn-checkbox").each(function () {
+                        this.checked = false;
+                    });
+                }
+            });
+           
+            //解封用户
+            $(".unbanUser").click(function () {
+                var id = $(this).data('id');
+                var keyword = $("#keyword").val();
+                var startDate = $("#minDate").val();
+                var endDate = $("#maxDate").val();
+                var state = $("#state option:selected").val();
+                var roleId = $("#role option:selected").val();
+                if (roleId == "") {
+                    roleId = 0
+                }
+                if (state == "") {
+                    state = 0;
+                }
+                layer.confirm("是否确认解封用户?", {
+                    btn: ['确认', '取消']
+                },
+                function () {
+                    $.post('@CachedUrlHelper.Action("_UnbanUser","ControlPanel")', { userId: id }, function (data) {
+                        if (data.state == 1) {
+                            layer.msg("解封用户成功", { icon: 1 });
+                            $.get('@CachedUrlHelper.Action("_ListUsers", "ControlPanel")', { keyword: keyword, startDate: startDate, endDate: endDate, state: state, roleId: roleId, pageIndex: " @Model.PageIndex", requestDate: new Date().getTime() }, function (data) {
+                                $("#_listUsers").html(data);
+                            })
+                        }
+                        else {
+                            layer.msg("解封用户失败", { icon: 2 });
+                        }
+                    })
+                })
+            })
+            //删除用户
+            $(".delete-user").click(function () {
+                var keyword = $("#keyword").val();
+                var startDate = $("#minDate").val();
+                var endDate = $("#maxDate").val();
+                var state = $("#state option:selected").val();
+                var roleId = $("#role option:selected").val();
+                var userCheckBox = $("input.userCheckBox");
+                var checkedUserIds = [];
+                if (roleId == "") {
+                    roleId = 0
+                }
+                if (state == "") {
+                    state = 0;
+                }
+                for (var i = 0; i < userCheckBox.length; i++) {
+                    checkItem = $(userCheckBox[i]);
+                    if (checkItem.prop('checked')) {
+                        checkedUserIds.push(checkItem.data("id"));
+                    }
+                }
+
+                layer.confirm("是否确认删除用户？", {
+                    btn: ['确认', '取消']
+                },
+                function () {
+                    $.post('@CachedUrlHelper.Action("_DeleteUser", "ControlPanel")', { Ids: checkedUserIds }, function (data) {
+                        if (data) {
+                            if (data.state == 1) {
+                                layer.msg("删除成功", { icon: 1 });
+                                $.get('@CachedUrlHelper.Action("_ListUsers", "ControlPanel")', { keyword: keyword, startDate: startDate, endDate: endDate, state: state, roleId: roleId, pageIndex: " @Model.PageIndex", requestDate: new Date().getTime() }, function (data) {
+                                    $("#_listUsers").html(data);
+                                })
+                            }
+                            else {
+                                var failMessage = "用户 " + data.failedMsg;
+                                layer.msg("删除" + failMessage + "失败", { icon: 2 })
+                            }
+                        }
+                        else {
+                            layer.msg("删除失败", { icon: 2 })
+                        }
+                    }, "json")
+                }
+                )
+            })
+        })
+        //编辑回调函数
+        $.fn.EditCallBack = function (data) {
+            var keyword = $("#keyword").val();
+            var startDate = $("#minDate").val();
+            var endDate = $("#maxDate").val();
+            var state = $("#state option:selected").val();
+            var roleId = $("#role option:selected").val();
+            if (roleId == "") {
+                roleId = 0
+            }
+            if (state == "") {
+                state = 0;
+            }
+            if (data.state == 1) {
+                var successmsg = data.successmsg;
+                $.get('@CachedUrlHelper.Action("_ListUsers", "ControlPanel")', { keyword: keyword, startDate: startDate, endDate: endDate, state: state, roleId: roleId, pageIndex: " @Model.PageIndex", requestDate: new Date().getTime() }, function (data) {
+                    $("#_listUsers").html(data);
+                })
+                layer.closeAll();
+                layer.msg(data.successmsg, { icon: 1 });
+            }
+            else {
+                layer.msg(data.errormsg, { icon: 2 });
+            }
+        }
+        //封禁用户回调函数
+        $.fn.BanUserCallBack = function (data) {
+            var keyword = $("#keyword").val();
+            var startDate = $("#registeDate").parent().find("#minDate").val();
+            var endDate = $("#registeDate").parent().find("#maxDate").val();
+            var state = $("#state option:selected").val();
+            var roleId = $("#role option:selected").val();
+            if (roleId == "") {
+                roleId = 0
+            }
+            if (state == "") {
+                state = 0;
+            }
+            if (endDate == "") {
+                startDate = "";
+                $("#registeDate").parent().find("#minDate").val("");
+            }
+            if (data.state == 1) {
+                $.get('@CachedUrlHelper.Action("_ListUsers", "ControlPanel")', { keyword: keyword, startDate: startDate, endDate: endDate, state: state, roleId: roleId, requestDate: new Date().getTime() }, function (data) {
+                    $("#_listUsers").html(data);
+                })
+                layer.closeAll();
+                layer.msg("封禁用户成功!", { icon: 1 })
+            }
+            else {
+                layer.msg("封禁用户失败!", { icon: 2 })
+            }
+        };
+        //修改密码回调函数
+        $.fn.ChangePasswordCallBack = function (data) {
+            var keyword = $("#keyword").val();
+            var startDate = $("#minDate").val();
+            var endDate = $("#maxDate").val();
+            var state = $("#state option:selected").val();
+            var roleId = $("#role option:selected").val();
+            if (roleId == "") {
+                roleId = 0
+            }
+            if (state == "") {
+                state = 0;
+            }
+            if (data.state == 1) {
+                $.get('@CachedUrlHelper.Action("_ListUsers", "ControlPanel")', { keyword: keyword, startDate: startDate, endDate: endDate, state: state, roleId: roleId, pageIndex: " @Model.PageIndex", requestDate: new Date().getTime() }, function (data) {
+                    $("#_listUsers").html(data);
+                })
+                layer.closeAll();
+                layer.msg("密码修改成功!", { icon: 1 })
+            }
+            else {
+                layer.msg("密码修改失败!", { icon: 2 })
+            }
+        }
+        //设置角色回调函数
+        $.fn.SetRoleCallBack = function (data) {
+            var keyword = $("#keyword").val();
+            var startDate = $("#minDate").val();
+            var endDate = $("#maxDate").val();
+            var state = $("#state option:selected").val();
+            var roleId = $("#role option:selected").val();
+            if (roleId == "") {
+                roleId = 0
+            }
+            if (state == "") {
+                state = 0;
+            }
+            if (data.state == 1) {
+                $.get('@CachedUrlHelper.Action("_ListUsers", "ControlPanel")', { keyword: keyword, startDate: startDate, endDate: endDate, state: state, roleId: roleId, pageIndex: " @Model.PageIndex", requestDate: new Date().getTime() }, function (data) {
+                    $("#_listUsers").html(data);
+                })
+                layer.closeAll();
+                layer.msg("设置用户角色成功!", { icon: 1 })
+            }
+            else {
+                layer.msg("设置用户角色失败!", { icon: 2 })
+            }
+        }
+        //奖惩用户回调函数
+        $.fn.RewardUserCallBack = function (data) {
+            var keyword = $("#keyword").val();
+            var startDate = $("#minDate").val();
+            var endDate = $("#maxDate").val();
+            var state = $("#state option:selected").val();
+            var roleId = $("#role option:selected").val();
+            if (roleId == "") {
+                roleId = 0
+            }
+            if (state == "") {
+                state = 0;
+            }
+            if (data.state == 1) {
+                $.get('@CachedUrlHelper.Action("_ListUsers", "ControlPanel")', { keyword: keyword, startDate: startDate, endDate: endDate, state: state, roleId: roleId, pageIndex: " @Model.PageIndex", requestDate: new Date().getTime() }, function (data) {
+                    $("#_listUsers").html(data);
+                })
+                layer.closeAll();
+                layer.msg("奖惩用户成功!", { icon: 1 })
+            }
+            else {
+                layer.msg("奖惩用户失败!", { icon: 2 })
+            }
+        }
+    })
+</script>

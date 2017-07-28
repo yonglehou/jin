@@ -1,0 +1,303 @@
+﻿@{
+    var authorizer = new Authorizer();
+    string[] subMenu_check = TempData.Get<string[]>("subMenu-check", new string[0]);
+
+    HttpCookie strcookie = System.Web.HttpContext.Current.Request.Cookies.Get("sideSwitch");
+    var strcookievals = false;
+    if (strcookie != null && strcookie.Value == "1")
+    {
+        strcookievals = true;
+    }
+
+    Func<string, bool> subMenucheck = (n) =>
+    {
+        if (subMenu_check.Length > 0)
+        {
+            if (new List<string>(subMenu_check).Contains(n) && strcookievals == false)
+            {
+                return true;
+            }
+        }
+        return false;
+    };
+}
+<nav class="navbar-default tn-global-nav" id="navbar-default">
+    <div class="tn-nav-header">
+        <a class="tn-nav-brand" href="@SiteUrls.Instance().ControlPanelHome()">
+            近乎管理后台
+        </a>
+    </div>
+    <ul class="nav tn-first-level dropdowns">
+        <li>
+            <a href="#" class="@(subMenucheck("CMS")?"active":"")">
+                <i class="fa fa-file-text"></i>
+                <span class="tn-text">资讯</span>
+                <i class="fa fa-angle-right tn-arrow"></i>
+            </a>
+            <ul class="nav tn-second-level" @if (subMenucheck("CMS")) { <text> style="display: block;" </text>      }>
+                <li>
+                    <a class="@(subMenucheck("ManageCMS")?"active":"")" href="@SiteUrls.Instance().ManageCMS()">
+                        <span class="tn-text">资讯管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="@(subMenucheck("ManageContentCategories")?"active":"")" href="@SiteUrls.Instance().ManageContentCategories()">
+                        <span class="tn-text">栏目管理</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <a class="@(subMenucheck("Sections")?"active":"")" href="#">
+                <i class="fa fa-comments"></i>
+                <span class="tn-text">贴吧</span>
+                <i class="fa fa-angle-right tn-arrow"></i>
+            </a>
+            <ul class="nav tn-second-level" @if (subMenucheck("Sections")) { <text> style="display: block;" </text>        }>
+                <li>
+                    <a class="@(subMenucheck("ManageThreads")?"active":"")" href="@SiteUrls.Instance().ManageThreads()">
+                        <span class="tn-text">贴子管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="@(subMenucheck("ManageSections")?"active":"")" href="@SiteUrls.Instance().ManageSections()">
+                        <span class="tn-text">贴吧管理</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+       
+       
+        <li>
+            <a class="@(subMenucheck("Public")?"active":"")" href="#">
+                <i class="fa fa-navicon"></i>
+                <span class="tn-text">公共内容</span>
+                <i class="fa fa-angle-right tn-arrow"></i>
+            </a>
+            <ul class="nav tn-second-level" @if (subMenucheck("Public")) { <text> style="display: block;" </text>        }>
+                <li>
+                    <a class="@(subMenucheck("ManageContentItems")?"active":"")" href="@SiteUrls.Instance().ManageContentItems()">
+                        <span class="tn-text">内容推荐</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="@(subMenucheck("ManageComments")?"active":"")" href="@SiteUrls.Instance().ManageComments()">
+                        <span class="tn-text">评论管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="@(subMenucheck("ManageCategories")?"active":"")" href="@SiteUrls.Instance().ManageCategories()">
+                        <span class="tn-text">类别管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="@(subMenucheck("ManageTags")?"active":"")" href="@SiteUrls.Instance().ManageTags()">
+                        <span class="tn-text">标签管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="@(subMenucheck("ManageLinks")?"active":"")" href="@SiteUrls.Instance().ManageLinks()">
+                        <span class="tn-text">链接管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="@(subMenucheck("ManageAdvertising")?"active":"")" href="@SiteUrls.Instance().ManageAdvertising(null)">
+                        <span class="tn-text">广告管理</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <a class="@(subMenucheck("User")?"active":"")" href="#">
+                <i class="fa fa-user"></i>
+                <span class="tn-text">用户</span>
+                <i class="fa fa-angle-right tn-arrow"></i>
+            </a>
+            <ul class="nav tn-second-level" @if (subMenucheck("User")) { <text> style="display: block;" </text>        }>
+                <li>
+                    <a class="@(subMenucheck("ManageUser")?"active":"")" href="@SiteUrls.Instance().ManageUser()">
+                        <span class="tn-text">用户管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="@(subMenucheck("ManageRoles")?"active":"")" href="@SiteUrls.Instance().ManageRoles()">
+                        <span class="tn-text">角色管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="@(subMenucheck("ManageUserRanks")?"active":"")" href="@SiteUrls.Instance().ManageUserRanks()">
+                        <span class="tn-text">等级管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="@(subMenucheck("ManagePermissions")?"active":"")" href="@SiteUrls.Instance().ManagePermissions()">
+                        <span class="tn-text">权限管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="@(subMenucheck("ManageAudits")?"active":"")" href="@SiteUrls.Instance().ManageAudits()">
+                        <span class="tn-text">审核规则</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="@(subMenucheck("Managepointrules")?"active":"")" href="@SiteUrls.Instance().Managepointrules()">
+                        <span class="tn-text">积分规则</span>
+                    </a>
+                </li>
+                @if (Utility.CheckThirdPartyLogin())
+                {
+                    <li>
+                        <a class="@(subMenucheck("ManageThirdLogin")?"active":"")" href="@SiteUrls.Instance().ManageThirdLogin()">
+                            <span class="tn-text">第三方登录</span>
+                        </a>
+                    </li>
+                }
+               
+                <li>
+                    <a class="@(subMenucheck("Managepointrecords")?"active":"")" href="@SiteUrls.Instance().Managepointrecords()">
+                        <span class="tn-text">积分记录</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="@(subMenucheck("ManageOperationLogs")?"active":"")" href="@SiteUrls.Instance().ManageOperationLogs()">
+                        <span class="tn-text">操作日志</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <a class="@(subMenucheck("Setting")?"active":"")" href="#">
+                <i class="fa fa-gears"></i>
+                <span class="tn-text">设置</span>
+                <i class="fa fa-angle-right tn-arrow"></i>
+            </a>
+            <ul class="nav tn-second-level" @if (subMenucheck("Setting")) { <text> style="display: block;" </text>        }>
+                <li>
+                    <a class="@(subMenucheck("ManageSiteSettings")?"active":"")" href="@SiteUrls.Instance().ManageSiteSettings()">
+                        <span class="tn-text">站点设置</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="@(subMenucheck("ManageNavigations")?"active":"")" href="@SiteUrls.Instance().ManageNavigations()">
+                        <span class="tn-text">导航管理</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <a class="@(subMenucheck("Tool")?"active":"")" href="#">
+                <i class="fa fa-wrench"></i>
+                <span class="tn-text">工具</span>
+                <i class="fa fa-angle-right tn-arrow"></i>
+            </a>
+            <ul class="nav tn-second-level" @if (subMenucheck("Tool")) { <text> style="display: block;" </text>  }>
+                <li>
+                    <a class="@(subMenucheck("ManageSearchIndexs")?"active":"")" href="@SiteUrls.Instance().ManageSearchIndexs()">
+                        <span class="tn-text">索引管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="@(subMenucheck("ManageaTasks")?"active":"")" href="@SiteUrls.Instance().ManageTasks()">
+                        <span class="tn-text">任务管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="clearCache" href="JavaScript:;">
+                        <span class="tn-text">清除缓存</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="restartSite" href="JavaScript:;">
+                        <span class="tn-text">重启站点</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="@(subMenucheck("PauseSiteSettings")?"active":"")" href="@SiteUrls.Instance().PauseSiteSettings()">
+                        <span class="tn-text">暂停站点</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+    </ul>
+    <div class="tn-side-switch text-right">
+        <div class="tn-side-powered">Powered by<a target="_blank" href="http://www.jinhusns.com/">近乎</a>v5.0</div>
+        <a id="sideSwitch" href="#"><i class="fa fa-chevron-circle-left"></i></a>
+    </div>
+</nav>
+<script>
+    require(['jquery'], function ($) {
+
+        function sleep(d) {
+            for (var t = Date.now() ; Date.now() - t <= d;);
+        }
+
+
+        $("#restartSite").click(function myfunction(){
+
+            layer.confirm("你确定要重启站点吗？", {
+                btn: ['确认', '取消'],//按钮
+                scrollbar: false
+            }, function () {
+                layer.closeAll();
+                var index = layer.load();
+                $.ajax({
+                    type: "POST",
+                    url: "@SiteUrls.Instance().UnloadAppDomain()",
+                    async: true,
+                    success: function myfunction(data) {
+                        setTimeout(function () {
+
+                            layer.close(index);
+                            if (data) {
+                                layer.msg("重启成功", {
+                                    icon: 1
+                                });
+                            }
+                            else {
+                                layer.msg("无权操作", {
+                                    icon: 2
+                                });
+                            }
+                        },3000)
+                        
+                    }
+                });
+            });
+        });
+        $("#clearCache").click(function myfunction() {
+
+            layer.confirm("你确定要清除缓存吗？", {
+                btn: ['确认', '取消'],//按钮
+                scrollbar: false
+            }, function () {
+                layer.closeAll();
+                var index = layer.load();
+                $.ajax({
+                    type: "POST",
+                    url: "@SiteUrls.Instance().ResetCache()",
+                    async: true,
+                    success: function myfunction(data) {
+                        setTimeout(function () {
+
+                            layer.close(index);
+                            if (data) {
+                                layer.msg("清除成功", {
+                                    icon: 1
+                                });
+                            }
+                            else {
+                                layer.msg("无权操作", {
+                                    icon: 2
+                                });
+                            }
+                        }, 3000)
+                      
+                    }
+                });
+              
+            });
+        });
+    })
+
+</script>

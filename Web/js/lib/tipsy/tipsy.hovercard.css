@@ -1,0 +1,18 @@
+@charset "utf-8";
+.tipsy-hovercard {
+}
+.tipsy-hovercard .tipsy-inner {
+}
+.tipsy-hovercard a {
+  color: inherit;
+}
+.tipsy-hovercard .thc-image {
+  float: left;
+  margin-right: 10px;
+}
+.tipsy-hovercard .thc-text {
+  float: left;
+  text-align: left;
+}
+.tipsy-hovercard .thc-options {
+}

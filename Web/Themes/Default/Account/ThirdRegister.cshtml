@@ -1,0 +1,21 @@
+﻿@{
+    ViewData["Title"] = new string[] { "关联帐号" };
+    var thirdCurrentUser = ViewData.Get<ThirdUser>("thirdCurrentUser", null);
+    var siteName = ViewData.Get<string>("siteName", string.Empty);
+}
+<div class="jh-login-home">
+    <h1 class="tn-mb-30 tn-space-xlg-hor text-center">关联@(siteName)帐号</h1>
+    <div class="jh-user-head text-center">
+        <img class="img-circle" alt="用户头像" src="@thirdCurrentUser.UserAvatarUrl" width="120" height="120">
+        <h5>@thirdCurrentUser.NickName</h5>
+    </div>
+    <form class="tn-space-xlg-hor text-center tn-mt-30">
+        <div class="alert alert-success" role="alert">
+            您尚未关联@(siteName)帐号
+        </div>
+        <div class="tn-p-lg">
+            <button type="button" class="btn btn-primary btn-block tn-mb-20" onclick="window.location='@SiteUrls.Instance().AssociateEmail()'">关联新帐号</button>
+            <button type="button" class="btn btn-default  btn-block" onclick="window.location='@SiteUrls.Instance().AssociateAccount()'">关联已有帐号</button>
+        </div>
+    </form>
+</div>
